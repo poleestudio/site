@@ -1,0 +1,11 @@
+Flask==3.0.0
+Werkzeug==3.0.1
+python-dotenv==1.0.1
+pyodbc==5.1.0
+pandas==2.2.2
+openpyxl==3.1.2
+numpy==1.26.4        # ou versão compatível com seu Python
+
+playwright==1.50.0   # ajuste para a versão que você estiver usando
+requests==2.31.0
+Flask-Login==0.6.3   # opcional, se você realmente usar flask_login

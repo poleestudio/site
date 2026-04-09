@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Área do aluno Clara Lucatti. Consulte aulas, plano, reservas, check-in e cadastro.">
+  <title>Área do Aluno · Clara Lucatti</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-body">
+
+  <a href="#conteudo-principal" class="sr-only">Pular para o conteúdo principal</a>
+
+  <nav id="navbar" class="app-navbar" aria-label="Navegação principal">
+    <a href="{{ url_for('home') }}#home" class="nav-logo" aria-label="Ir para o início">
+      <img
+        src="{{ url_for('static', filename='logo.png') }}"
+        alt="Logo Clara Lucatti Estúdio de Dança"
+        class="nav-logo-mark"
+      >
+      <div class="nav-brand">Clara Lucatti <span>Área do aluno</span></div>
+    </a>
+
+    <div class="nav-actions">
+      <span class="nav-user-chip">
+        {{ user_name if user_name else 'Aluno' }}
+      </span>
+
+      <form id="logoutForm" style="display:inline;">
+        <button type="button" class="nav-cta nav-cta-outline" id="logoutBtn">Sair</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="app-layout" id="conteudo-principal">
+    <aside class="app-sidebar" aria-label="Menu da área do aluno">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">
+          {{ (user_name[:1] if user_name else 'A')|upper }}
+        </div>
+
+        <div>
+          <div class="sidebar-user-name">{{ user_name if user_name else 'Aluno' }}</div>
+          <div class="sidebar-user-meta">
+            {{ user_tipo if user_tipo else 'aluno' }}
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu" role="tablist" aria-label="Seções da área do aluno">
+        <button
+          type="button"
+          class="sidebar-item active"
+          data-tab="resumo"
+          role="tab"
+          aria-selected="true"
+          aria-controls="tab-resumo"
+          id="tab-btn-resumo"
+        >
+          Resumo
+        </button>
+
+        <button
+          type="button"
+          class="sidebar-item"
+          data-tab="agenda"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-agenda"
+          id="tab-btn-agenda"
+        >
+          Aulas do dia
+        </button>
+
+        <button
+          type="button"
+          class="sidebar-item"
+          data-tab="plano"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-plano"
+          id="tab-btn-plano"
+        >
+          Meu plano
+        </button>
+
+        <button
+          type="button"
+          class="sidebar-item"
+          data-tab="reservas"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-reservas"
+          id="tab-btn-reservas"
+        >
+          Reservar aula
+        </button>
+
+        <button
+          type="button"
+          class="sidebar-item"
+          data-tab="checkin"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-checkin"
+          id="tab-btn-checkin"
+        >
+          Check-in
+        </button>
+
+        <button
+          type="button"
+          class="sidebar-item"
+          data-tab="cadastro"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-cadastro"
+          id="tab-btn-cadastro"
+        >
+          Meu cadastro
+        </button>
+      </nav>
+    </aside>
+
+    <section class="app-content" aria-live="polite">
+      <!-- RESUMO -->
+      <section
+        class="app-tab active"
+        id="tab-resumo"
+        role="tabpanel"
+        aria-labelledby="tab-btn-resumo"
+      >
+        <header class="app-tab-header">
+          <h1>Olá, {{ user_name if user_name else 'aluna' }} ✨</h1>
+          <p>Veja um resumo rápido do seu plano, próxima aula e frequência do mês.</p>
+        </header>
+
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <div class="kpi-label">Plano atual</div>
+            <div class="kpi-value">Plano Duo</div>
+            <div class="kpi-note">2 modalidades · 2 aulas por semana</div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-label">Próxima aula</div>
+            <div class="kpi-value">Hoje · 19h00</div>
+            <div class="kpi-note">Pole Arte · sala principal</div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-label">Check-ins no mês</div>
+            <div class="kpi-value">06</div>
+            <div class="kpi-note">Frequência em andamento</div>
+          </article>
+        </div>
+
+        <div class="panel-grid">
+          <article class="panel-card">
+            <h2>Minhas modalidades</h2>
+            <ul class="simple-list">
+              <li>Bases de Pole</li>
+              <li>Pole Arte</li>
+            </ul>
+          </article>
+
+          <article class="panel-card">
+            <h2>Status da semana</h2>
+            <ul class="simple-list">
+              <li>2 aulas reservadas</li>
+              <li>1 check-in pendente hoje</li>
+              <li>Plano ativo até 30/04/2026</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- AGENDA -->
+      <section
+        class="app-tab"
+        id="tab-agenda"
+        role="tabpanel"
+        aria-labelledby="tab-btn-agenda"
+        hidden
+      >
+        <header class="app-tab-header">
+          <h1>Aulas de hoje</h1>
+          <p>Acompanhe os horários e o status das suas aulas agendadas.</p>
+        </header>
+
+        <div class="class-list">
+          <article class="class-card">
+            <div>
+              <div class="class-time">Hoje · 18h00</div>
+              <div class="class-name">Bases de Pole</div>
+              <div class="class-meta">Sala principal · Reserva confirmada</div>
+            </div>
+            <span class="status status-confirmed">Reservada</span>
+          </article>
+
+          <article class="class-card">
+            <div>
+              <div class="class-time">Hoje · 19h00</div>
+              <div class="class-name">Pole Arte</div>
+              <div class="class-meta">Sala principal · Check-in pendente</div>
+            </div>
+            <span class="status status-pending">Check-in pendente</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- PLANO -->
+      <section
+        class="app-tab"
+        id="tab-plano"
+        role="tabpanel"
+        aria-labelledby="tab-btn-plano"
+        hidden
+      >
+        <header class="app-tab-header">
+          <h1>Meu plano</h1>
+          <p>Resumo do plano atual contratado, modalidades vinculadas e vigência.</p>
+        </header>
+
+        <article class="plan-card">
+          <div class="plan-badge">Plano ativo</div>
+          <h2>Plano Duo</h2>
+          <div class="plan-price">R$ 279<span>/mês</span></div>
+
+          <ul class="simple-list">
+            <li>2 modalidades</li>
+            <li>2 aulas por semana</li>
+            <li>Combinação atual: Bases de Pole + Pole Arte</li>
+            <li>Renovação prevista: 30/04/2026</li>
+          </ul>
+        </article>
+      </section>
+
+      <!-- RESERVAS -->
+      <section
+        class="app-tab"
+        id="tab-reservas"
+        role="tabpanel"
+        aria-labelledby="tab-btn-reservas"
+        hidden
+      >
+        <header class="app-tab-header">
+          <h1>Reservar aula</h1>
+          <p>Escolha modalidade, dia e horário para reservar sua vaga.</p>
+        </header>
+
+        <article class="booking-box">
+          <form id="bookingForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="modalidade">Modalidade</label>
+                <select id="modalidade" name="modalidade" required>
+                  <option value="">Selecione</option>
+                  <option>Bases de Pole</option>
+                  <option>Bases de Pole Giratório</option>
+                  <option>Pole Coreográfico</option>
+                  <option>Pole Arte</option>
+                  <option>Pole ON HEELS</option>
+                  <option>Mix Danças</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="dia">Dia</label>
+                <select id="dia" name="dia" required>
+                  <option value="">Selecione</option>
+                  <option>Segunda-feira</option>
+                  <option>Terça-feira</option>
+                  <option>Quarta-feira</option>
+                  <option>Quinta-feira</option>
+                  <option>Sexta-feira</option>
+                  <option>Sábado</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="hora">Horário</label>
+              <select id="hora" name="hora" required>
+                <option value="">Selecione</option>
+                <option>09h00</option>
+                <option>10h00</option>
+                <option>17h00</option>
+                <option>18h00</option>
+                <option>19h00</option>
+                <option>20h00</option>
+                <option>20h20</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-primary app-btn-wide">Reservar aula</button>
+          </form>
+
+          <div class="alert alert-success hidden" id="bookingFeedback">
+            Reserva realizada com sucesso.
+          </div>
+        </article>
+      </section>
+
+      <!-- CHECK-IN -->
+      <section
+        class="app-tab"
+        id="tab-checkin"
+        role="tabpanel"
+        aria-labelledby="tab-btn-checkin"
+        hidden
+      >
+        <header class="app-tab-header">
+          <h1>Check-in das aulas</h1>
+          <p>Marque presença nas aulas reservadas do dia.</p>
+        </header>
+
+        <div class="checkin-list">
+          <article class="checkin-card">
+            <div>
+              <div class="class-time">Hoje · 18h00</div>
+              <div class="class-name">Bases de Pole</div>
+            </div>
+            <button class="checkin-btn" data-checkin-btn type="button">Fazer check-in</button>
+          </article>
+
+          <article class="checkin-card">
+            <div>
+              <div class="class-time">Hoje · 19h00</div>
+              <div class="class-name">Pole Arte</div>
+            </div>
+            <button class="checkin-btn" data-checkin-btn type="button">Fazer check-in</button>
+          </article>
+        </div>
+      </section>
+
+      <!-- CADASTRO -->
+      <section
+        class="app-tab"
+        id="tab-cadastro"
+        role="tabpanel"
+        aria-labelledby="tab-btn-cadastro"
+        hidden
+      >
+        <header class="app-tab-header">
+          <h1>Meu cadastro</h1>
+          <p>Visualize seus dados principais. Em breve: edição direta pelo aluno.</p>
+        </header>
+
+        <article class="panel-card">
+          <h2>Dados principais</h2>
+          <ul class="simple-list">
+            <li><strong>Nome:</strong> {{ user_name if user_name else 'Aluno' }}</li>
+            <li><strong>E-mail:</strong> (dados do cadastro)</li>
+            <li><strong>Plano atual:</strong> Plano Duo</li>
+            <li><strong>Tipo de cadastro:</strong> {{ user_tipo if user_tipo else 'aluno' }}</li>
+          </ul>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const tabButtons = document.querySelectorAll('.sidebar-item');
+    const tabPanels = document.querySelectorAll('.app-tab');
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetId = 'tab-' + btn.dataset.tab;
+
+        tabButtons.forEach((button) => {
+          button.classList.remove('active');
+          button.setAttribute('aria-selected', 'false');
+        });
+
+        tabPanels.forEach((panel) => {
+          panel.classList.remove('active');
+          panel.hidden = true;
+        });
+
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        const targetPanel = document.getElementById(targetId);
+        if (targetPanel) {
+          targetPanel.classList.add('active');
+          targetPanel.hidden = false;
+        }
+      });
+    });
+
+    document.querySelectorAll('[data-checkin-btn]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        btn.textContent = 'Check-in realizado';
+        btn.classList.add('done');
+        btn.disabled = true;
+      });
+    });
+
+    const bookingForm = document.getElementById('bookingForm');
+    const bookingFeedback = document.getElementById('bookingFeedback');
+
+    if (bookingForm) {
+      bookingForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        bookingFeedback.classList.remove('hidden');
+        bookingFeedback.textContent = 'Reserva realizada com sucesso.';
+        bookingForm.reset();
+      });
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await fetch('{{ url_for("logout") }}', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          });
+        } catch (e) {}
+
+        window.location.href = '{{ url_for("home") }}#home';
+      });
+    }
+  </script>
+</body>
+</html>

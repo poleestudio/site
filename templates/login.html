@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Área do Aluno · Clara Lucatti</title>
+  <meta name="description" content="Área do aluno para login, cadastro, reservas e gestão de aulas.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bordo: #8B0021;
+      --bordo-light: #A3002A;
+      --bordo-pale: #f5e6ea;
+      --cream: #fdf8f5;
+      --warm-white: #fff9f6;
+      --blush: #f0dde3;
+      --taupe: #c9a8b2;
+      --text-dark: #2a1a1f;
+      --text-mid: #6b4a55;
+      --text-light: #b08090;
+      --success: #2d7a45;
+      --success-bg: #e8f5ec;
+      --warning: #9c6516;
+      --warning-bg: #fff3e0;
+      --error: #8f2237;
+      --error-bg: #fdecee;
+      --border-soft: rgba(139, 0, 33, 0.08);
+      --shadow-soft: 0 18px 50px rgba(42, 26, 31, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body.app-body {
+      background: linear-gradient(180deg, #fffaf8 0%, #f7f0ed 100%);
+      color: var(--text-dark);
+      font-family: 'Jost', sans-serif;
+      min-height: 100vh;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    button, input, select { font: inherit; }
+    .hidden { display: none !important; }
+
+    /* NAVBAR BÁSICA (mesma identidade do site) */
+    .app-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.2rem 2rem;
+      background: rgba(255, 249, 246, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(139, 0, 33, 0.06);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .nav-logo-mark {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .nav-brand span {
+      display: block;
+      font-size: 0.68rem;
+      color: var(--bordo);
+      letter-spacing: 0.16em;
+      font-family: 'Jost', sans-serif;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      padding: 0.85rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-size: 0.76rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      min-height: 44px;
+    }
+
+    .nav-cta-outline {
+      background: transparent;
+      color: var(--bordo);
+      border-color: rgba(139, 0, 33, 0.16);
+    }
+
+    .nav-cta-outline:hover {
+      background: var(--bordo-pale);
+    }
+
+    /* LAYOUT LOGIN */
+    .login-layout {
+      max-width: 1180px;
+      margin: 2rem auto;
+      padding: 0 2rem 2.5rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 1.8rem;
+    }
+
+    .login-hero-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      padding: 2.2rem;
+    }
+
+    .login-form-card {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      padding: 2rem;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bordo);
+      margin-bottom: 1rem;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(2.6rem, 4vw, 4rem);
+      line-height: 0.98;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--bordo);
+    }
+
+    .hero-subtitle {
+      color: var(--text-mid);
+      line-height: 1.8;
+      max-width: 58ch;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      padding: 0.85rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      min-height: 44px;
+      background: var(--bordo);
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(139, 0, 33, 0.18);
+    }
+
+    .btn-primary:hover {
+      background: var(--bordo-light);
+      transform: translateY(-1px);
+    }
+
+    .app-btn-wide {
+      width: 100%;
+      justify-content: center;
+      border: none;
+    }
+
+    .auth-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .auth-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 2.2rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .auth-subtitle {
+      color: var(--text-mid);
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+      font-size: 0.94rem;
+    }
+
+    .switch-inline {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .switch-btn {
+      padding: 0.7rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(139, 0, 33, 0.12);
+      background: transparent;
+      color: var(--text-mid);
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    .switch-btn.active {
+      background: var(--bordo-pale);
+      color: var(--bordo);
+      border-color: rgba(139, 0, 33, 0.18);
+    }
+
+    .form-group { margin-bottom: 1rem; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 0.45rem;
+    }
+
+    input,
+    select {
+      width: 100%;
+      background: var(--cream);
+      border: 1.5px solid rgba(139, 0, 33, 0.10);
+      border-radius: var(--radius-md);
+      padding: 0.95rem 1rem;
+      outline: none;
+      color: var(--text-dark);
+      min-height: 48px;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--bordo);
+      box-shadow: 0 0 0 4px rgba(139, 0, 33, 0.06);
+    }
+
+    .alert {
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .alert-error {
+      background: var(--error-bg);
+      border: 1px solid rgba(139, 0, 33, 0.10);
+      color: var(--error);
+    }
+
+    .alert-success {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(45, 122, 69, 0.12);
+    }
+
+    .password-rules {
+      margin: 0.2rem 0 1rem;
+      padding: 1rem;
+      background: var(--cream);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(139, 0, 33, 0.06);
+    }
+
+    .password-rules-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-light);
+      margin-bottom: 0.7rem;
+    }
+
+    .password-rule {
+      font-size: 0.86rem;
+      color: var(--text-mid);
+      margin-bottom: 0.35rem;
+    }
+
+    .password-rule.ok { color: var(--success); }
+
+    .consent-box {
+      background: var(--cream);
+      border: 1px solid rgba(139, 0, 33, 0.06);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .consent-item {
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-start;
+      margin-bottom: 0.9rem;
+    }
+
+    .consent-item:last-child { margin-bottom: 0; }
+
+    .consent-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      min-height: auto;
+      margin-top: 0.15rem;
+      accent-color: var(--bordo);
+    }
+
+    .consent-text {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-mid);
+    }
+
+    .consent-text strong { color: var(--text-dark); }
+
+    :focus-visible {
+      outline: 2px solid var(--bordo);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 960px) {
+      .login-layout {
+        grid-template-columns: 1fr;
+        padding-inline: 1.2rem;
+      }
+
+      .app-navbar {
+        padding-inline: 1.2rem;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .nav-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .form-row { grid-template-columns: 1fr; }
+
+      .switch-inline {
+        width: 100%;
+      }
+
+      .switch-btn {
+        flex: 1;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body class="app-body">
+
+  <nav id="navbar" class="app-navbar">
+    <a href="{{ url_for('home') }}" class="nav-logo" aria-label="Ir para o início">
+      <img
+        src="{{ url_for('static', filename='logo.png') }}"
+        alt="Logo Clara Lucatti Estúdio de Dança"
+        class="nav-logo-mark"
+      >
+      <div class="nav-brand">Clara Lucatti <span>Acesso à plataforma</span></div>
+    </a>
+
+    <div class="nav-actions">
+      <a href="{{ url_for('home') }}" class="nav-cta nav-cta-outline">Voltar ao site</a>
+    </div>
+  </nav>
+
+  <main class="login-layout">
+    <section class="login-hero-card">
+      <div class="hero-eyebrow">Estúdio de Dança & Pole</div>
+      <h1 class="hero-title">
+        Sua rotina de aulas<br>
+        <em>em um só lugar</em>
+      </h1>
+      <p class="hero-subtitle">
+        Faça login para acessar reservas, check-ins, plano, agenda de aulas e informações da sua área.
+      </p>
+    </section>
+
+    <section class="login-form-card">
+      <div class="auth-header">
+        <div>
+          <h2 class="auth-title" id="authTitle">Entrar</h2>
+          <p class="auth-subtitle" id="authSubtitle">
+            Use seu e-mail e senha para acessar sua conta.
+          </p>
+        </div>
+
+        <div class="switch-inline" aria-label="Alternar entre login e cadastro">
+          <button type="button" class="switch-btn active" id="tabLoginBtn">Login</button>
+          <button type="button" class="switch-btn" id="tabSignupBtn">Cadastro</button>
+        </div>
+      </div>
+
+      <!-- LOGIN -->
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email_login">E-mail</label>
+          <input id="email_login" name="email" type="email" placeholder="Digite seu e-mail" required>
+        </div>
+
+        <div class="form-group">
+          <label for="senha_login">Senha</label>
+          <input id="senha_login" name="senha" type="password" placeholder="Digite sua senha" required>
+        </div>
+
+        <div class="alert alert-error hidden" id="loginError"></div>
+
+        <button type="submit" class="btn-primary app-btn-wide">
+          Entrar
+        </button>
+      </form>
+
+      <!-- CADASTRO -->
+      <form id="signupForm" class="hidden" novalidate>
+        <div class="form-group">
+          <label for="nome_completo">Nome completo</label>
+          <input id="nome_completo" name="nome_completo" type="text" placeholder="Digite seu nome completo" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email_cadastro">E-mail</label>
+          <input id="email_cadastro" name="email" type="email" placeholder="seu@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cpf">CPF</label>
+          <input id="cpf" name="cpf" type="text" placeholder="000.000.000-00" maxlength="14" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="senha_cadastro">Senha</label>
+            <input id="senha_cadastro" name="senha" type="password" placeholder="Crie uma senha forte" required>
+          </div>
+
+          <div class="form-group">
+            <label for="senha_confirmacao">Confirmar senha</label>
+            <input id="senha_confirmacao" name="senha_confirmacao" type="password" placeholder="Repita sua senha" required>
+          </div>
+        </div>
+
+        <div class="password-rules" id="passwordRules">
+          <div class="password-rules-title">Sua senha precisa ter</div>
+          <div class="password-rule" data-rule="length">• Pelo menos 8 caracteres</div>
+          <div class="password-rule" data-rule="upper">• Pelo menos 1 letra maiúscula</div>
+          <div class="password-rule" data-rule="lower">• Pelo menos 1 letra minúscula</div>
+          <div class="password-rule" data-rule="number">• Pelo menos 1 número</div>
+          <div class="password-rule" data-rule="special">• Pelo menos 1 símbolo</div>
+        </div>
+
+        <div class="consent-box">
+          <div class="consent-item">
+            <input type="checkbox" id="termo_imagem" name="termo_imagem">
+            <div class="consent-text">
+              <strong>Permissão de uso de imagem</strong> (opcional).
+            </div>
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="termo_seguranca" name="termo_seguranca" required>
+            <div class="consent-text">
+              <strong>Termo de segurança e responsabilidade</strong> (obrigatório).
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-error hidden" id="signupError"></div>
+        <div class="alert alert-success hidden" id="signupSuccess"></div>
+
+        <button type="submit" class="btn-primary app-btn-wide">
+          Criar meu cadastro
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const tabLoginBtn = document.getElementById('tabLoginBtn');
+    const tabSignupBtn = document.getElementById('tabSignupBtn');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+
+    const loginError = document.getElementById('loginError');
+    const signupError = document.getElementById('signupError');
+    const signupSuccess = document.getElementById('signupSuccess');
+
+    const passwordInput = document.getElementById('senha_cadastro');
+    const confirmPasswordInput = document.getElementById('senha_confirmacao');
+    const cpfInput = document.getElementById('cpf');
+    const termoSeguranca = document.getElementById('termo_seguranca');
+    const termoImagem = document.getElementById('termo_imagem');
+
+    function showLogin() {
+      loginForm.classList.remove('hidden');
+      signupForm.classList.add('hidden');
+      authTitle.textContent = 'Entrar';
+      authSubtitle.textContent = 'Use seu e-mail e senha para acessar sua conta.';
+      tabLoginBtn.classList.add('active');
+      tabSignupBtn.classList.remove('active');
+    }
+
+    function showSignup() {
+      loginForm.classList.add('hidden');
+      signupForm.classList.remove('hidden');
+      authTitle.textContent = 'Cadastro';
+      authSubtitle.textContent = 'Crie sua conta com seus dados básicos.';
+      tabLoginBtn.classList.remove('active');
+      tabSignupBtn.classList.add('active');
+    }
+
+    tabLoginBtn.addEventListener('click', showLogin);
+    tabSignupBtn.addEventListener('click', showSignup);
+
+    function passwordChecks(password) {
+      return {
+        length: password.length >= 8,
+        upper: /[A-Z]/.test(password),
+        lower: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[^A-Za-z0-9]/.test(password)
+      };
+    }
+
+    function updatePasswordRules() {
+      const rules = passwordChecks(passwordInput.value);
+      Object.entries(rules).forEach(([key, ok]) => {
+        const el = document.querySelector(`[data-rule="${key}"]`);
+        if (el) el.classList.toggle('ok', ok);
+      });
+      return Object.values(rules).every(Boolean);
+    }
+
+    passwordInput.addEventListener('input', updatePasswordRules);
+
+    cpfInput.addEventListener('input', () => {
+      let v = cpfInput.value.replace(/\D/g, '').slice(0, 11);
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      cpfInput.value = v;
+    });
+
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      loginError.classList.add('hidden');
+
+      const email = document.getElementById('email_login').value.trim();
+      const senha = document.getElementById('senha_login').value.trim();
+
+      try {
+        const resp = await fetch('{{ url_for("login_post") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({ email, senha })
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          loginError.textContent = data.mensagem || 'Erro ao fazer login.';
+          loginError.classList.remove('hidden');
+          return;
+        }
+
+        window.location.href = data.redirect_url;
+      } catch (err) {
+        loginError.textContent = 'Erro de comunicação com o servidor.';
+        loginError.classList.remove('hidden');
+      }
+    });
+
+    signupForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      signupError.classList.add('hidden');
+      signupSuccess.classList.add('hidden');
+
+      const nome = document.getElementById('nome_completo').value.trim();
+      const email = document.getElementById('email_cadastro').value.trim();
+      const cpfRaw = cpfInput.value.replace(/\D/g, '');
+      const senha = passwordInput.value;
+      const confirmar = confirmPasswordInput.value;
+
+      if (!nome || !email || !cpfRaw || !senha || !confirmar) {
+        signupError.textContent = 'Preencha todos os campos obrigatórios.';
+        signupError.classList.remove('hidden');
+        return;
+      }
+
+      if (cpfRaw.length !== 11) {
+        signupError.textContent = 'Informe um CPF válido com 11 dígitos.';
+        signupError.classList.remove('hidden');
+        return;
+      }
+
+      if (!updatePasswordRules()) {
+        signupError.textContent = 'A senha não atende aos critérios mínimos de segurança.';
+        signupError.classList.remove('hidden');
+        return;
+      }
+
+      if (senha !== confirmar) {
+        signupError.textContent = 'As senhas não conferem.';
+        signupError.classList.remove('hidden');
+        return;
+      }
+
+      if (!termoSeguranca.checked) {
+        signupError.textContent = 'Você precisa aceitar o termo de segurança.';
+        signupError.classList.remove('hidden');
+        return;
+      }
+
+      const payload = {
+        nome_completo: nome,
+        email: email,
+        cpf: cpfRaw,
+        senha: senha,
+        termo_imagem: termoImagem.checked,
+        termo_seguranca: termoSeguranca.checked
+      };
+
+      try {
+        const resp = await fetch('{{ url_for("registrar_aluno") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          signupError.textContent = data.mensagem || 'Erro ao realizar cadastro.';
+          signupError.classList.remove('hidden');
+          return;
+        }
+
+        signupSuccess.textContent = data.mensagem || 'Cadastro realizado com sucesso.';
+        signupSuccess.classList.remove('hidden');
+        signupForm.reset();
+        updatePasswordRules();
+
+        setTimeout(() => {
+          showLogin();
+          document.getElementById('email_login').value = email;
+        }, 1000);
+      } catch (err) {
+        signupError.textContent = 'Erro de comunicação com o servidor.';
+        signupError.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

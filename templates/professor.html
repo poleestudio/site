@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Área do Professor · Clara Lucatti</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-body">
+
+  <nav id="navbar" class="app-navbar">
+    <a href="{{ url_for('home') }}#home" class="nav-logo" aria-label="Ir para o início">
+      <img
+        src="{{ url_for('static', filename='logo.png') }}"
+        alt="Logo Clara Lucatti Estúdio de Dança"
+        class="nav-logo-mark"
+      >
+      <div class="nav-brand">Clara Lucatti <span>Área do professor</span></div>
+    </a>
+
+    <div class="nav-actions">
+      <span class="nav-user-chip">
+        {{ user_name if user_name else 'Professor' }}
+      </span>
+      <button type="button" class="nav-cta nav-cta-outline" id="logoutBtn">Sair</button>
+    </div>
+  </nav>
+
+  <main class="app-layout">
+    <aside class="app-sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">
+          {{ (user_name[:1] if user_name else 'P')|upper }}
+        </div>
+        <div>
+          <div class="sidebar-user-name">{{ user_name if user_name else 'Professor(a)' }}</div>
+          <div class="sidebar-user-meta">professor</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <button type="button" class="sidebar-item active" data-tab="resumo">Resumo</button>
+        <button type="button" class="sidebar-item" data-tab="aulas-hoje">Aulas de hoje</button>
+        <button type="button" class="sidebar-item" data-tab="turmas">Minhas turmas</button>
+        <button type="button" class="sidebar-item" data-tab="presencas">Presenças</button>
+        <button type="button" class="sidebar-item" data-tab="anotacoes">Anotações</button>
+      </nav>
+    </aside>
+
+    <section class="app-content">
+      <!-- RESUMO -->
+      <section class="app-tab active" id="tab-resumo">
+        <header class="app-tab-header">
+          <h1>Bem-vinda, {{ user_name if user_name else 'profa.' }} 🎓</h1>
+          <p>Veja um panorama rápido das suas aulas, turmas e presenças do dia.</p>
+        </header>
+
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <div class="kpi-label">Aulas hoje</div>
+            <div class="kpi-value">04</div>
+            <div class="kpi-note">Entre bases, spin e coreo</div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-label">Alunas esperadas</div>
+            <div class="kpi-value">26</div>
+            <div class="kpi-note">Somando todas as turmas</div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-label">Presença média</div>
+            <div class="kpi-value">87%</div>
+            <div class="kpi-note">Últimos 30 dias</div>
+          </article>
+        </div>
+
+        <div class="panel-grid">
+          <article class="panel-card">
+            <h2>Próximas aulas</h2>
+            <ul class="simple-list">
+              <li>18h00 · Bases de Pole · Turma iniciantes</li>
+              <li>19h00 · Pole Arte · Turma mista</li>
+              <li>20h00 · Pole Spin 2 e 3 · Intermediário</li>
+            </ul>
+          </article>
+
+          <article class="panel-card">
+            <h2>Pontos de atenção</h2>
+            <ul class="simple-list">
+              <li>3 alunas em retorno pós-pausa</li>
+              <li>1 aluna com restrição de ombro</li>
+              <li>Semana de gravações de coreos</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- AULAS DE HOJE -->
+      <section class="app-tab" id="tab-aulas-hoje">
+        <header class="app-tab-header">
+          <h1>Aulas de hoje</h1>
+          <p>Organize rapidamente cada turma, veja alunas confirmadas e marque início de aula.</p>
+        </header>
+
+        <div class="class-list">
+          <article class="class-card">
+            <div>
+              <div class="class-time">18h00 · Sala principal</div>
+              <div class="class-name">Bases de Pole</div>
+              <div class="class-meta">10 alunas confirmadas · 2 em lista de espera</div>
+            </div>
+            <button type="button" class="checkin-btn">Abrir chamada</button>
+          </article>
+
+          <article class="class-card">
+            <div>
+              <div class="class-time">19h00 · Sala principal</div>
+              <div class="class-name">Pole Arte</div>
+              <div class="class-meta">8 alunas confirmadas · 1 remanejada</div>
+            </div>
+            <button type="button" class="checkin-btn">Abrir chamada</button>
+          </article>
+
+          <article class="class-card">
+            <div>
+              <div class="class-time">20h00 · Sala principal</div>
+              <div class="class-name">Pole Spin 2 e 3</div>
+              <div class="class-meta">8 alunas confirmadas · nível intermediário/avançado</div>
+            </div>
+            <button type="button" class="checkin-btn">Abrir chamada</button>
+          </article>
+        </div>
+      </section>
+
+      <!-- TURMAS -->
+      <section class="app-tab" id="tab-turmas">
+        <header class="app-tab-header">
+          <h1>Minhas turmas</h1>
+          <p>Visualize as turmas fixas sob sua responsabilidade.</p>
+        </header>
+
+        <div class="panel-grid">
+          <article class="panel-card">
+            <h2>Bases de Pole · Ter/Qui</h2>
+            <ul class="simple-list">
+              <li>Terça · 18h00 · sala principal</li>
+              <li>Quinta · 09h00 · sala principal</li>
+              <li>Turma: iniciantes / base técnica</li>
+              <li>Alunas ativas: 14</li>
+            </ul>
+          </article>
+
+          <article class="panel-card">
+            <h2>Pole Arte · Ter</h2>
+            <ul class="simple-list">
+              <li>Terça · 19h00 · sala principal</li>
+              <li>Foco: expressão, criação e presença</li>
+              <li>Alunas ativas: 10</li>
+            </ul>
+          </article>
+
+          <article class="panel-card">
+            <h2>Pole Spin 2 e 3 · Qui</h2>
+            <ul class="simple-list">
+              <li>Quinta · 19h00 · sala principal</li>
+              <li>Nível: intermediário / avançado</li>
+              <li>Alunas ativas: 8</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- PRESENÇAS -->
+      <section class="app-tab" id="tab-presencas">
+        <header class="app-tab-header">
+          <h1>Presenças</h1>
+          <p>Registre quickly presenças do dia ou consulte a frequência recente.</p>
+        </header>
+
+        <div class="panel-card">
+          <h2>Presenças de hoje</h2>
+          <div class="presenca-list">
+            <div class="presenca-item">
+              <span>Aluna A</span>
+              <button type="button" class="tag-btn tag-btn-ok">Presente</button>
+            </div>
+            <div class="presenca-item">
+              <span>Aluna B</span>
+              <button type="button" class="tag-btn">Marcar presença</button>
+            </div>
+            <div class="presenca-item">
+              <span>Aluna C</span>
+              <button type="button" class="tag-btn">Marcar presença</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANOTAÇÕES -->
+      <section class="app-tab" id="tab-anotacoes">
+        <header class="app-tab-header">
+          <h1>Anotações rápidas</h1>
+          <p>Registre lembretes sobre turmas, processos, ajustes de coreo e observações gerais.</p>
+        </header>
+
+        <div class="panel-card">
+          <form id="notesForm">
+            <div class="form-group">
+              <label for="nota_texto">Anotações</label>
+              <textarea id="nota_texto" rows="5" placeholder="Ex.: revisar combo de giro na turma de quinta, adaptar sequência para aluna com dor no ombro..."></textarea>
+            </div>
+            <button type="submit" class="btn-primary app-btn-inline">Salvar rascunho</button>
+            <span class="form-hint" id="notesHint" style="margin-left:0.5rem;"></span>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll('.sidebar-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.app-tab').forEach(tab => tab.classList.remove('active'));
+
+        btn.classList.add('active');
+        const tab = document.getElementById('tab-' + btn.dataset.tab);
+        if (tab) tab.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('tag-btn-ok');
+        btn.textContent = btn.classList.contains('tag-btn-ok') ? 'Presente' : 'Marcar presença';
+      });
+    });
+
+    const notesForm = document.getElementById('notesForm');
+    const notesHint = document.getElementById('notesHint');
+
+    if (notesForm) {
+      notesForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        notesHint.textContent = 'Rascunho atualizado (somente local por enquanto).';
+      });
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await fetch('{{ url_for("logout") }}', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          });
+        } catch(e) {}
+        window.location.href = '{{ url_for("home") }}#home';
+      });
+    }
+  </script>
+</body>
+</html>
