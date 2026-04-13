@@ -2114,51 +2114,82 @@ def professor_page():
         user_tipo="professor"
     )
  
- 
+def _tabela_existe(cursor, tabela):
+    """Verifica se uma tabela existe no banco."""
+    try:
+        cursor.execute("""
+            SELECT 1 FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_TYPE='BASE TABLE' AND TABLE_NAME = ?
+        """, (tabela,))
+        return cursor.fetchone() is not None
+    except Exception:
+        return False
+
+def _col_exists(cursor, tabela, coluna):
+    """Verifica se uma coluna existe em uma tabela SQL Server."""
+    try:
+        cursor.execute("""
+            SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = ? AND COLUMN_NAME = ?
+        """, (tabela, coluna))
+        return cursor.fetchone() is not None
+    except Exception:
+        return False
+        
 @app.route("/professor/dados")
 @login_required(tipo="professor")
 def professor_dados():
-    """Carrega todas as informações do professor para o front-end."""
     id_prof = session["user_id"]
     conn = cursor = None
     try:
-        conn = get_conn(); cursor = conn.cursor()
+        conn = get_conn()
+        cursor = conn.cursor()
  
-        # ── Turmas do professor (via modalidade.id_responsavel_cadastro) ──
-        cursor.execute("""
-            SELECT
-                t.id_turma, t.nome_exibicao, t.capacidade_maxima,
-                m.titulo AS modalidade,
-                s.nome   AS sala,
-                h.hora_inicio, h.hora_fim, h.dias_semana
-            FROM turmas t
-            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
-            JOIN salas      s ON s.id_sala        = t.id_sala
-            JOIN horarios   h ON h.id_horario     = t.id_horario
-            WHERE t.ativo = 1
-              AND m.id_responsavel_cadastro = ?
-            ORDER BY m.titulo, h.hora_inicio
-        """, (id_prof,))
+        # ── Turmas do professor ────────────────────────────────
+        # Busca por id_responsavel_cadastro OU id_professora (compatibilidade)
+        has_id_prof_col = _col_exists(cursor, "turmas", "id_professora")
+ 
+        if has_id_prof_col:
+            sql_turmas = """
+                SELECT t.id_turma, t.nome_exibicao, t.capacidade_maxima,
+                       m.titulo, s.nome, h.hora_inicio, h.hora_fim, h.dias_semana
+                FROM turmas t
+                JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+                JOIN salas s ON s.id_sala = t.id_sala
+                JOIN horarios h ON h.id_horario = t.id_horario
+                WHERE t.ativo = 1
+                  AND (m.id_responsavel_cadastro = ? OR t.id_professora = ?)
+                ORDER BY m.titulo, h.hora_inicio
+            """
+            cursor.execute(sql_turmas, (id_prof, id_prof))
+        else:
+            cursor.execute("""
+                SELECT t.id_turma, t.nome_exibicao, t.capacidade_maxima,
+                       m.titulo, s.nome, h.hora_inicio, h.hora_fim, h.dias_semana
+                FROM turmas t
+                JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+                JOIN salas s ON s.id_sala = t.id_sala
+                JOIN horarios h ON h.id_horario = t.id_horario
+                WHERE t.ativo = 1 AND m.id_responsavel_cadastro = ?
+                ORDER BY m.titulo, h.hora_inicio
+            """, (id_prof,))
  
         turmas = []
         for r in cursor.fetchall():
             turma = {
-                "id_turma":         r[0],
-                "nome_exibicao":    r[1] or "",
-                "capacidade_maxima":r[2] or 0,
-                "modalidade":       r[3],
-                "sala":             r[4],
-                "hora_inicio":      str(r[5])[:5] if r[5] else "",
-                "hora_fim":         str(r[6])[:5] if r[6] else "",
-                "dias_semana":      r[7] or "",
-                "alunos":           [],
+                "id_turma": r[0], "nome_exibicao": r[1] or "",
+                "capacidade_maxima": r[2] or 0,
+                "modalidade": r[3], "sala": r[4],
+                "hora_inicio": str(r[5])[:5] if r[5] else "",
+                "hora_fim":    str(r[6])[:5] if r[6] else "",
+                "dias_semana": r[7] or "",
+                "alunos": [],
             }
  
-            # Alunos da turma com plano
+            # Alunos da turma
             cursor.execute("""
-                SELECT
-                    c.id_cadastro, c.nome_completo, c.email, c.termo_imagem,
-                    p.nome AS plano
+                SELECT c.id_cadastro, c.nome_completo, c.email, c.termo_imagem,
+                       p.nome AS plano
                 FROM matriculas ma
                 JOIN cadastro c ON c.id_cadastro = ma.id_aluno
                 LEFT JOIN aluno_pacote ap ON ap.id_aluno = c.id_cadastro AND ap.ativo = 1
@@ -2168,69 +2199,71 @@ def professor_dados():
             """, (turma["id_turma"],))
             for a in cursor.fetchall():
                 turma["alunos"].append({
-                    "id_cadastro":  a[0],
-                    "nome_completo":a[1],
-                    "email":        a[2] or "",
-                    "termo_imagem": bool(a[3]),
-                    "plano":        a[4] or "",
+                    "id_cadastro":   a[0],
+                    "nome_completo": a[1],
+                    "email":         a[2] or "",
+                    "termo_imagem":  bool(a[3]),
+                    "plano":         a[4] or "",
                 })
- 
             turmas.append(turma)
  
-        # ── Reposições geradas por cancelamentos deste professor ──
-        cursor.execute("""
-            SELECT
-                rep.id_reposicao, c.nome_completo AS aluno_nome,
-                rep.tipo, rep.usada,
-                t.nome_exibicao, m.titulo AS modalidade,
-                ac.data_aula, ac.motivo
-            FROM reposicoes rep
-            JOIN cadastro c ON c.id_cadastro = rep.id_aluno
-            JOIN aulas_canceladas ac ON ac.id_cancelamento = rep.id_cancelamento
-            JOIN turmas t ON t.id_turma = ac.id_turma
-            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
-            WHERE ac.cancelado_por = ?
-              AND rep.tipo = 'especial'
-            ORDER BY rep.criado_em DESC
-        """, (id_prof,))
+        # ── Reposições geradas pelo professor ──────────────────
         reposicoes = []
-        for r in cursor.fetchall():
-            reposicoes.append({
-                "id_reposicao": r[0],
-                "aluno_nome":   r[1],
-                "tipo":         r[2],
-                "usada":        bool(r[3]),
-                "turma_nome":   r[4] or r[5],
-                "data_aula":    str(r[6]) if r[6] else "",
-                "motivo":       r[7] or "",
-            })
+        if _tabela_existe(cursor, "reposicoes") and _tabela_existe(cursor, "aulas_canceladas"):
+            try:
+                cursor.execute("""
+                    SELECT rep.id_reposicao, c.nome_completo,
+                           rep.tipo, rep.usada,
+                           t.nome_exibicao, m.titulo,
+                           ac.data_aula, ac.motivo
+                    FROM reposicoes rep
+                    JOIN cadastro c ON c.id_cadastro = rep.id_aluno
+                    JOIN aulas_canceladas ac ON ac.id_cancelamento = rep.id_cancelamento
+                    JOIN turmas t ON t.id_turma = ac.id_turma
+                    JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+                    WHERE ac.cancelado_por = ? AND rep.tipo = 'especial'
+                    ORDER BY rep.criado_em DESC
+                """, (id_prof,))
+                for r in cursor.fetchall():
+                    reposicoes.append({
+                        "id_reposicao": r[0],
+                        "aluno_nome":   r[1],
+                        "tipo":         r[2],
+                        "usada":        bool(r[3]),
+                        "turma_nome":   r[4] or r[5],
+                        "data_aula":    str(r[6]) if r[6] else "",
+                        "motivo":       r[7] or "",
+                    })
+            except pyodbc.Error:
+                reposicoes = []
  
-        # ── Histórico de cancelamentos ──
-        cursor.execute("""
-            SELECT
-                ac.id_cancelamento,
-                m.titulo AS modalidade,
-                t.nome_exibicao,
-                ac.data_aula,
-                ac.motivo,
-                ac.cancelado_em,
-                (SELECT COUNT(*) FROM reposicoes rep WHERE rep.id_cancelamento = ac.id_cancelamento) AS afetados
-            FROM aulas_canceladas ac
-            JOIN turmas t ON t.id_turma = ac.id_turma
-            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
-            WHERE ac.cancelado_por = ?
-            ORDER BY ac.cancelado_em DESC
-        """, (id_prof,))
+        # ── Histórico de cancelamentos ─────────────────────────
         historico = []
-        for r in cursor.fetchall():
-            historico.append({
-                "id_cancelamento":  r[0],
-                "turma_nome":       r[3] or r[2] or r[1],
-                "data_aula":        str(r[3]) if r[3] else "",
-                "motivo":           r[4] or "",
-                "cancelado_em":     str(r[5])[:10] if r[5] else "",
-                "alunos_afetados":  r[6] or 0,
-            })
+        if _tabela_existe(cursor, "aulas_canceladas"):
+            try:
+                cursor.execute("""
+                    SELECT ac.id_cancelamento,
+                           m.titulo, t.nome_exibicao,
+                           ac.data_aula, ac.motivo, ac.cancelado_em,
+                           (SELECT COUNT(*) FROM reposicoes rep
+                            WHERE rep.id_cancelamento = ac.id_cancelamento) AS afetados
+                    FROM aulas_canceladas ac
+                    JOIN turmas t ON t.id_turma = ac.id_turma
+                    JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+                    WHERE ac.cancelado_por = ?
+                    ORDER BY ac.cancelado_em DESC
+                """, (id_prof,))
+                for r in cursor.fetchall():
+                    historico.append({
+                        "id_cancelamento": r[0],
+                        "turma_nome":      r[2] or r[1],
+                        "data_aula":       str(r[3]) if r[3] else "",
+                        "motivo":          r[4] or "",
+                        "cancelado_em":    str(r[5])[:10] if r[5] else "",
+                        "alunos_afetados": r[6] or 0,
+                    })
+            except pyodbc.Error:
+                historico = []
  
         return jsonify(ok=True, turmas=turmas, reposicoes=reposicoes, historico=historico)
  
@@ -2240,36 +2273,33 @@ def professor_dados():
         if cursor: cursor.close()
         if conn:   conn.close()
  
- 
 @app.route("/professor/cancelar-aula", methods=["POST"])
 @login_required(tipo="professor")
 def professor_cancelar_aula():
-    """
-    Cancela uma ocorrência específica de uma turma.
-    Gera reposição especial para cada aluno matriculado.
-    """
-    data_req   = request.get_json(silent=True) or {}
-    id_turma   = data_req.get("id_turma")
-    data_aula  = data_req.get("data_aula")
-    motivo     = (data_req.get("motivo") or "").strip()
-    id_prof    = session["user_id"]
+    data_req  = request.get_json(silent=True) or {}
+    id_turma  = data_req.get("id_turma")
+    data_aula = data_req.get("data_aula")
+    motivo    = (data_req.get("motivo") or "").strip()
+    id_prof   = session["user_id"]
  
     if not id_turma or not data_aula:
         return jsonify(ok=False, mensagem="Informe a turma e a data da aula."), 400
  
     conn = cursor = None
     try:
-        conn = get_conn(); cursor = conn.cursor()
+        conn = get_conn()
+        cursor = conn.cursor()
  
-        # Verificar se já foi cancelada
+        # Verificar se tabelas existem
+        if not _tabela_existe(cursor, "aulas_canceladas"):
+            return jsonify(ok=False, mensagem="Funcionalidade de cancelamento ainda não configurada no banco. Execute o schema SQL."), 400
+ 
         cursor.execute("""
-            SELECT 1 FROM aulas_canceladas
-            WHERE id_turma = ? AND data_aula = ?
+            SELECT 1 FROM aulas_canceladas WHERE id_turma = ? AND data_aula = ?
         """, (id_turma, data_aula))
         if cursor.fetchone():
             return jsonify(ok=False, mensagem="Esta aula já foi cancelada anteriormente."), 400
  
-        # Registrar cancelamento
         cursor.execute("""
             INSERT INTO aulas_canceladas (id_turma, data_aula, motivo, cancelado_por)
             VALUES (?, ?, ?, ?)
@@ -2277,28 +2307,21 @@ def professor_cancelar_aula():
         cursor.execute("SELECT SCOPE_IDENTITY()")
         id_cancel = int(cursor.fetchone()[0])
  
-        # Buscar alunos da turma
-        cursor.execute("""
-            SELECT id_aluno FROM matriculas
-            WHERE id_turma = ? AND ativo = 1
-        """, (id_turma,))
+        cursor.execute("SELECT id_aluno FROM matriculas WHERE id_turma = ? AND ativo = 1", (id_turma,))
         alunos = [r[0] for r in cursor.fetchall()]
  
-        # Gerar reposição especial para cada aluno
-        valida_ate = fim_do_mes()
-        for id_aluno in alunos:
-            cursor.execute("""
-                INSERT INTO reposicoes
-                    (id_aluno, id_cancelamento, tipo, usada,
-                     data_aula_orig, id_turma_orig, valida_ate)
-                VALUES (?, ?, 'especial', 0, ?, ?, ?)
-            """, (id_aluno, id_cancel, data_aula, id_turma, valida_ate))
+        if _tabela_existe(cursor, "reposicoes"):
+            valida_ate = fim_do_mes()
+            for id_aluno in alunos:
+                cursor.execute("""
+                    INSERT INTO reposicoes
+                        (id_aluno, id_cancelamento, tipo, usada,
+                         data_aula_orig, id_turma_orig, valida_ate)
+                    VALUES (?, ?, 'especial', 0, ?, ?, ?)
+                """, (id_aluno, id_cancel, data_aula, id_turma, valida_ate))
  
         conn.commit()
-        return jsonify(
-            ok=True,
-            mensagem=f"Aula cancelada. {len(alunos)} reposição(ões) especial(is) gerada(s)."
-        )
+        return jsonify(ok=True, mensagem=f"Aula cancelada. {len(alunos)} aluno(s) notificados.")
  
     except pyodbc.Error as e:
         if conn: conn.rollback()
@@ -2306,8 +2329,7 @@ def professor_cancelar_aula():
     finally:
         if cursor: cursor.close()
         if conn:   conn.close()
- 
- 
+  
 # ================================================================
 # ALUNO
 # ================================================================
@@ -2321,62 +2343,95 @@ def aluno_page():
         user_tipo="aluno"
     )
  
- 
 @app.route("/aluno/dados")
 @login_required(tipo="aluno")
 def aluno_dados():
-    """Carrega todos os dados do aluno para o front-end."""
     id_aluno = session["user_id"]
     conn = cursor = None
     try:
-        conn = get_conn(); cursor = conn.cursor()
+        conn = get_conn()
+        cursor = conn.cursor()
  
-        # ── Info do aluno ──
-        cursor.execute("SELECT id_cadastro, nome_completo, email, termo_imagem FROM cadastro WHERE id_cadastro = ?", (id_aluno,))
-        row = cursor.fetchone()
-        aluno = {"id_cadastro": row[0], "nome_completo": row[1], "email": row[2] or "", "termo_imagem": bool(row[3])}
- 
-        # ── Plano ativo ──
+        # ── Info do aluno ──────────────────────────────────────
         cursor.execute("""
-            SELECT p.id_pacote, p.nome, p.tipo_cobranca, p.valor,
-                   p.aulas_por_semana, p.qt_modalidades,
-                   ap.data_inicio, ap.data_fim
-            FROM aluno_pacote ap
-            JOIN pacotes p ON p.id_pacote = ap.id_pacote
-            WHERE ap.id_aluno = ? AND ap.ativo = 1
+            SELECT id_cadastro, nome_completo, email, termo_imagem
+            FROM cadastro WHERE id_cadastro = ?
         """, (id_aluno,))
-        p = cursor.fetchone()
+        row = cursor.fetchone()
+        if not row:
+            return jsonify(ok=False, mensagem="Aluno não encontrado."), 404
+        aluno = {
+            "id_cadastro":  row[0],
+            "nome_completo":row[1],
+            "email":        row[2] or "",
+            "termo_imagem": bool(row[3]),
+        }
+ 
+        # ── Plano ativo ────────────────────────────────────────
         plano = None
         mods_plano_ids = set()
-        if p:
-            pid = p[0]
-            cursor.execute("""
-                SELECT pm.id_modalidade, m.titulo
-                FROM pacote_modalidades pm
-                JOIN modalidades m ON m.id_modalidade = pm.id_modalidade
-                WHERE pm.id_pacote = ?
-            """, (pid,))
-            mods_rows = cursor.fetchall()
-            mods_plano_ids = {r[0] for r in mods_rows}
-            plano = {
-                "id_pacote": pid, "nome": p[1], "tipo_cobranca": p[2],
-                "valor": float(p[3] or 0), "aulas_por_semana": p[4],
-                "qt_modalidades": p[5], "status": "ativo",
-                "data_inicio": str(p[6]) if p[6] else "",
-                "data_fim":    str(p[7]) if p[7] else "",
-                "modalidades_nomes": [r[1] for r in mods_rows],
-                "modalidades_ids":   list(mods_plano_ids),
-            }
+        status_acesso = "sem_plano"
  
-        # ── Turmas matriculadas ──
+        tem_aluno_pacote = _tabela_existe(cursor, "aluno_pacote")
+        if tem_aluno_pacote:
+            has_status_col = _col_exists(cursor, "aluno_pacote", "status_acesso")
+ 
+            if has_status_col:
+                cursor.execute("""
+                    SELECT p.id_pacote, p.nome, p.tipo_cobranca, p.valor,
+                           p.aulas_por_semana, p.qt_modalidades,
+                           ap.data_inicio, ap.data_fim, ap.status_acesso
+                    FROM aluno_pacote ap
+                    JOIN pacotes p ON p.id_pacote = ap.id_pacote
+                    WHERE ap.id_aluno = ? AND ap.ativo = 1
+                """, (id_aluno,))
+            else:
+                cursor.execute("""
+                    SELECT p.id_pacote, p.nome, p.tipo_cobranca, p.valor,
+                           p.aulas_por_semana, p.qt_modalidades,
+                           ap.data_inicio, ap.data_fim, 'ativo' AS status_acesso
+                    FROM aluno_pacote ap
+                    JOIN pacotes p ON p.id_pacote = ap.id_pacote
+                    WHERE ap.id_aluno = ? AND ap.ativo = 1
+                """, (id_aluno,))
+ 
+            p = cursor.fetchone()
+            if p:
+                pid = p[0]
+                status_acesso = p[8] if p[8] else "ativo"
+ 
+                cursor.execute("""
+                    SELECT pm.id_modalidade, m.titulo
+                    FROM pacote_modalidades pm
+                    JOIN modalidades m ON m.id_modalidade = pm.id_modalidade
+                    WHERE pm.id_pacote = ?
+                """, (pid,))
+                mods_rows = cursor.fetchall()
+                mods_plano_ids = {r[0] for r in mods_rows}
+ 
+                plano = {
+                    "id_pacote":         pid,
+                    "nome":              p[1],
+                    "tipo_cobranca":     p[2],
+                    "valor":             float(p[3] or 0),
+                    "aulas_por_semana":  p[4] or 1,
+                    "qt_modalidades":    p[5] or 1,
+                    "status":            status_acesso,
+                    "data_inicio":       str(p[6]) if p[6] else "",
+                    "data_fim":          str(p[7]) if p[7] else "",
+                    "modalidades_nomes": [r[1] for r in mods_rows],
+                    "modalidades_ids":   list(mods_plano_ids),
+                }
+ 
+        # ── Turmas matriculadas ────────────────────────────────
+        # SEM tipo_matricula — coluna pode não existir ainda
         cursor.execute("""
             SELECT
                 t.id_turma, t.nome_exibicao, t.capacidade_maxima,
                 m.titulo AS modalidade,
                 s.nome   AS sala,
                 h.hora_inicio, h.hora_fim, h.dias_semana,
-                c.nome_completo AS professora,
-                ma.tipo_matricula
+                c.nome_completo AS professora
             FROM matriculas ma
             JOIN turmas      t ON t.id_turma      = ma.id_turma
             JOIN modalidades m ON m.id_modalidade = t.id_modalidade
@@ -2386,32 +2441,34 @@ def aluno_dados():
             WHERE ma.id_aluno = ? AND ma.ativo = 1 AND t.ativo = 1
             ORDER BY h.hora_inicio
         """, (id_aluno,))
+ 
         turmas_mat = []
         ids_mat = set()
-        horarios_mat = []  # para detectar conflito
         for r in cursor.fetchall():
             turmas_mat.append({
-                "id_turma": r[0], "nome_exibicao": r[1] or "",
-                "capacidade_maxima": r[2] or 0,
-                "modalidade": r[3], "sala": r[4],
-                "hora_inicio": str(r[5])[:5] if r[5] else "",
-                "hora_fim":    str(r[6])[:5] if r[6] else "",
-                "dias_semana": r[7] or "", "professora": r[8] or "",
-                "tipo_matricula": r[9] or "normal",
-                "inscritos": 0,
+                "id_turma":         r[0],
+                "nome_exibicao":    r[1] or "",
+                "capacidade_maxima":r[2] or 0,
+                "modalidade":       r[3],
+                "sala":             r[4],
+                "hora_inicio":      str(r[5])[:5] if r[5] else "",
+                "hora_fim":         str(r[6])[:5] if r[6] else "",
+                "dias_semana":      r[7] or "",
+                "professora":       r[8] or "",
+                "tipo_matricula":   "normal",   # padrão
+                "inscritos":        0,
             })
             ids_mat.add(r[0])
-            horarios_mat.append({"dias": r[7] or "", "ini": str(r[5])[:5] if r[5] else "", "fim": str(r[6])[:5] if r[6] else ""})
  
-        # ── Turmas disponíveis (do plano, com vagas) ──
+        # ── Turmas disponíveis (do plano) ──────────────────────
         cursor.execute("""
             SELECT
                 t.id_turma, t.nome_exibicao, t.capacidade_maxima,
                 m.id_modalidade, m.titulo AS modalidade,
-                s.nome   AS sala,
-                h.hora_inicio, h.hora_fim, h.dias_semana,
+                s.nome, h.hora_inicio, h.hora_fim, h.dias_semana,
                 c.nome_completo AS professora,
-                (SELECT COUNT(*) FROM matriculas ma WHERE ma.id_turma = t.id_turma AND ma.ativo = 1) AS inscritos
+                (SELECT COUNT(*) FROM matriculas ma
+                 WHERE ma.id_turma = t.id_turma AND ma.ativo = 1) AS inscritos
             FROM turmas t
             JOIN modalidades m ON m.id_modalidade = t.id_modalidade
             JOIN salas       s ON s.id_sala        = t.id_sala
@@ -2427,87 +2484,65 @@ def aluno_dados():
             cap    = r[2] or 0
             ocp    = r[10] or 0
             lotada = cap > 0 and ocp >= cap
- 
-            # Verificar se modalidade está no plano
-            no_plano = id_mod in mods_plano_ids
+            no_plano = id_mod in mods_plano_ids if mods_plano_ids else False
  
             if not no_plano:
-                continue  # turma fora do plano → só aparece se houver reposição especial
-            if lotada:
-                turmas_disp.append({
-                    "id_turma": id_t, "nome_exibicao": r[1] or "", "capacidade_maxima": cap,
-                    "modalidade": r[4], "sala": r[5],
-                    "hora_inicio": str(r[6])[:5] if r[6] else "",
-                    "hora_fim":    str(r[7])[:5] if r[7] else "",
-                    "dias_semana": r[8] or "", "professora": r[9] or "",
-                    "inscritos": ocp, "lotada": True, "apenas_reposicao_especial": False,
-                })
+                # Turma fora do plano — adicionar como reposição especial
+                if not lotada:
+                    turmas_disp.append({
+                        "id_turma": id_t, "nome_exibicao": r[1] or "",
+                        "capacidade_maxima": cap, "modalidade": r[4],
+                        "sala": r[5],
+                        "hora_inicio": str(r[6])[:5] if r[6] else "",
+                        "hora_fim":    str(r[7])[:5] if r[7] else "",
+                        "dias_semana": r[8] or "", "professora": r[9] or "",
+                        "inscritos": ocp, "lotada": False,
+                        "apenas_reposicao_especial": True,
+                    })
                 continue
+ 
             turmas_disp.append({
-                "id_turma": id_t, "nome_exibicao": r[1] or "", "capacidade_maxima": cap,
-                "modalidade": r[4], "sala": r[5],
+                "id_turma": id_t, "nome_exibicao": r[1] or "",
+                "capacidade_maxima": cap, "modalidade": r[4],
+                "sala": r[5],
                 "hora_inicio": str(r[6])[:5] if r[6] else "",
                 "hora_fim":    str(r[7])[:5] if r[7] else "",
                 "dias_semana": r[8] or "", "professora": r[9] or "",
-                "inscritos": ocp, "lotada": False, "apenas_reposicao_especial": False,
+                "inscritos": ocp, "lotada": lotada,
+                "apenas_reposicao_especial": False,
             })
  
-        # ── Turmas fora do plano (para reposições especiais) ──
-        cursor.execute("""
-            SELECT
-                t.id_turma, m.titulo, s.nome, h.hora_inicio, h.hora_fim, h.dias_semana,
-                c.nome_completo, t.capacidade_maxima,
-                (SELECT COUNT(*) FROM matriculas ma WHERE ma.id_turma=t.id_turma AND ma.ativo=1) AS inscritos
-            FROM turmas t
-            JOIN modalidades m ON m.id_modalidade=t.id_modalidade
-            JOIN salas       s ON s.id_sala=t.id_sala
-            JOIN horarios    h ON h.id_horario=t.id_horario
-            LEFT JOIN cadastro c ON c.id_cadastro=m.id_responsavel_cadastro
-            WHERE t.ativo=1 AND m.id_modalidade NOT IN ({})
-        """.format(",".join(["?"]*len(mods_plano_ids)) if mods_plano_ids else "SELECT 0"),
-            list(mods_plano_ids) if mods_plano_ids else [])
-        for r in cursor.fetchall():
-            cap = r[7] or 0; ocp = r[8] or 0
-            if cap > 0 and ocp >= cap: continue
-            turmas_disp.append({
-                "id_turma": r[0], "modalidade": r[1], "sala": r[2],
-                "hora_inicio": str(r[3])[:5] if r[3] else "",
-                "hora_fim":    str(r[4])[:5] if r[4] else "",
-                "dias_semana": r[5] or "", "professora": r[6] or "",
-                "capacidade_maxima": cap, "inscritos": ocp,
-                "lotada": False, "apenas_reposicao_especial": True,
-            })
- 
-        # ── Reposições ──
-        cursor.execute("""
-            SELECT
-                rep.id_reposicao, rep.tipo, rep.usada, rep.data_aula_orig, rep.valida_ate,
-                m.titulo AS modalidade_orig,
-                t.nome_exibicao
-            FROM reposicoes rep
-            LEFT JOIN turmas t ON t.id_turma = rep.id_turma_orig
-            LEFT JOIN modalidades m ON m.id_modalidade = t.id_modalidade
-            WHERE rep.id_aluno = ?
-            ORDER BY rep.criado_em DESC
-        """, (id_aluno,))
+        # ── Reposições ─────────────────────────────────────────
         reposicoes = []
-        for r in cursor.fetchall():
-            reposicoes.append({
-                "id_reposicao":    r[0],
-                "tipo":            r[1],
-                "usada":           bool(r[2]),
-                "data_aula":       str(r[3]) if r[3] else "",
-                "valida_ate":      str(r[4]) if r[4] else "",
-                "turma_cancelada": r[6] or r[5] or "—",
-            })
+        if _tabela_existe(cursor, "reposicoes"):
+            try:
+                cursor.execute("""
+                    SELECT rep.id_reposicao, rep.tipo, rep.usada,
+                           rep.data_aula_orig, rep.valida_ate,
+                           m.titulo, t.nome_exibicao
+                    FROM reposicoes rep
+                    LEFT JOIN turmas t ON t.id_turma = rep.id_turma_orig
+                    LEFT JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+                    WHERE rep.id_aluno = ?
+                    ORDER BY rep.criado_em DESC
+                """, (id_aluno,))
+                for r in cursor.fetchall():
+                    reposicoes.append({
+                        "id_reposicao":    r[0],
+                        "tipo":            r[1],
+                        "usada":           bool(r[2]),
+                        "data_aula":       str(r[3]) if r[3] else "",
+                        "valida_ate":      str(r[4]) if r[4] else "",
+                        "turma_cancelada": r[6] or r[5] or "—",
+                    })
+            except pyodbc.Error:
+                reposicoes = []
  
-        # ── Pacotes disponíveis para mudança ──
+        # ── Pacotes disponíveis ────────────────────────────────
         cursor.execute("""
             SELECT p.id_pacote, p.nome, p.tipo_cobranca, p.valor,
                    p.aulas_por_semana, p.qt_modalidades
-            FROM pacotes p
-            WHERE p.ativo = 1
-            ORDER BY p.valor
+            FROM pacotes p WHERE p.ativo = 1 ORDER BY p.valor
         """)
         pacotes = []
         for r in cursor.fetchall():
@@ -2519,11 +2554,56 @@ def aluno_dados():
             """, (pid,))
             mods_p = [x[0] for x in cursor.fetchall()]
             pacotes.append({
-                "id_pacote": pid, "nome": r[1], "tipo_cobranca": r[2],
-                "valor": float(r[3] or 0), "aulas_por_semana": r[4],
-                "qt_modalidades": r[5], "status": "ativo",
-                "modalidades_nomes": mods_p,
+                "id_pacote":        pid,
+                "nome":             r[1],
+                "tipo_cobranca":    r[2],
+                "valor":            float(r[3] or 0),
+                "aulas_por_semana": r[4] or 1,
+                "qt_modalidades":   r[5] or 1,
+                "status":           "ativo",
+                "modalidades_nomes":mods_p,
             })
+ 
+        # ── Solicitação pendente ───────────────────────────────
+        sol_pend = None
+        if _tabela_existe(cursor, "solicitacoes_plano"):
+            try:
+                cursor.execute("""
+                    SELECT sp.id_solicitacao, sp.id_pacote, p.nome
+                    FROM solicitacoes_plano sp
+                    JOIN pacotes p ON p.id_pacote = sp.id_pacote
+                    WHERE sp.id_aluno = ? AND sp.status = 'pendente'
+                """, (id_aluno,))
+                r_sol = cursor.fetchone()
+                if r_sol:
+                    sol_pend = {
+                        "id_solicitacao": r_sol[0],
+                        "id_pacote":      r_sol[1],
+                        "pacote_nome":    r_sol[2],
+                    }
+            except pyodbc.Error:
+                sol_pend = None
+ 
+        # ── Histórico de pagamentos ────────────────────────────
+        hist_pag = []
+        if _tabela_existe(cursor, "historico_pagamentos"):
+            try:
+                cursor.execute("""
+                    SELECT data_pagamento, valor, descricao
+                    FROM historico_pagamentos
+                    WHERE id_aluno = ?
+                    ORDER BY data_pagamento DESC
+                """, (id_aluno,))
+                hist_pag = [
+                    {
+                        "data_pagamento": str(r[0]) if r[0] else "",
+                        "valor":          float(r[1] or 0),
+                        "descricao":      r[2] or "",
+                    }
+                    for r in cursor.fetchall()
+                ]
+            except pyodbc.Error:
+                hist_pag = []
  
         return jsonify(
             ok=True,
@@ -2533,6 +2613,9 @@ def aluno_dados():
             turmas_disponiveis=turmas_disp,
             reposicoes=reposicoes,
             pacotes=pacotes,
+            status_acesso=status_acesso,
+            solicitacao_pendente=sol_pend,
+            historico_pagamentos=hist_pag,
         )
  
     except pyodbc.Error as e:
@@ -2541,18 +2624,9 @@ def aluno_dados():
         if cursor: cursor.close()
         if conn:   conn.close()
  
- 
 @app.route("/aluno/inscrever", methods=["POST"])
 @login_required(tipo="aluno")
 def aluno_inscrever():
-    """
-    Inscreve o aluno em uma turma com todas as validações:
-    1. Tem plano ativo
-    2. Modalidade está no plano
-    3. Não está lotada
-    4. Não tem conflito de horário
-    5. Não está duplicado
-    """
     data_req = request.get_json(silent=True) or {}
     id_turma = data_req.get("id_turma")
     id_aluno = session["user_id"]
@@ -2561,27 +2635,34 @@ def aluno_inscrever():
  
     conn = cursor = None
     try:
-        conn = get_conn(); cursor = conn.cursor()
+        conn = get_conn()
+        cursor = conn.cursor()
  
-        # 1. Verificar plano ativo
-        cursor.execute("""
-            SELECT ap.id_pacote FROM aluno_pacote ap WHERE ap.id_aluno = ? AND ap.ativo = 1
-        """, (id_aluno,))
-        p = cursor.fetchone()
-        if not p:
-            return jsonify(ok=False, mensagem="Você não possui um plano ativo. Entre em contato com o estúdio."), 400
+        # 0. Verificar suspensão
+        if _tabela_existe(cursor, "aluno_pacote") and _col_exists(cursor, "aluno_pacote", "status_acesso"):
+            cursor.execute("SELECT status_acesso FROM aluno_pacote WHERE id_aluno=? AND ativo=1", (id_aluno,))
+            r_st = cursor.fetchone()
+            if r_st and r_st[0] == "suspenso":
+                return jsonify(ok=False, mensagem="Seu acesso está suspenso por falta de pagamento. Entre em contato com o estúdio."), 403
  
-        # 2. Verificar se modalidade está no plano
-        cursor.execute("""
-            SELECT pm.id_modalidade
-            FROM turmas t
-            JOIN pacote_modalidades pm ON pm.id_pacote = ? AND pm.id_modalidade = t.id_modalidade
-            WHERE t.id_turma = ?
-        """, (p[0], id_turma))
-        if not cursor.fetchone():
-            return jsonify(ok=False, mensagem="Esta modalidade não está incluída no seu plano."), 400
+        # 1. Plano ativo
+        if _tabela_existe(cursor, "aluno_pacote"):
+            cursor.execute("SELECT id_pacote FROM aluno_pacote WHERE id_aluno=? AND ativo=1", (id_aluno,))
+            p = cursor.fetchone()
+            if not p:
+                return jsonify(ok=False, mensagem="Você não possui um plano ativo. Entre em contato com o estúdio."), 400
  
-        # 3. Verificar vagas
+            # 2. Modalidade no plano
+            cursor.execute("""
+                SELECT pm.id_modalidade
+                FROM turmas t
+                JOIN pacote_modalidades pm ON pm.id_pacote = ? AND pm.id_modalidade = t.id_modalidade
+                WHERE t.id_turma = ?
+            """, (p[0], id_turma))
+            if not cursor.fetchone():
+                return jsonify(ok=False, mensagem="Esta modalidade não está incluída no seu plano."), 400
+ 
+        # 3. Vagas
         cursor.execute("""
             SELECT t.capacidade_maxima,
                    (SELECT COUNT(*) FROM matriculas ma WHERE ma.id_turma=t.id_turma AND ma.ativo=1)
@@ -2591,38 +2672,39 @@ def aluno_inscrever():
         if r and r[0] and r[1] >= r[0]:
             return jsonify(ok=False, mensagem="Esta turma está lotada."), 400
  
-        # 4. Verificar conflito de horário
+        # 4. Conflito de horário
         cursor.execute("""
             SELECT h.dias_semana, h.hora_inicio, h.hora_fim
-            FROM turmas t JOIN horarios h ON h.id_horario = t.id_horario
-            WHERE t.id_turma = ?
+            FROM turmas t JOIN horarios h ON h.id_horario=t.id_horario
+            WHERE t.id_turma=?
         """, (id_turma,))
         nova = cursor.fetchone()
         if nova:
             cursor.execute("""
                 SELECT h.dias_semana, h.hora_inicio, h.hora_fim
                 FROM matriculas ma
-                JOIN turmas t ON t.id_turma = ma.id_turma
-                JOIN horarios h ON h.id_horario = t.id_horario
-                WHERE ma.id_aluno = ? AND ma.ativo = 1
+                JOIN turmas t ON t.id_turma=ma.id_turma
+                JOIN horarios h ON h.id_horario=t.id_horario
+                WHERE ma.id_aluno=? AND ma.ativo=1
             """, (id_aluno,))
-            for existente in cursor.fetchall():
-                dias_nova = set((nova[0] or "").lower().split(","))
-                dias_exist = set((existente[0] or "").lower().split(","))
-                if dias_nova & dias_exist:
+            for ex in cursor.fetchall():
+                dias_n = set((nova[0] or "").lower().replace(" ","").split(","))
+                dias_e = set((ex[0]   or "").lower().replace(" ","").split(","))
+                if dias_n & dias_e:
                     ini_n = str(nova[1])[:5]; fim_n = str(nova[2])[:5]
-                    ini_e = str(existente[1])[:5]; fim_e = str(existente[2])[:5]
+                    ini_e = str(ex[1])[:5];   fim_e = str(ex[2])[:5]
                     if ini_n < fim_e and fim_n > ini_e:
-                        return jsonify(ok=False, mensagem="Você já tem uma aula neste horário. Não é permitido se inscrever em duas aulas simultâneas."), 400
+                        return jsonify(ok=False, mensagem="Conflito de horário com outra aula já matriculada."), 400
  
-        # 5. Duplicado
+        # 5. Duplicado / inserir
         cursor.execute("SELECT ativo FROM matriculas WHERE id_turma=? AND id_aluno=?", (id_turma, id_aluno))
         ex = cursor.fetchone()
         if ex:
-            if ex[0]: return jsonify(ok=False, mensagem="Você já está inscrita nesta turma."), 400
-            cursor.execute("UPDATE matriculas SET ativo=1, tipo_matricula='normal' WHERE id_turma=? AND id_aluno=?", (id_turma, id_aluno))
+            if ex[0]:
+                return jsonify(ok=False, mensagem="Você já está inscrita nesta turma."), 400
+            cursor.execute("UPDATE matriculas SET ativo=1 WHERE id_turma=? AND id_aluno=?", (id_turma, id_aluno))
         else:
-            cursor.execute("INSERT INTO matriculas (id_turma, id_aluno, tipo_matricula, ativo) VALUES (?, ?, 'normal', 1)", (id_turma, id_aluno))
+            cursor.execute("INSERT INTO matriculas(id_turma, id_aluno, ativo) VALUES(?,?,1)", (id_turma, id_aluno))
  
         conn.commit()
         return jsonify(ok=True, mensagem="Inscrição realizada com sucesso!"), 201
@@ -2634,6 +2716,53 @@ def aluno_inscrever():
         if cursor: cursor.close()
         if conn:   conn.close()
  
+ 
+@app.route("/aluno/cancelar-aula", methods=["POST"])
+@login_required(tipo="aluno")
+def aluno_cancelar_aula():
+    data_req  = request.get_json(silent=True) or {}
+    id_turma  = data_req.get("id_turma")
+    data_aula = data_req.get("data_aula")
+    id_aluno  = session["user_id"]
+ 
+    if not id_turma or not data_aula:
+        return jsonify(ok=False, mensagem="Informe a turma e a data."), 400
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+ 
+        cursor.execute("SELECT 1 FROM matriculas WHERE id_turma=? AND id_aluno=? AND ativo=1", (id_turma, id_aluno))
+        if not cursor.fetchone():
+            return jsonify(ok=False, mensagem="Você não está inscrita nesta turma."), 400
+ 
+        if _tabela_existe(cursor, "reposicoes"):
+            # Verificar se já cancelou esta data
+            cursor.execute("""
+                SELECT 1 FROM reposicoes
+                WHERE id_aluno=? AND id_turma_orig=? AND data_aula_orig=? AND tipo='normal'
+            """, (id_aluno, id_turma, data_aula))
+            if cursor.fetchone():
+                return jsonify(ok=False, mensagem="Você já cancelou esta aula."), 400
+ 
+            valida_ate = fim_do_mes()
+            cursor.execute("""
+                INSERT INTO reposicoes(id_aluno, tipo, usada, data_aula_orig, id_turma_orig, valida_ate)
+                VALUES(?, 'normal', 0, ?, ?, ?)
+            """, (id_aluno, data_aula, id_turma, valida_ate))
+            conn.commit()
+            return jsonify(ok=True, mensagem="Aula cancelada. Uma reposição foi creditada para o mês.")
+        else:
+            conn.commit()
+            return jsonify(ok=True, mensagem="Presença na aula cancelada.")
+ 
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
  
 @app.route("/aluno/cancelar-aula", methods=["POST"])
 @login_required(tipo="aluno")
@@ -2688,23 +2817,22 @@ def aluno_cancelar_aula():
 @app.route("/aluno/usar-reposicao-especial", methods=["POST"])
 @login_required(tipo="aluno")
 def aluno_usar_reposicao_especial():
-    """
-    Aluno usa uma reposição especial para se inscrever em qualquer turma,
-    mesmo fora do seu plano. Valida capacidade e conflito de horário.
-    """
-    data_req    = request.get_json(silent=True) or {}
-    id_turma    = data_req.get("id_turma")
-    id_reposicao= data_req.get("id_reposicao")
-    id_aluno    = session["user_id"]
+    data_req     = request.get_json(silent=True) or {}
+    id_turma     = data_req.get("id_turma")
+    id_reposicao = data_req.get("id_reposicao")
+    id_aluno     = session["user_id"]
  
     if not id_turma or not id_reposicao:
         return jsonify(ok=False, mensagem="Informe a turma e a reposição."), 400
  
+    if not _tabela_existe(None, "reposicoes"):
+        return jsonify(ok=False, mensagem="Funcionalidade de reposições ainda não configurada."), 400
+ 
     conn = cursor = None
     try:
-        conn = get_conn(); cursor = conn.cursor()
+        conn = get_conn()
+        cursor = conn.cursor()
  
-        # Validar reposição
         cursor.execute("""
             SELECT usada, valida_ate FROM reposicoes
             WHERE id_reposicao=? AND id_aluno=? AND tipo='especial'
@@ -2717,7 +2845,7 @@ def aluno_usar_reposicao_especial():
         if rep[1] and date.today() > rep[1]:
             return jsonify(ok=False, mensagem="Esta reposição expirou."), 400
  
-        # Verificar vagas
+        # Vagas
         cursor.execute("""
             SELECT t.capacidade_maxima,
                    (SELECT COUNT(*) FROM matriculas ma WHERE ma.id_turma=t.id_turma AND ma.ativo=1)
@@ -2727,7 +2855,7 @@ def aluno_usar_reposicao_especial():
         if r and r[0] and r[1] >= r[0]:
             return jsonify(ok=False, mensagem="Esta turma está lotada."), 400
  
-        # Verificar conflito de horário
+        # Conflito horário
         cursor.execute("""
             SELECT h.dias_semana, h.hora_inicio, h.hora_fim
             FROM turmas t JOIN horarios h ON h.id_horario=t.id_horario WHERE t.id_turma=?
@@ -2736,36 +2864,27 @@ def aluno_usar_reposicao_especial():
         if nova:
             cursor.execute("""
                 SELECT h.dias_semana, h.hora_inicio, h.hora_fim
-                FROM matriculas ma
-                JOIN turmas t ON t.id_turma=ma.id_turma
+                FROM matriculas ma JOIN turmas t ON t.id_turma=ma.id_turma
                 JOIN horarios h ON h.id_horario=t.id_horario
                 WHERE ma.id_aluno=? AND ma.ativo=1
             """, (id_aluno,))
             for ex in cursor.fetchall():
-                dias_n = set((nova[0] or "").lower().split(","))
-                dias_e = set((ex[0]   or "").lower().split(","))
+                dias_n = set((nova[0] or "").lower().replace(" ","").split(","))
+                dias_e = set((ex[0]   or "").lower().replace(" ","").split(","))
                 if dias_n & dias_e:
                     ini_n = str(nova[1])[:5]; fim_n = str(nova[2])[:5]
                     ini_e = str(ex[1])[:5];   fim_e = str(ex[2])[:5]
                     if ini_n < fim_e and fim_n > ini_e:
                         return jsonify(ok=False, mensagem="Conflito de horário com outra aula."), 400
  
-        # Matricular (reposição especial)
+        # Matricular
         cursor.execute("SELECT ativo FROM matriculas WHERE id_turma=? AND id_aluno=?", (id_turma, id_aluno))
         ex = cursor.fetchone()
-        cursor.execute("SELECT SCOPE_IDENTITY()")  # reset
- 
         if ex and ex[0]:
             return jsonify(ok=False, mensagem="Você já está inscrita nesta turma."), 400
  
-        cursor.execute("""
-            INSERT INTO matriculas (id_turma, id_aluno, tipo_matricula, id_reposicao, ativo)
-            VALUES (?, ?, 'reposicao_especial', ?, 1)
-        """, (id_turma, id_aluno, id_reposicao))
- 
-        # Marcar reposição como usada
+        cursor.execute("INSERT INTO matriculas(id_turma, id_aluno, ativo) VALUES(?,?,1)", (id_turma, id_aluno))
         cursor.execute("UPDATE reposicoes SET usada=1 WHERE id_reposicao=?", (id_reposicao,))
- 
         conn.commit()
         return jsonify(ok=True, mensagem="Reposição especial utilizada! Inscrição realizada.")
  
@@ -2775,8 +2894,7 @@ def aluno_usar_reposicao_especial():
     finally:
         if cursor: cursor.close()
         if conn:   conn.close()
- 
- 
+  
 @app.route("/aluno/solicitar-plano", methods=["POST"])
 @login_required(tipo="aluno")
 def aluno_solicitar_plano():
@@ -2789,31 +2907,41 @@ def aluno_solicitar_plano():
  
     conn = cursor = None
     try:
-        conn = get_conn(); cursor = conn.cursor()
+        conn = get_conn()
+        cursor = conn.cursor()
  
-        # Verificar se já tem solicitação pendente
+        if not _tabela_existe(cursor, "solicitacoes_plano"):
+            return jsonify(ok=False, mensagem="Funcionalidade ainda não configurada. Execute o schema SQL."), 400
+ 
         cursor.execute("""
-            SELECT 1 FROM solicitacoes_plano
-            WHERE id_aluno=? AND status='pendente'
+            SELECT 1 FROM solicitacoes_plano WHERE id_aluno=? AND status='pendente'
         """, (id_aluno,))
         if cursor.fetchone():
             return jsonify(ok=False, mensagem="Você já tem uma solicitação pendente. Aguarde a análise do estúdio."), 400
  
-        # Determinar tipo (nova compra ou mudança)
-        cursor.execute("SELECT 1 FROM aluno_pacote WHERE id_aluno=? AND ativo=1", (id_aluno,))
-        tem_plano = bool(cursor.fetchone())
+        tem_plano = False
+        if _tabela_existe(cursor, "aluno_pacote"):
+            cursor.execute("SELECT 1 FROM aluno_pacote WHERE id_aluno=? AND ativo=1", (id_aluno,))
+            tem_plano = bool(cursor.fetchone())
+ 
         tipo = "mudanca" if tem_plano else "nova_compra"
  
-        cursor.execute("""
-            INSERT INTO solicitacoes_plano (id_aluno, id_pacote, tipo_solicitacao, status)
-            VALUES (?, ?, ?, 'pendente')
-        """, (id_aluno, id_pacote, tipo))
-        conn.commit()
+        # Verificar se coluna tipo_solicitacao existe
+        has_tipo_col = _col_exists(cursor, "solicitacoes_plano", "tipo_solicitacao")
+        if has_tipo_col:
+            cursor.execute("""
+                INSERT INTO solicitacoes_plano(id_aluno, id_pacote, tipo_solicitacao, status)
+                VALUES(?,?,?,'pendente')
+            """, (id_aluno, id_pacote, tipo))
+        else:
+            cursor.execute("""
+                INSERT INTO solicitacoes_plano(id_aluno, id_pacote, status)
+                VALUES(?,?,'pendente')
+            """, (id_aluno, id_pacote))
  
-        return jsonify(
-            ok=True,
-            mensagem="Solicitação enviada! Agora envie o comprovante do PIX via WhatsApp para ativar o plano mais rápido."
-        )
+        conn.commit()
+        return jsonify(ok=True, mensagem="Solicitação enviada! Envie o comprovante PIX via WhatsApp para ativar.")
+ 
     except pyodbc.Error as e:
         if conn: conn.rollback()
         return jsonify(ok=False, mensagem=str(e)), 500
