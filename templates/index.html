@@ -3,399 +3,248 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Clara Lucatti · Estúdio de Dança, Pole e Expressão Corporal.">
+  <meta name="description" content="Clara Lucatti · Estúdio de Dança, Pole e Expressão Corporal. Modalidades, horários e pacotes.">
   <title>Clara Lucatti · Estúdio de Dança</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
   <style>
-    /* ── VARIÁVEIS ───────────────────────────────────────────── */
+    /* ─── Estilos adicionais (não presentes no style.css original) ─── */
     :root {
       --bordo: #8B0021; --bordo-light: #A3002A; --bordo-pale: #f5e6ea;
-      --cream: #fdf8f5; --warm-white: #fff9f6; --blush: #f0dde3;
+      --cream: #fdf8f5; --warm-white: #fff9f6;
       --text-dark: #2a1a1f; --text-mid: #6b4a55; --text-light: #b08090;
       --shadow: 0 18px 45px rgba(139,0,33,0.08);
       --shadow-strong: 0 24px 60px rgba(139,0,33,0.14);
     }
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--warm-white); color: var(--text-dark); font-family: 'Jost', sans-serif; font-weight: 300; overflow-x: hidden; }
-    img { max-width: 100%; display: block; }
-    a { text-decoration: none; color: inherit; }
-    button { border: none; background: none; cursor: pointer; font: inherit; }
-    :focus-visible { outline: 2px solid var(--bordo); outline-offset: 3px; border-radius: 10px; }
 
-    /* ── CURSOR CUSTOM ───────────────────────────────────────── */
-    .cursor { position:fixed; width:8px; height:8px; background:var(--bordo); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.15s; }
-    .cursor-ring { position:fixed; width:32px; height:32px; border:1.5px solid rgba(139,0,33,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.35s ease; }
+    /* ─── Professoras ─── */
+    .professoras { padding: 6rem; background: var(--warm-white); }
+    .prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 1.5rem; }
+    .prof-card { background: var(--cream); border: 1px solid rgba(139,0,33,0.08); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); transition: all 0.35s; }
+    .prof-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-strong); border-color: rgba(139,0,33,0.18); }
+    .prof-img-wrap { height: 200px; background: var(--bordo-pale); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .prof-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .prof-card:hover .prof-img-wrap img { transform: scale(1.05); }
+    .prof-img-wrap .no-photo { opacity: 0.25; }
+    .prof-body { padding: 1.2rem 1.4rem; }
+    .prof-nome { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 300; margin-bottom: 0.2rem; }
+    .prof-tipo { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light); margin-bottom: 0.6rem; }
+    .prof-mods { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.7rem; }
+    .prof-mod-tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.65rem; border-radius: 50px; background: var(--bordo-pale); color: var(--bordo); }
+    .prof-insta { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--bordo); }
 
-    /* ── NAVBAR ──────────────────────────────────────────────── */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 1.2rem 4rem;
-      background: rgba(253,248,245,0.93); backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(139,0,33,0.08);
-      transition: box-shadow 0.3s;
-    }
-    nav.scrolled { box-shadow: 0 4px 24px rgba(139,0,33,0.08); }
-    .nav-logo { display:flex; align-items:center; gap:0.8rem; }
-    .nav-logo-mark { width:40px; height:40px; border-radius:50%; object-fit:cover; }
-    .nav-brand { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:1.1rem; letter-spacing:0.12em; text-transform:uppercase; line-height:1.1; }
-    .nav-brand span { display:block; font-size:0.6rem; letter-spacing:0.22em; color:var(--bordo); font-weight:400; }
-    .nav-links { display:flex; gap:2rem; list-style:none; }
-    .nav-links a { font-size:0.74rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-mid); position:relative; transition:color 0.3s; }
-    .nav-links a::after { content:''; position:absolute; bottom:-3px; left:0; right:100%; height:1px; background:var(--bordo); transition:right 0.3s; }
-    .nav-links a:hover { color:var(--bordo); }
-    .nav-links a:hover::after { right:0; }
-    .nav-actions { display:flex; align-items:center; gap:0.7rem; }
-    .nav-cta { font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 1.4rem; border-radius:50px; transition:all 0.3s; min-height:42px; display:inline-flex; align-items:center; }
-    .nav-cta-solid { background:var(--bordo); color:#fff; box-shadow:0 6px 20px rgba(139,0,33,0.2); }
-    .nav-cta-solid:hover { background:var(--bordo-light); transform:translateY(-1px); }
-    .nav-cta-outline { border:1.5px solid var(--bordo); color:var(--bordo); }
-    .nav-cta-outline:hover { background:var(--bordo); color:#fff; }
+    /* ─── Modal "saber mais" com galeria ─── */
+    .modal-gallery { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.4rem; margin-top: 0.9rem; }
+    .modal-gallery img { width: 100%; height: 72px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; }
+    .modal-gallery img:hover { opacity: 0.82; }
+    .modal-card-img-wrap { height: 160px; background: var(--bordo-pale); overflow: hidden; cursor: pointer; position: relative; }
+    .modal-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .modal-card:hover .modal-card-img-wrap img { transform: scale(1.05); }
+    .modal-card-img-wrap .no-img { display: flex; align-items: center; justify-content: center; height: 100%; opacity: 0.22; }
+    .modal-card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(42,26,31,0.4), transparent); display: flex; align-items: flex-end; padding: 0.7rem 0.9rem; pointer-events: none; }
+    .modal-card-img-overlay span { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.8); }
 
-    /* ── HERO ────────────────────────────────────────────────── */
-    .hero { min-height:92vh; display:grid; grid-template-columns:1.15fr 0.85fr; overflow:hidden; position:relative; }
-    .hero-left { display:flex; flex-direction:column; justify-content:center; padding:8rem 4rem 5rem 6rem; position:relative; z-index:2; }
-    .hero-eyebrow { font-size:0.68rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--bordo); margin-bottom:1.8rem; display:flex; align-items:center; gap:1rem; }
-    .hero-eyebrow::before { content:''; width:40px; height:1px; background:var(--bordo); }
-    .hero-title { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(3rem,5vw,5rem); line-height:1.04; color:var(--text-dark); }
-    .hero-title em { font-style:italic; color:var(--bordo); display:block; }
-    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(1rem,1.8vw,1.3rem); color:var(--text-light); margin:1.4rem 0 2.4rem; line-height:1.75; max-width:500px; }
-    .hero-actions { display:flex; gap:1rem; flex-wrap:wrap; }
-    .btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:0.6rem; background:var(--bordo); color:#fff; font-size:0.76rem; font-weight:400; letter-spacing:0.14em; text-transform:uppercase; padding:1rem 2rem; border-radius:50px; transition:all 0.35s; box-shadow:0 8px 28px rgba(139,0,33,0.22); min-height:46px; }
-    .btn-primary:hover { background:var(--bordo-light); transform:translateY(-2px); }
-    .btn-secondary { display:inline-flex; align-items:center; justify-content:center; gap:0.6rem; min-height:46px; padding:0.95rem 1.5rem; border-radius:50px; border:1.5px solid rgba(139,0,33,0.18); color:var(--bordo); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; transition:all 0.3s; }
-    .btn-secondary:hover { background:var(--bordo-pale); }
-    .hero-right { position:relative; overflow:hidden; }
-    .hero-bg-shape { position:absolute; inset:2rem 2rem 2rem 0; background:var(--bordo-pale); border-radius:280px 0 0 280px; }
-    .hero-ornament { position:absolute; top:50%; left:54%; transform:translate(-50%,-50%); opacity:0.06; animation:rotateSlow 30s linear infinite; }
-    .hero-logo-display { position:absolute; top:50%; left:54%; width:min(340px,62%); height:min(340px,62%); transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; z-index:2; animation:floatLogo 6s ease-in-out infinite; }
-    .hero-logo-display img { width:100%; height:100%; object-fit:contain; border-radius:50%; }
-    .hero-quote { position:absolute; bottom:2.5rem; left:3rem; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.92rem; color:var(--bordo); opacity:0.65; max-width:220px; line-height:1.6; z-index:2; }
-    .hero-scroll { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:0.4rem; color:var(--text-light); font-size:0.58rem; letter-spacing:0.2em; text-transform:uppercase; }
-    .scroll-line { width:1px; height:40px; background:linear-gradient(to bottom, var(--bordo), transparent); }
+    /* ─── Lightbox ─── */
+    .lightbox { position: fixed; inset: 0; background: rgba(42,26,31,0.93); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+    .lightbox.open { display: flex; }
+    .lightbox-img { max-width: 90vw; max-height: 88vh; border-radius: 14px; object-fit: contain; }
+    .lightbox-close { position: absolute; top: 1.2rem; right: 1.4rem; font-size: 1.7rem; color: rgba(255,255,255,0.65); cursor: pointer; line-height: 1; transition: color 0.2s; background: none; border: none; }
+    .lightbox-close:hover { color: #fff; }
+    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; transition: background 0.2s; }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+    .lightbox-prev { left: 1rem; } .lightbox-next { right: 1rem; }
 
-    /* ── STRIP ───────────────────────────────────────────────── */
-    .about-strip { background:var(--bordo); padding:1.4rem 6rem; display:flex; gap:3rem; align-items:center; overflow-x:auto; }
-    .strip-item { display:flex; align-items:center; gap:1rem; flex-shrink:0; color:rgba(255,255,255,0.8); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; }
-    .strip-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.35); flex-shrink:0; }
-    .strip-num { font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:300; color:#fff; line-height:1; }
+    /* ─── Horários dinâmicos ─── */
+    .schedule-empty { font-size: 0.8rem; color: var(--text-light); font-style: italic; margin-top: 0.5rem; }
 
-    /* ── SEÇÕES ──────────────────────────────────────────────── */
-    section { padding:6rem; }
-    .section-label { font-size:0.66rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--bordo); margin-bottom:1rem; display:flex; align-items:center; gap:0.8rem; }
-    .section-label::before { content:''; width:30px; height:1px; background:var(--bordo); }
-    .section-title { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(2rem,3.5vw,3rem); line-height:1.15; color:var(--text-dark); margin-bottom:1rem; }
-    .section-title em { font-style:italic; color:var(--bordo); }
-    .section-copy { max-width:640px; color:var(--text-mid); font-size:0.96rem; line-height:1.85; margin-bottom:2.4rem; }
+    /* ─── Formulário duplo (Aula experimental + Contato) ─── */
+    .form-tabs { display: flex; gap: 0; margin-bottom: 1.6rem; border: 1.5px solid rgba(139,0,33,0.12); border-radius: 50px; overflow: hidden; }
+    .form-tab { flex: 1; padding: 0.65rem; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; cursor: pointer; color: var(--text-light); background: none; border: none; transition: all 0.3s; font-family: 'Jost', sans-serif; }
+    .form-tab.active { background: var(--bordo); color: #fff; }
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+    .form-hint { font-size: 0.76rem; color: var(--text-light); line-height: 1.6; margin-top: 0.8rem; padding: 0.7rem 1rem; background: var(--warm-white); border-radius: 10px; border-left: 2px solid rgba(139,0,33,0.2); }
+    .form-success { display: none; background: #eef8f1; border: 1px solid rgba(47,107,65,.15); border-radius: 16px; padding: 1rem 1.2rem; color: #2f6b41; font-size: 0.88rem; line-height: 1.65; margin-bottom: 1rem; }
+    .wpp-cta { display: inline-flex; align-items: center; gap: 0.5rem; background: #25D366; color: #fff; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.65rem 1.2rem; border-radius: 50px; margin-top: 0.9rem; font-family: 'Jost', sans-serif; }
+    .wpp-cta:hover { background: #1eba59; }
 
-    /* ── SOBRE ───────────────────────────────────────────────── */
-    .sobre { background:var(--cream); display:grid; grid-template-columns:1fr 1fr; gap:6rem; align-items:center; }
-    .sobre-image-wrap { position:relative; }
-    .sobre-image-bg { width:100%; aspect-ratio:1; border-radius:50%; background:var(--bordo-pale); display:flex; align-items:center; justify-content:center; overflow:hidden; }
-    .sobre-image-inner img { width:65%; opacity:0.55; }
-    .sobre-badge { position:absolute; bottom:-1rem; right:-1rem; background:var(--bordo); color:#fff; padding:1.2rem 1.5rem; border-radius:20px; text-align:center; }
-    .sobre-badge .num { font-family:'Cormorant Garamond',serif; font-size:2rem; line-height:1; }
-    .sobre-badge .label { font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; opacity:0.75; margin-top:0.2rem; }
-    .sobre-text p { color:var(--text-mid); line-height:1.85; font-size:0.96rem; margin-bottom:1rem; }
-    .sobre-signature { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.6rem; color:var(--bordo); margin-top:1.5rem; }
+    /* ─── Pacotes dinâmicos ─── */
+    .pacote-mods { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.8rem; }
+    .pacote-mod-tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.65rem; border-radius: 50px; background: var(--bordo-pale); color: var(--bordo); }
 
-    /* ── PROFESSORAS ─────────────────────────────────────────── */
-    .professoras-sec { background:var(--warm-white); }
-    .prof-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.5rem; }
-    .prof-card { background:var(--cream); border:1px solid rgba(139,0,33,0.08); border-radius:24px; overflow:hidden; box-shadow:var(--shadow); transition:all 0.35s; }
-    .prof-card:hover { transform:translateY(-5px); box-shadow:var(--shadow-strong); border-color:rgba(139,0,33,0.18); }
-    .prof-img { height:200px; background:var(--bordo-pale); overflow:hidden; display:flex; align-items:center; justify-content:center; }
-    .prof-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; }
-    .prof-card:hover .prof-img img { transform:scale(1.05); }
-    .prof-img .placeholder-icon { opacity:0.25; }
-    .prof-body { padding:1.3rem 1.4rem; }
-    .prof-nome { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:300; margin-bottom:0.25rem; }
-    .prof-tipo { font-size:0.64rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-light); margin-bottom:0.7rem; }
-    .prof-insta { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.72rem; color:var(--bordo); }
-
-    /* ── MODALIDADES ─────────────────────────────────────────── */
-    .modalidades { background:var(--cream); }
-    .modal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.4rem; }
-    .modal-card { background:var(--warm-white); border:1px solid rgba(139,0,33,0.08); border-radius:24px; overflow:hidden; box-shadow:var(--shadow); transition:all 0.35s; }
-    .modal-card:hover { transform:translateY(-5px); box-shadow:var(--shadow-strong); border-color:rgba(139,0,33,0.18); }
-    .modal-card-img { height:160px; background:var(--bordo-pale); overflow:hidden; position:relative; cursor:pointer; }
-    .modal-card-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; }
-    .modal-card:hover .modal-card-img img { transform:scale(1.06); }
-    .modal-card-img-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(42,26,31,0.45), transparent); display:flex; align-items:flex-end; padding:0.8rem 1rem; }
-    .modal-card-img-overlay span { font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.75); }
-    .modal-card-img .no-img { width:100%; height:100%; display:flex; align-items:center; justify-content:center; opacity:0.25; }
-    .modal-body { padding:1.4rem 1.5rem; }
-    .modal-name { font-family:'Cormorant Garamond',serif; font-size:1.35rem; font-weight:300; margin-bottom:0.4rem; }
-    .modal-desc { font-size:0.86rem; color:var(--text-mid); line-height:1.75; margin-bottom:0.9rem; }
-    .modal-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.9rem; }
-    .modal-tag { font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.25rem 0.75rem; border-radius:50px; background:var(--bordo-pale); color:var(--bordo); }
-    .modal-more-btn { font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--bordo); padding:0.5rem 0; border-bottom:1px solid rgba(139,0,33,0.15); display:inline-flex; align-items:center; gap:0.4rem; transition:gap 0.2s; background:none; cursor:pointer; }
-    .modal-more-btn:hover { gap:0.7rem; }
-    .modal-more-content { margin-top:1rem; font-size:0.85rem; color:var(--text-mid); line-height:1.78; }
-    /* galeria interna do modal */
-    .modal-gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:0.4rem; margin-top:0.9rem; }
-    .modal-gallery img { width:100%; height:72px; object-fit:cover; border-radius:8px; cursor:pointer; transition:opacity 0.2s; }
-    .modal-gallery img:hover { opacity:0.85; }
-
-    /* ── LIGHTBOX ────────────────────────────────────────────── */
-    .lightbox { position:fixed; inset:0; background:rgba(42,26,31,0.92); z-index:500; display:none; align-items:center; justify-content:center; padding:1.5rem; }
-    .lightbox.open { display:flex; }
-    .lightbox-img { max-width:90vw; max-height:88vh; border-radius:16px; object-fit:contain; }
-    .lightbox-close { position:absolute; top:1.2rem; right:1.4rem; font-size:1.6rem; color:rgba(255,255,255,0.7); cursor:pointer; line-height:1; transition:color 0.2s; }
-    .lightbox-close:hover { color:#fff; }
-    .lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.12); border:none; cursor:pointer; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.2rem; transition:background 0.2s; }
-    .lightbox-nav:hover { background:rgba(255,255,255,0.22); }
-    .lightbox-prev { left:1rem; }
-    .lightbox-next { right:1rem; }
-
-    /* ── HORÁRIOS ────────────────────────────────────────────── */
-    .horarios { background:var(--warm-white); }
-    .schedule-wrap { overflow-x:auto; }
-    .schedule-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1rem; min-width:700px; }
-    .schedule-day { background:var(--cream); border:1px solid rgba(139,0,33,0.08); border-radius:20px; padding:1.4rem 1.2rem; box-shadow:var(--shadow); }
-    .day-name { font-family:'Cormorant Garamond',serif; font-size:1.25rem; font-weight:300; color:var(--bordo); margin-bottom:1rem; padding-bottom:0.6rem; border-bottom:1px solid rgba(139,0,33,0.1); }
-    .class-item { margin-bottom:0.7rem; }
-    .class-time { font-size:0.66rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-light); margin-bottom:0.1rem; }
-    .class-name { font-size:0.84rem; color:var(--text-dark); line-height:1.4; }
-    .class-level { font-size:0.64rem; color:var(--text-light); margin-top:0.1rem; }
-    .empty-day { font-size:0.82rem; color:var(--text-light); font-style:italic; margin-top:0.5rem; }
-
-    /* ── PACOTES ─────────────────────────────────────────────── */
-    .pacotes { background:var(--cream); }
-    .pacotes-intro { max-width:680px; color:var(--text-mid); font-size:0.96rem; line-height:1.85; margin-bottom:2.8rem; }
-    .pacotes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.4rem; }
-    .pacote-card { background:var(--warm-white); border:1px solid rgba(139,0,33,0.08); border-radius:24px; padding:2rem; box-shadow:var(--shadow); transition:all 0.35s; position:relative; overflow:hidden; }
-    .pacote-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--bordo); opacity:0.5; }
-    .pacote-card.destaque { border-color:rgba(139,0,33,0.22); }
-    .pacote-card.destaque::before { opacity:1; }
-    .pacote-card:hover { transform:translateY(-5px); box-shadow:var(--shadow-strong); }
-    .pacote-badge { display:inline-flex; padding:0.25rem 0.8rem; border-radius:50px; background:var(--bordo-pale); color:var(--bordo); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:0.8rem; }
-    .pacote-nome { font-family:'Cormorant Garamond',serif; font-size:1.55rem; font-weight:300; margin-bottom:0.3rem; }
-    .pacote-preco { font-family:'Cormorant Garamond',serif; font-size:2.5rem; color:var(--bordo); line-height:1; margin-bottom:0.8rem; }
-    .pacote-preco span { font-family:'Jost',sans-serif; font-size:0.78rem; color:var(--text-light); }
-    .pacote-tipo { font-size:0.64rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-light); margin-bottom:0.8rem; }
-    .pacote-desc { font-size:0.86rem; color:var(--text-mid); line-height:1.7; margin-bottom:1rem; }
-    .pacote-lista { list-style:none; margin-bottom:1.4rem; }
-    .pacote-lista li { font-size:0.84rem; color:var(--text-mid); padding:0.3rem 0; padding-left:1rem; position:relative; }
-    .pacote-lista li::before { content:'·'; position:absolute; left:0; color:var(--bordo); }
-    .pacote-mods { display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1rem; }
-    .pacote-mod-tag { font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.2rem 0.65rem; border-radius:50px; background:var(--bordo-pale); color:var(--bordo); }
-    .pacote-btn { display:flex; align-items:center; justify-content:center; width:100%; padding:0.85rem; border-radius:50px; background:var(--bordo); color:#fff; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; transition:all 0.3s; box-shadow:0 6px 20px rgba(139,0,33,0.18); cursor:pointer; border:none; }
-    .pacote-btn:hover { background:var(--bordo-light); }
-
-    /* ── CONTATO / AULA EXPERIMENTAL ─────────────────────────── */
-    .contato { background:var(--warm-white); display:grid; grid-template-columns:1fr 1.2fr; gap:5rem; align-items:start; }
-    .contact-item { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.4rem; }
-    .contact-icon { width:38px; height:38px; border-radius:50%; background:var(--bordo-pale); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-    .contact-label { font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-light); margin-bottom:0.2rem; }
-    .contact-value { font-size:0.92rem; color:var(--text-dark); }
-    .social-links { display:flex; gap:0.6rem; margin-top:1.5rem; }
-    .social-link { width:36px; height:36px; border-radius:50%; border:1.5px solid rgba(139,0,33,0.15); display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:500; color:var(--bordo); transition:all 0.3s; }
-    .social-link:hover { background:var(--bordo); color:#fff; border-color:var(--bordo); }
-    .wpp-strip { background:var(--bordo-pale); border:1px solid rgba(139,0,33,0.15); border-radius:16px; padding:1rem 1.2rem; margin-top:1.5rem; display:flex; align-items:center; gap:1rem; }
-    .wpp-strip p { font-size:0.82rem; color:var(--text-mid); line-height:1.6; }
-    .wpp-strip a { flex-shrink:0; display:inline-flex; align-items:center; gap:0.5rem; background:#25D366; color:#fff; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.65rem 1.1rem; border-radius:50px; white-space:nowrap; }
-
-    /* FORM */
-    .contato-form { background:var(--cream); border:1px solid rgba(139,0,33,0.08); border-radius:28px; padding:2.4rem; box-shadow:var(--shadow); }
-    .form-title { font-family:'Cormorant Garamond',serif; font-size:1.6rem; font-weight:300; margin-bottom:0.3rem; }
-    .form-sub { font-size:0.82rem; color:var(--text-light); line-height:1.65; margin-bottom:1.6rem; }
-    .form-tabs { display:flex; gap:0; margin-bottom:1.6rem; border:1.5px solid rgba(139,0,33,0.12); border-radius:50px; overflow:hidden; }
-    .form-tab { flex:1; padding:0.65rem; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; text-align:center; cursor:pointer; color:var(--text-light); background:none; border:none; transition:all 0.3s; }
-    .form-tab.active { background:var(--bordo); color:#fff; }
-    .form-panel { display:none; }
-    .form-panel.active { display:block; }
-    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
-    .form-group { margin-bottom:0.95rem; }
-    .form-group.full { grid-column:1/-1; }
-    .form-group label { display:block; font-size:0.64rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-light); margin-bottom:0.4rem; }
-    .form-group input, .form-group select, .form-group textarea { width:100%; background:var(--warm-white); border:1.5px solid rgba(139,0,33,0.12); border-radius:14px; padding:0.82rem 1rem; font-family:'Jost',sans-serif; font-size:0.9rem; color:var(--text-dark); transition:border-color 0.3s; outline:none; appearance:none; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--bordo); box-shadow:0 0 0 4px rgba(139,0,33,0.06); }
-    .form-group textarea { min-height:90px; resize:vertical; }
-    .form-hint { font-size:0.74rem; color:var(--text-light); line-height:1.6; margin-top:0.5rem; padding:0.7rem 1rem; background:var(--warm-white); border-radius:10px; border-left:2px solid rgba(139,0,33,0.2); }
-    .form-success { display:none; background:#eef8f1; border:1px solid rgba(47,107,65,.15); border-radius:16px; padding:1.2rem 1.4rem; color:#2f6b41; font-size:0.9rem; line-height:1.65; margin-bottom:1rem; }
-    .form-error { background:#fff1f3; border:1px solid rgba(139,0,33,.12); border-radius:16px; padding:0.8rem 1rem; color:#8b0021; font-size:0.84rem; margin-bottom:0.8rem; display:none; }
-
-    /* ── FOOTER ──────────────────────────────────────────────── */
-    footer { background:var(--text-dark); color:rgba(255,255,255,0.38); padding:3rem 6rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
-    .footer-brand { font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:300; color:rgba(255,255,255,0.7); letter-spacing:0.1em; }
-    .footer-copy { font-size:0.7rem; letter-spacing:0.08em; }
-
-    /* ── REVEAL ──────────────────────────────────────────────── */
-    .reveal { opacity:0; transform:translateY(24px); transition:opacity 0.7s ease, transform 0.7s ease; }
-    .reveal.visible { opacity:1; transform:none; }
-    .reveal-delay-1 { transition-delay:0.12s; }
-    .reveal-delay-2 { transition-delay:0.24s; }
-
-    /* ── ANIMAÇÕES ───────────────────────────────────────────── */
-    @keyframes floatLogo { 0%,100% { transform:translate(-50%,-50%) translateY(0); } 50% { transform:translate(-50%,-50%) translateY(-16px); } }
-    @keyframes rotateSlow { from { transform:translate(-50%,-50%) rotate(0deg); } to { transform:translate(-50%,-50%) rotate(360deg); } }
-
-    /* ── RESPONSIVE ──────────────────────────────────────────── */
-    @media(max-width:1100px) { .hero,.sobre,.contato { grid-template-columns:1fr; } .hero-right { min-height:300px; } }
-    @media(max-width:900px) { nav { padding:1rem 1.5rem; } .nav-links { display:none; } section { padding:4rem 1.5rem; } .about-strip { padding:1.2rem 1.5rem; gap:1.5rem; } footer { padding:2rem 1.5rem; flex-direction:column; text-align:center; } .form-row { grid-template-columns:1fr; } }
-    @media(max-width:600px) { .hero-left { padding:6rem 1.5rem 3rem; } .pacotes-grid,.modal-grid { grid-template-columns:1fr; } .prof-grid { grid-template-columns:1fr 1fr; } }
+    @media (max-width: 900px) { .professoras { padding: 4rem 1.5rem; } .prof-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .prof-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
 
-<!-- ══ NAVBAR ════════════════════════════════════════════════ -->
-<nav id="navbar">
-  <a href="#home" class="nav-logo">
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Clara Lucatti" class="nav-logo-mark">
-    <div class="nav-brand">Clara Lucatti <span>Estúdio de Dança</span></div>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#sobre">Sobre</a></li>
-    <li><a href="#professoras">Professoras</a></li>
-    <li><a href="#modalidades">Modalidades</a></li>
-    <li><a href="#horarios">Horários</a></li>
-    <li><a href="#pacotes">Pacotes</a></li>
-  </ul>
-  <div class="nav-actions">
-    <a href="#contato" class="nav-cta nav-cta-solid">Aula experimental</a>
-    <a href="{{ url_for('login_page') }}" class="nav-cta nav-cta-outline">Entrar</a>
-  </div>
-</nav>
-
-<!-- ══ HERO ══════════════════════════════════════════════════ -->
-<section class="hero" id="home">
-  <div class="hero-left">
-    <div class="hero-eyebrow">Estúdio de Dança & Pole</div>
-    <h1 class="hero-title">Mova-se com<br><em>força e expressão</em></h1>
-    <p class="hero-subtitle">Um espaço para desenvolver técnica, presença, consciência corporal e confiança através da dança, do pole e da arte do movimento.</p>
-    <div class="hero-actions">
-      <a href="#contato" class="btn-primary">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-        Agendar aula experimental
-      </a>
-      <a href="#pacotes" class="btn-secondary">Ver pacotes →</a>
+  <!-- ══ NAVBAR ═══════════════════════════════════════════════ -->
+  <nav id="navbar">
+    <a href="#home" class="nav-logo" aria-label="Ir para o início">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Clara Lucatti" class="nav-logo-mark">
+      <div class="nav-brand">Clara Lucatti <span>Estúdio de Dança</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#sobre">Sobre</a></li>
+      {% if professoras %}<li><a href="#professoras">Professoras</a></li>{% endif %}
+      <li><a href="#modalidades">Modalidades</a></li>
+      <li><a href="#horarios">Horários</a></li>
+      <li><a href="#pacotes">Pacotes</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#contato" class="nav-cta">Aula experimental</a>
+      <a href="{{ url_for('login_page') }}" class="nav-cta nav-cta-outline">Entrar</a>
     </div>
-  </div>
-  <div class="hero-right">
-    <div class="hero-bg-shape"></div>
-    <svg class="hero-ornament" width="480" height="480" viewBox="0 0 500 500">
-      <circle cx="250" cy="250" r="220" fill="none" stroke="#8B0021" stroke-width="1" stroke-dasharray="6 14"/>
-      <circle cx="250" cy="250" r="170" fill="none" stroke="#8B0021" stroke-width="0.5" stroke-dasharray="3 8"/>
-    </svg>
-    <div class="hero-logo-display">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
-    </div>
-    <div class="hero-quote">"Movimento, técnica e expressão em um só espaço"</div>
-  </div>
-  <div class="hero-scroll"><div class="scroll-line"></div><span>scroll</span></div>
-</section>
+  </nav>
 
-<!-- ══ STRIP ══════════════════════════════════════════════════ -->
-<div class="about-strip">
-  <div class="strip-item"><div class="strip-num">{{ stats.total_modalidades }}</div><div>Modalidades<br>na grade</div></div>
-  <div class="strip-dot"></div>
-  <div class="strip-item"><div class="strip-num">{{ stats.dias_ativos }}</div><div>Dias com<br>atividades</div></div>
-  <div class="strip-dot"></div>
-  <div class="strip-item"><div class="strip-num">{{ stats.total_turmas }}</div><div>Turmas<br>ativas</div></div>
-  <div class="strip-dot"></div>
-  <div class="strip-item"><div class="strip-num">{{ stats.total_pacotes }}</div><div>Planos<br>disponíveis</div></div>
-</div>
-
-<!-- ══ SOBRE ══════════════════════════════════════════════════ -->
-<section class="sobre" id="sobre">
-  <div class="sobre-image-wrap reveal">
-    <div class="sobre-image-bg">
-      <div class="sobre-image-inner">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Clara Lucatti">
-      </div>
-    </div>
-    <div class="sobre-badge"><div class="num">+</div><div class="label">Movimento<br>com propósito</div></div>
-  </div>
-  <div class="sobre-text reveal reveal-delay-1">
-    <div class="section-label">Nossa proposta</div>
-    <h2 class="section-title">Mais que aula —<br><em>uma jornada corporal</em></h2>
-    <p>O estúdio é um espaço dedicado ao desenvolvimento técnico e expressivo de cada aluna. Aqui, o aprendizado acontece com acolhimento, progressão e respeito ao ritmo individual.</p>
-    <p>A proposta une pole, dança, musicalidade, presença e consciência corporal em uma rotina que fortalece o corpo e amplia a confiança em cena e na vida.</p>
-    <div class="sobre-signature">Clara Lucatti</div>
-  </div>
-</section>
-
-<!-- ══ PROFESSORAS ════════════════════════════════════════════ -->
-{% if professoras %}
-<section class="professoras-sec" id="professoras">
-  <div class="section-label reveal">Nossa equipe</div>
-  <h2 class="section-title reveal reveal-delay-1">Conheça as <em>professoras</em></h2>
-  <p class="section-copy reveal reveal-delay-2">Profissionais apaixonadas pelo movimento que conduzem cada turma com técnica, cuidado e presença.</p>
-  <div class="prof-grid">
-    {% for prof in professoras %}
-    <article class="prof-card reveal">
-      <div class="prof-img">
-        {% if prof.foto_professora and prof.slug %}
-          <img src="{{ url_for('static', filename='modalidades/' ~ prof.slug ~ '/professora/' ~ prof.foto_professora) }}" alt="{{ prof.nome_completo }}">
-        {% else %}
-          <div class="placeholder-icon">
-            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          </div>
-        {% endif %}
-      </div>
-      <div class="prof-body">
-        <div class="prof-nome">{{ prof.nome_completo }}</div>
-        <div class="prof-tipo">{{ prof.tipo_cadastro | capitalize }}</div>
-        {% if prof.modalidades %}
-        <div class="modal-tags" style="margin-bottom:0.7rem;">
-          {% for m in prof.modalidades %}<span class="modal-tag">{{ m }}</span>{% endfor %}
-        </div>
-        {% endif %}
-        {% if prof.instagram %}
-        <a class="prof-insta" href="https://instagram.com/{{ prof.instagram | replace('@','') }}" target="_blank" rel="noopener">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-          {{ prof.instagram }}
+  <!-- ══ HERO ═════════════════════════════════════════════════ -->
+  <section class="hero" id="home">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Estúdio de Dança & Pole</div>
+      <h1 class="hero-title">Mova-se com<br><em>força e expressão</em></h1>
+      <p class="hero-subtitle">
+        Um espaço para desenvolver técnica, presença, consciência corporal e confiança através da dança, do pole e da arte do movimento.
+      </p>
+      <div class="hero-actions">
+        <a href="#contato" class="btn-primary">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+          Agendar aula experimental
         </a>
-        {% endif %}
+        <a href="#pacotes" class="btn-secondary">Ver pacotes <span class="arrow">→</span></a>
       </div>
-    </article>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
+    </div>
+    <div class="hero-right">
+      <div class="hero-bg-shape"></div>
+      <svg class="hero-ornament" width="500" height="500" viewBox="0 0 500 500" aria-hidden="true">
+        <circle cx="250" cy="250" r="220" fill="none" stroke="#8B0021" stroke-width="1" stroke-dasharray="6 14"/>
+        <circle cx="250" cy="250" r="170" fill="none" stroke="#8B0021" stroke-width="0.5" stroke-dasharray="3 8"/>
+      </svg>
+      <div class="hero-logo-display">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logotipo do Estúdio de Dança Clara Lucatti">
+      </div>
+      <div class="hero-quote">"Movimento, técnica e expressão em um só espaço"</div>
+    </div>
+    <div class="hero-scroll"><div class="scroll-line"></div><span>scroll</span></div>
+  </section>
 
-<!-- ══ MODALIDADES ════════════════════════════════════════════ -->
-<section class="modalidades" id="modalidades">
-  <div class="section-label reveal">O que ensinamos</div>
-  <h2 class="section-title reveal reveal-delay-1">Modalidades que<br><em>desenvolvem técnica e expressão</em></h2>
-  <div class="modal-grid">
-    {% for m in modalidades %}
-    <article class="modal-card reveal" data-id="{{ m.id_modalidade }}">
-      <div class="modal-card-img" onclick="abrirGaleria({{ m.id_modalidade }})">
-        {% if m.foto_capa and m.slug %}
-          <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/professora/' ~ m.foto_capa) }}" alt="{{ m.titulo }}">
-          <div class="modal-card-img-overlay"><span>Ver fotos</span></div>
-        {% elif m.galeria %}
-          <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ m.galeria[0]) }}" alt="{{ m.titulo }}">
-          <div class="modal-card-img-overlay"><span>Ver fotos</span></div>
-        {% else %}
-          <div class="no-img">
-            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><path d="M12 7v6M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </div>
-        {% endif %}
-      </div>
-      <div class="modal-body">
-        <div class="modal-name">{{ m.titulo }}</div>
-        <div class="modal-tags">
-          {% if m.nivel %}<span class="modal-tag">{{ m.nivel }}</span>{% endif %}
-          {% if m.responsavel_nome %}<span class="modal-tag" style="background:#e6f0f5;color:#005577;">{{ m.responsavel_nome.split()[0] }}</span>{% endif %}
+  <!-- ══ STRIP ════════════════════════════════════════════════ -->
+  <div class="about-strip">
+    <div class="strip-item"><div class="strip-num">{{ stats.total_modalidades }}</div><div>Modalidades<br>na grade</div></div>
+    <div class="strip-dot"></div>
+    <div class="strip-item"><div class="strip-num">{{ stats.dias_ativos }}</div><div>Dias com<br>atividades</div></div>
+    <div class="strip-dot"></div>
+    <div class="strip-item"><div class="strip-num">{{ stats.total_turmas }}</div><div>Turmas<br>ativas</div></div>
+    <div class="strip-dot"></div>
+    <div class="strip-item"><div class="strip-num">{{ stats.total_pacotes }}</div><div>Planos<br>disponíveis</div></div>
+  </div>
+
+  <!-- ══ SOBRE ════════════════════════════════════════════════ -->
+  <section class="sobre" id="sobre">
+    <div class="sobre-image-wrap reveal">
+      <div class="sobre-image-bg">
+        <div class="sobre-image-inner">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Clara Lucatti" style="width:55%; opacity:0.6;">
         </div>
-        <p class="modal-desc">{{ m.resumo or m.descricao[:120] ~ '…' if m.descricao and (m.resumo == '' or not m.resumo) else (m.resumo or 'Modalidade disponível no estúdio.') }}</p>
-        {% if m.descricao and m.descricao != m.resumo %}
-        <button class="modal-more-btn" data-id="{{ m.id_modalidade }}">
-          Saber mais <span>→</span>
-        </button>
-        <div class="modal-more-content" id="more-{{ m.id_modalidade }}" style="display:none;">
+      </div>
+      <div class="sobre-badge"><div class="num">+</div><div class="label">Movimento<br>com propósito</div></div>
+    </div>
+    <div class="sobre-text reveal reveal-delay-1">
+      <div class="section-label">Nossa proposta</div>
+      <h2 class="section-title">Mais que aula —<br><em>uma jornada corporal</em></h2>
+      <p>O estúdio é um espaço dedicado ao desenvolvimento técnico e expressivo de cada aluna. Aqui, o aprendizado acontece com acolhimento, progressão e respeito ao ritmo individual.</p>
+      <p>A proposta une pole, dança, musicalidade, presença e consciência corporal em uma rotina que fortalece o corpo e amplia a confiança em cena e na vida.</p>
+      <div class="sobre-signature">Clara Lucatti</div>
+    </div>
+  </section>
+
+  <!-- ══ PROFESSORAS ══════════════════════════════════════════ -->
+  {% if professoras %}
+  <section class="professoras" id="professoras">
+    <div class="section-label reveal">Nossa equipe</div>
+    <h2 class="section-title reveal reveal-delay-1">Conheça as <em>professoras</em></h2>
+    <p style="color:var(--text-mid);font-size:0.96rem;line-height:1.85;margin-bottom:2.4rem;max-width:640px;" class="reveal reveal-delay-2">
+      Profissionais apaixonadas pelo movimento que conduzem cada turma com técnica, cuidado e presença.
+    </p>
+    <div class="prof-grid">
+      {% for prof in professoras %}
+      <article class="prof-card reveal">
+        <div class="prof-img-wrap">
+          {% if prof.foto_professora and prof.slug %}
+            <img src="{{ url_for('static', filename='modalidades/' ~ prof.slug ~ '/professora/' ~ prof.foto_professora) }}" alt="{{ prof.nome_completo }}">
+          {% else %}
+            <div class="no-photo">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            </div>
+          {% endif %}
+        </div>
+        <div class="prof-body">
+          <div class="prof-nome">{{ prof.nome_completo }}</div>
+          <div class="prof-tipo">{{ prof.tipo_cadastro | capitalize }}</div>
+          {% if prof.modalidades %}
+          <div class="prof-mods">{% for m in prof.modalidades %}<span class="prof-mod-tag">{{ m }}</span>{% endfor %}</div>
+          {% endif %}
+          {% if prof.instagram %}
+          <a class="prof-insta" href="https://instagram.com/{{ prof.instagram | replace('@','') }}" target="_blank" rel="noopener">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+            {{ prof.instagram }}
+          </a>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ══ MODALIDADES ══════════════════════════════════════════ -->
+  <section class="modalidades" id="modalidades">
+    <div class="section-label reveal">O que ensinamos</div>
+    <h2 class="section-title reveal reveal-delay-1">Modalidades que<br><em>desenvolvem técnica e expressão</em></h2>
+    <div class="modal-grid">
+      {% for m in modalidades %}
+      <article class="modal-card reveal">
+        <!-- Imagem clicável -->
+        <div class="modal-card-img-wrap" onclick="abrirGaleria({{ m.id_modalidade }})">
+          {% if m.foto_capa and m.slug %}
+            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/professora/' ~ m.foto_capa) }}" alt="{{ m.titulo }}">
+            {% if m.galeria %}<div class="modal-card-img-overlay"><span>Ver fotos →</span></div>{% endif %}
+          {% elif m.galeria and m.slug %}
+            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ m.galeria[0]) }}" alt="{{ m.titulo }}">
+            <div class="modal-card-img-overlay"><span>Ver fotos →</span></div>
+          {% else %}
+            <div class="no-img">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="modal-icon" style="display:none;"></div>
+        <div class="modal-name">{{ m.titulo }}</div>
+        <p class="modal-desc">{{ m.resumo or (m.descricao[:110] ~ '…' if m.descricao and m.descricao|length > 110 else m.descricao) or 'Modalidade disponível no estúdio.' }}</p>
+
+        {% if m.nivel %}
+        <span class="modal-tag">{{ m.nivel }}</span>
+        {% endif %}
+        {% if m.responsavel_nome %}
+        <span class="modal-tag" style="background:#e6f0f5;color:#005577;margin-left:0.3rem;">{{ m.responsavel_nome.split()[0] }}</span>
+        {% endif %}
+
+        <button class="modal-more-btn" type="button" aria-expanded="false" data-id="{{ m.id_modalidade }}">Saber mais</button>
+        <div class="modal-more-content" id="more-{{ m.id_modalidade }}" hidden>
+          {% if m.descricao and m.descricao != m.resumo %}
           <p>{{ m.descricao }}</p>
-          {% if m.galeria %}
-          <div class="modal-gallery" id="gallery-{{ m.id_modalidade }}">
+          {% endif %}
+          {% if m.galeria and m.slug %}
+          <div class="modal-gallery" style="margin-top:0.8rem;">
             {% for foto in m.galeria[:6] %}
             <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ foto) }}"
                  alt="{{ m.titulo }}"
@@ -404,44 +253,43 @@
           </div>
           {% endif %}
         </div>
-        {% endif %}
+      </article>
+      {% endfor %}
+
+      {% if not modalidades %}
+      <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-light);">
+        <p>Modalidades em breve. Cadastre no painel administrativo.</p>
       </div>
-    </article>
-    {% endfor %}
-    {% if not modalidades %}
-    <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-light);">
-      <p>Modalidades em breve.</p>
+      {% endif %}
     </div>
-    {% endif %}
+  </section>
+
+  <!-- ══ LIGHTBOX ═════════════════════════════════════════════ -->
+  <div class="lightbox" id="lightbox" onclick="fecharLightbox()">
+    <button class="lightbox-close" onclick="fecharLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation();navLightbox(-1)">‹</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+    <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation();navLightbox(1)">›</button>
   </div>
-</section>
 
-<!-- ══ LIGHTBOX ════════════════════════════════════════════════ -->
-<div class="lightbox" id="lightbox" onclick="fecharLightbox()">
-  <button class="lightbox-close" onclick="fecharLightbox()">✕</button>
-  <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation();navLightbox(-1)">‹</button>
-  <img class="lightbox-img" id="lightboxImg" src="" alt="">
-  <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation();navLightbox(1)">›</button>
-</div>
-
-<!-- ══ HORÁRIOS ════════════════════════════════════════════════ -->
-<section class="horarios" id="horarios">
-  <div class="section-label reveal">Grade semanal</div>
-  <h2 class="section-title reveal reveal-delay-1">Horários das <em>aulas</em></h2>
-  <div class="schedule-wrap">
-    <div class="schedule-grid">
-      {% set dias = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'] %}
-      {% for dia in dias %}
-      <div class="schedule-day reveal">
+  <!-- ══ HORÁRIOS ═════════════════════════════════════════════ -->
+  <section class="horarios" id="horarios">
+    <div class="section-label reveal">Grade semanal</div>
+    <h2 class="section-title reveal reveal-delay-1">Horários das <em>aulas</em></h2>
+    <div class="schedule-grid reveal reveal-delay-2">
+      {% set dias_semana = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'] %}
+      {% for dia in dias_semana %}
+      <div class="schedule-day">
         <div class="day-name">{{ dia }}</div>
-        {% set aulas_dia = [] %}
+        {% set aulas_do_dia = [] %}
         {% for t in turmas %}
-          {% if dia.lower()[:3] in t.dias_semana.lower() or dia.lower() in t.dias_semana.lower() %}
-            {% set _ = aulas_dia.append(t) %}
+          {% set dias_lower = t.dias_semana | lower %}
+          {% if dia[:3].lower() in dias_lower or dia.lower() in dias_lower %}
+            {% set _ = aulas_do_dia.append(t) %}
           {% endif %}
         {% endfor %}
-        {% if aulas_dia %}
-          {% for aula in aulas_dia | sort(attribute='hora_inicio') %}
+        {% if aulas_do_dia %}
+          {% for aula in aulas_do_dia | sort(attribute='hora_inicio') %}
           <div class="class-item">
             <div class="class-time">{{ aula.hora_inicio }}</div>
             <div class="class-name">{{ aula.modalidade }}</div>
@@ -449,141 +297,174 @@
           </div>
           {% endfor %}
         {% else %}
-          <div class="empty-day">Sem aulas</div>
+          <p class="schedule-empty">Sem aulas</p>
         {% endif %}
       </div>
       {% endfor %}
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ══ PACOTES ═════════════════════════════════════════════════ -->
-<section class="pacotes" id="pacotes">
-  <div class="section-label reveal">Planos e valores</div>
-  <h2 class="section-title reveal reveal-delay-1">Pacotes para sua<br><em>rotina de movimento</em></h2>
-  <p class="pacotes-intro reveal reveal-delay-2">Escolha o plano que combina com seu ritmo, objetivo e modalidade preferida. Cada pacote pode ser pago via PIX — entre em contato pelo WhatsApp após escolher.</p>
-  <div class="pacotes-grid">
-    {% for p in pacotes %}
-    <article class="pacote-card reveal {% if loop.index == 2 %}destaque{% endif %}">
-      <div class="pacote-badge">{% if loop.index == 1 %}Entrada{% elif loop.index == 2 %}Mais escolhido{% elif p.tipo_cobranca == 'semestral' %}Semestral{% else %}{{ p.aulas_por_semana }}x/semana{% endif %}</div>
-      <div class="pacote-nome">{{ p.nome }}</div>
-      <div class="pacote-preco">R$ {{ '%.0f'|format(p.valor) }}<span>/{{ 'mês' if p.tipo_cobranca == 'mensal' else 'semestre' }}</span></div>
-      <div class="pacote-tipo">{{ p.tipo_cobranca | capitalize }}</div>
-      <p class="pacote-desc">{{ p.observacao or (p.aulas_por_semana ~ ' aula(s) por semana · ' ~ p.qt_modalidades ~ ' modalidade(s)') }}</p>
-      <ul class="pacote-lista">
-        <li>{{ p.aulas_por_semana }} aula{{ 's' if p.aulas_por_semana != 1 else '' }} por semana</li>
-        <li>{{ p.qt_modalidades }} modalidade{{ 's' if p.qt_modalidades != 1 else '' }}</li>
-        <li>Pagamento via PIX</li>
-      </ul>
-      {% if p.modalidades_nomes %}
-      <div class="pacote-mods">
-        {% for m in p.modalidades_nomes %}<span class="pacote-mod-tag">{{ m }}</span>{% endfor %}
+  <!-- ══ PACOTES ══════════════════════════════════════════════ -->
+  <section class="pacotes" id="pacotes">
+    <div class="section-label reveal">Planos e valores</div>
+    <h2 class="section-title reveal reveal-delay-1">Pacotes para sua<br><em>rotina de movimento</em></h2>
+    <p class="pacotes-intro reveal reveal-delay-2">
+      Escolha o plano que combina com seu ritmo e objetivo. Pagamento via PIX — envie o comprovante pelo WhatsApp para ativar sua matrícula.
+    </p>
+    <div class="pacotes-grid">
+      {% for p in pacotes %}
+      <article class="pacote-card reveal {% if loop.index == 2 %}destaque{% endif %}">
+        <div class="pacote-badge">
+          {% if loop.index == 1 %}Entrada
+          {% elif loop.index == 2 %}Mais escolhido
+          {% elif p.tipo_cobranca == 'semestral' %}Semestral
+          {% else %}{{ p.aulas_por_semana }}x/semana{% endif %}
+        </div>
+        <h3 class="pacote-nome">{{ p.nome }}</h3>
+        <div class="pacote-preco">R$ {{ '%.0f'|format(p.valor) }}<span>/{{ 'mês' if p.tipo_cobranca == 'mensal' else 'semestre' }}</span></div>
+        {% if p.observacao %}
+        <p class="pacote-desc">{{ p.observacao }}</p>
+        {% endif %}
+        <ul class="pacote-lista">
+          <li>{{ p.aulas_por_semana }} aula{{ 's' if p.aulas_por_semana != 1 else '' }} por semana</li>
+          <li>{{ p.qt_modalidades }} modalidade{{ 's' if p.qt_modalidades != 1 else '' }}</li>
+          <li>Pagamento mensal via PIX</li>
+          <li>Turmas fixas semanais</li>
+        </ul>
+        {% if p.modalidades_nomes %}
+        <div class="pacote-mods">
+          {% for mn in p.modalidades_nomes %}<span class="pacote-mod-tag">{{ mn }}</span>{% endfor %}
+        </div>
+        {% endif %}
+        <a href="#contato" class="btn-primary pacote-btn" onclick="escolherPacote('{{ p.nome }}')">Quero esse</a>
+      </article>
+      {% endfor %}
+
+      {% if not pacotes %}
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-light);">
+        <p>Pacotes em breve. Cadastre no painel administrativo.</p>
       </div>
       {% endif %}
-      <button class="pacote-btn" onclick="escolherPacote('{{ p.nome }}', {{ p.valor }})">Quero esse →</button>
-    </article>
-    {% endfor %}
-    {% if not pacotes %}
-    <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-light);">Pacotes em breve.</div>
-    {% endif %}
-  </div>
-</section>
+    </div>
+  </section>
 
-<!-- ══ CONTATO ═════════════════════════════════════════════════ -->
-<section class="contato" id="contato">
-  <div class="reveal">
-    <div class="section-label">Venha experimentar</div>
-    <h2 class="section-title">Entre em<br><em>contato conosco</em></h2>
-    <div class="contact-item">
-      <div class="contact-icon">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#8B0021" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498A1 1 0 0121 15.72V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+  <!-- ══ CONTATO ══════════════════════════════════════════════ -->
+  <section class="contato" id="contato">
+    <div class="reveal">
+      <div class="section-label">Venha experimentar</div>
+      <h2 class="section-title">Agende sua aula<br><em>e conheça o estúdio</em></h2>
+      <p style="color:var(--text-mid);line-height:1.8;margin-bottom:2rem;font-size:0.95rem;max-width:380px">
+        Escolha a modalidade, agende sua aula experimental e entre em contato pelo WhatsApp. Após o pagamento simbólico, sua vaga fica garantida.
+      </p>
+
+      <div class="contact-item">
+        <div class="contact-icon">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498A1 1 0 0121 15.72V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+        </div>
+        <div>
+          <div class="contact-label">WhatsApp · PIX</div>
+          <div class="contact-value">(34) 99834-8127</div>
+        </div>
       </div>
-      <div>
-        <div class="contact-label">WhatsApp</div>
-        <div class="contact-value">(34) 99834-8127</div>
+
+      <div class="contact-item">
+        <div class="contact-icon">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <div class="contact-label">E-mail</div>
+          <div class="contact-value">contato@claralucatti.com.br</div>
+        </div>
       </div>
-    </div>
-    <div class="contact-item">
-      <div class="contact-icon">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#8B0021" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-      </div>
-      <div>
-        <div class="contact-label">E-mail</div>
-        <div class="contact-value">contato@claralucatti.com.br</div>
-      </div>
-    </div>
-    <div class="wpp-strip">
-      <p>Após escolher seu plano, faça o PIX e envie o comprovante pelo WhatsApp para ativar sua matrícula.</p>
-      <a href="https://wa.me/5534998348127?text=Olá!%20Tenho%20interesse%20em%20uma%20aula%20no%20estúdio." target="_blank" rel="noopener">
+
+      <a class="wpp-cta" href="https://wa.me/5534998348127?text=Olá!%20Tenho%20interesse%20em%20uma%20aula%20experimental." target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        WhatsApp
+        Falar no WhatsApp
       </a>
-    </div>
-    <div class="social-links">
-      <a href="#" class="social-link" title="Instagram">IG</a>
-      <a href="#" class="social-link" title="Facebook">FB</a>
-      <a href="#" class="social-link" title="YouTube">YT</a>
-    </div>
-  </div>
 
-  <!-- FORMULÁRIO DUPLO -->
-  <div class="contato-form reveal reveal-delay-1">
-    <div class="form-tabs">
-      <button class="form-tab active" data-panel="panelAulaExp">Aula experimental</button>
-      <button class="form-tab" data-panel="panelContato">Mensagem</button>
-    </div>
-
-    <!-- PAINEL: AULA EXPERIMENTAL -->
-    <div class="form-panel active" id="panelAulaExp">
-      <div class="form-title">Aula experimental</div>
-      <p class="form-sub">Preencha o formulário, entre em contato pelo WhatsApp e combine seu horário. A aula experimental tem um valor simbólico — envie o comprovante PIX para confirmar.</p>
-      <div id="successExp" class="form-success">
-        ✓ Solicitação enviada! Em breve entraremos em contato via WhatsApp para confirmar sua aula experimental. Você também pode nos chamar diretamente pelo número <strong>(34) 99834-8127</strong>.
+      <div class="social-links" style="margin-top:1.5rem;">
+        <a href="#" class="social-link" title="Instagram" aria-label="Instagram">IG</a>
+        <a href="#" class="social-link" title="Facebook" aria-label="Facebook">FB</a>
+        <a href="#" class="social-link" title="YouTube" aria-label="YouTube">YT</a>
       </div>
-      <div id="errorExp" class="form-error"></div>
-      <form id="formAulaExp">
+    </div>
+
+    <!-- FORMULÁRIO DUPLO -->
+    <form class="contato-form reveal reveal-delay-1" id="mainForm">
+
+      <div class="form-tabs">
+        <button type="button" class="form-tab active" data-panel="panelExp">🎯 Aula experimental</button>
+        <button type="button" class="form-tab" data-panel="panelMsg">💬 Mensagem</button>
+      </div>
+
+      <!-- AULA EXPERIMENTAL -->
+      <div class="form-panel active" id="panelExp">
+        <div class="form-success" id="successExp">
+          ✓ Solicitação enviada! Entraremos em contato pelo WhatsApp em breve.
+          <br><a class="wpp-cta" style="margin-top:0.7rem;display:inline-flex;" id="wppAutoLink" href="https://wa.me/5534998348127" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Enviar comprovante pelo WhatsApp
+          </a>
+        </div>
         <div class="form-row">
-          <div class="form-group"><label>Nome completo *</label><input name="nome" type="text" placeholder="Seu nome" required></div>
-          <div class="form-group"><label>WhatsApp *</label><input name="telefone" type="tel" placeholder="(34) 99999-0000" required></div>
+          <div class="form-group">
+            <label for="exp-nome">Nome</label>
+            <input id="exp-nome" name="nome" type="text" placeholder="Seu nome completo" required>
+          </div>
+          <div class="form-group">
+            <label for="exp-tel">WhatsApp</label>
+            <input id="exp-tel" name="telefone" type="tel" placeholder="(34) 99999-0000" required>
+          </div>
         </div>
-        <div class="form-group"><label>E-mail *</label><input name="email" type="email" placeholder="seu@email.com" required></div>
         <div class="form-group">
-          <label>CPF <span style="font-size:0.58rem;opacity:0.6;">(para criar seu cadastro)</span></label>
-          <input name="cpf" type="text" placeholder="Somente números" maxlength="11">
+          <label for="exp-email">E-mail</label>
+          <input id="exp-email" name="email" type="email" placeholder="seu@email.com" required>
         </div>
         <div class="form-group">
-          <label>Modalidade de interesse *</label>
-          <select name="modalidade" required>
+          <label for="exp-modal">Modalidade de interesse</label>
+          <select id="exp-modal" name="modalidade" required>
             <option value="" disabled selected>Escolha uma modalidade</option>
-            {% for m in modalidades %}<option value="{{ m.titulo }}">{{ m.titulo }}</option>{% endfor %}
+            {% for m in modalidades %}
+            <option value="{{ m.titulo }}">{{ m.titulo }}</option>
+            {% endfor %}
           </select>
         </div>
-        <div class="form-group"><label>Melhor horário</label><input name="horario_preferido" type="text" placeholder="Ex.: Manhãs ou noites de terça"></div>
-        <div class="form-group full"><label>Mensagem</label><textarea name="mensagem" placeholder="Conte sobre você, sua experiência e qualquer dúvida…"></textarea></div>
-        <div class="form-hint">
-          💳 Após enviar o formulário, faremos o PIX combinado pelo WhatsApp para confirmar a aula experimental. Chave PIX: <strong>(34) 99834-8127</strong>
+        <div class="form-group">
+          <label for="exp-horario">Melhor horário</label>
+          <input id="exp-horario" name="horario_preferido" type="text" placeholder="Ex.: Noites de segunda ou terça manhã">
         </div>
-        <button type="submit" class="btn-primary" style="width:100%;margin-top:1.2rem;justify-content:center;">
+        <div class="form-group">
+          <label for="exp-msg">Mensagem</label>
+          <textarea id="exp-msg" name="mensagem" placeholder="Conte sobre você, sua experiência ou qualquer dúvida…"></textarea>
+        </div>
+        <div class="form-hint">
+          Após enviar, entraremos em contato pelo WhatsApp para confirmar o horário e o valor da aula experimental. Chave PIX: <strong>(34) 99834-8127</strong>
+        </div>
+        <button type="button" id="btnEnviarExp" class="btn-primary" style="width:100%;justify-content:center;margin-top:1rem;">
           Solicitar aula experimental →
         </button>
-      </form>
-    </div>
+      </div>
 
-    <!-- PAINEL: CONTATO GERAL -->
-    <div class="form-panel" id="panelContato">
-      <div class="form-title">Envie uma mensagem</div>
-      <p class="form-sub">Tire dúvidas sobre pacotes, horários, modalidades ou qualquer outro assunto.</p>
-      <div id="successContato" class="form-success">✓ Mensagem enviada! Retornaremos em breve.</div>
-      <div id="errorContato" class="form-error"></div>
-      <form id="formContato">
+      <!-- MENSAGEM GERAL -->
+      <div class="form-panel" id="panelMsg">
+        <div class="form-success" id="successMsg">✓ Mensagem enviada! Retornaremos em breve.</div>
         <div class="form-row">
-          <div class="form-group"><label>Nome *</label><input name="nome" type="text" placeholder="Seu nome" required></div>
-          <div class="form-group"><label>Telefone *</label><input name="telefone" type="tel" placeholder="(34) 99999-0000" required></div>
+          <div class="form-group">
+            <label for="msg-nome">Nome</label>
+            <input id="msg-nome" name="nome" type="text" placeholder="Seu nome" required>
+          </div>
+          <div class="form-group">
+            <label for="msg-tel">Telefone</label>
+            <input id="msg-tel" name="telefone" type="tel" placeholder="(34) 99999-0000" required>
+          </div>
         </div>
-        <div class="form-group"><label>E-mail *</label><input name="email" type="email" placeholder="seu@email.com" required></div>
         <div class="form-group">
-          <label>Assunto</label>
-          <select name="modalidade">
+          <label for="msg-email">E-mail</label>
+          <input id="msg-email" name="email" type="email" placeholder="seu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="msg-assunto">Assunto</label>
+          <select id="msg-assunto" name="modalidade">
             <option value="">Selecione</option>
             <option>Pacotes e valores</option>
             <option>Horários</option>
@@ -591,156 +472,172 @@
             <option>Outro</option>
           </select>
         </div>
-        <div class="form-group full"><label>Mensagem *</label><textarea name="mensagem" placeholder="Como podemos ajudar?" required></textarea></div>
-        <button type="submit" class="btn-primary" style="width:100%;margin-top:0.8rem;justify-content:center;">
+        <div class="form-group">
+          <label for="msg-texto">Mensagem</label>
+          <textarea id="msg-texto" name="mensagem" placeholder="Como podemos ajudar?" required></textarea>
+        </div>
+        <button type="button" id="btnEnviarMsg" class="btn-primary" style="width:100%;justify-content:center;border:none;font-size:0.82rem;padding:1.1rem">
           Enviar mensagem →
         </button>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- ══ FOOTER ══════════════════════════════════════════════════ -->
-<footer>
-  <div>
-    <div class="footer-brand">Clara Lucatti · Estúdio de Dança</div>
-    <div style="font-size:0.7rem;margin-top:0.3rem;letter-spacing:0.08em;">Pole, dança, técnica e expressão</div>
-  </div>
-  <div class="footer-copy">© 2026 Clara Lucatti. Todos os direitos reservados.</div>
-</footer>
-
-<!-- ══ FLASH (redirect com mensagem) ═════════════════════════ -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9000;display:grid;gap:0.5rem;">
-      {% for cat, msg in messages %}
-      <div style="padding:0.9rem 1.2rem;border-radius:14px;font-size:0.88rem;line-height:1.55;max-width:340px;
-        {% if cat in ['sucesso','success'] %}background:#eef8f1;color:#2f6b41;border:1px solid rgba(47,107,65,.15);
-        {% else %}background:#fff1f3;color:#8b0021;border:1px solid rgba(139,0,33,.12);{% endif %}">
-        {{ msg }}
       </div>
-      {% endfor %}
+
+    </form>
+  </section>
+
+  <footer>
+    <div>
+      <div class="footer-brand">Clara Lucatti · Estúdio de Dança</div>
+      <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:0.3rem;letter-spacing:0.08em">Pole, dança, técnica e expressão</div>
     </div>
-  {% endif %}
-{% endwith %}
+    <div class="footer-copy">© 2026 Clara Lucatti. Todos os direitos reservados.</div>
+  </footer>
 
-<script>
-// ── CURSOR ────────────────────────────────────────────────────
-if (window.matchMedia('(pointer: fine)').matches) {
-  const cur = document.getElementById('cursor');
-  const ring = document.getElementById('cursorRing');
-  document.addEventListener('mousemove', e => {
-    cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px';
-    setTimeout(() => { ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px'; }, 80);
-  });
-  document.querySelectorAll('a,button,input,select,textarea').forEach(el => {
-    el.addEventListener('mouseenter', () => { cur.style.transform = 'translate(-50%,-50%) scale(2.5)'; });
-    el.addEventListener('mouseleave', () => { cur.style.transform = 'translate(-50%,-50%) scale(1)'; });
-  });
-}
+  <!-- Dados de galeria para o lightbox -->
+  <script>
+    const GALERIA_DATA = {{ galeria_data | tojson }};
+  </script>
 
-// ── NAVBAR SCROLL ─────────────────────────────────────────────
-window.addEventListener('scroll', () => {
-  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
-});
+  <script>
+    // ── Cursor ────────────────────────────────────────────────
+    if (window.matchMedia('(pointer: fine)').matches) {
+      const cur = document.getElementById('cursor');
+      const ring = document.getElementById('cursorRing');
+      document.addEventListener('mousemove', e => {
+        cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px';
+        setTimeout(() => { ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px'; }, 80);
+      });
+      document.querySelectorAll('a, button, input, select, textarea').forEach(el => {
+        el.addEventListener('mouseenter', () => { cur.style.transform = 'translate(-50%,-50%) scale(2.5)'; ring.style.transform = 'translate(-50%,-50%) scale(1.5)'; });
+        el.addEventListener('mouseleave', () => { cur.style.transform = 'translate(-50%,-50%) scale(1)'; ring.style.transform = 'translate(-50%,-50%) scale(1)'; });
+      });
+    }
 
-// ── REVEAL ────────────────────────────────────────────────────
-const obs = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), { threshold:0.1 });
-document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    // ── Navbar scroll ─────────────────────────────────────────
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+    });
 
-// ── TABS FORMULÁRIO ───────────────────────────────────────────
-document.querySelectorAll('.form-tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.form-tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.panel).classList.add('active');
-  });
-});
+    // ── Reveal ───────────────────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// ── MODALIDADES: SABER MAIS ───────────────────────────────────
-document.querySelectorAll('.modal-more-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const id = btn.dataset.id;
-    const content = document.getElementById('more-' + id);
-    const isOpen = content.style.display !== 'none';
-    content.style.display = isOpen ? 'none' : 'block';
-    btn.querySelector('span').textContent = isOpen ? '→' : '↑';
-  });
-});
+    // ── Saber mais (modalidades) ──────────────────────────────
+    document.querySelectorAll('.modal-more-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const content = document.getElementById('more-' + id);
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!expanded));
+        content.hidden = expanded;
+        btn.textContent = expanded ? 'Saber mais' : 'Mostrar menos';
+      });
+    });
 
-// ── LIGHTBOX ──────────────────────────────────────────────────
-let _lbImgs = [], _lbIdx = 0;
-const _galData = {{ galeria_data | tojson }};  // { id_modalidade: [urls] }
+    // ── Lightbox ─────────────────────────────────────────────
+    let _lbImgs = [], _lbIdx = 0;
+    function abrirGaleria(idMod) {
+      const imgs = GALERIA_DATA[idMod] || [];
+      if (!imgs.length) return;
+      _lbImgs = imgs; _lbIdx = 0;
+      document.getElementById('lightboxImg').src = imgs[0];
+      document.getElementById('lightbox').classList.add('open');
+    }
+    function abrirLightbox(src, idx, idMod) {
+      _lbImgs = GALERIA_DATA[idMod] || [src]; _lbIdx = idx;
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightbox').classList.add('open');
+    }
+    function fecharLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+    function navLightbox(dir) {
+      if (!_lbImgs.length) return;
+      _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+      document.getElementById('lightboxImg').src = _lbImgs[_lbIdx];
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') fecharLightbox();
+      if (e.key === 'ArrowRight') navLightbox(1);
+      if (e.key === 'ArrowLeft')  navLightbox(-1);
+    });
 
-function abrirGaleria(idMod) {
-  const imgs = _galData[idMod] || [];
-  if (!imgs.length) return;
-  _lbImgs = imgs; _lbIdx = 0;
-  document.getElementById('lightboxImg').src = imgs[0];
-  document.getElementById('lightbox').classList.add('open');
-}
+    // ── Tabs formulário ───────────────────────────────────────
+    document.querySelectorAll('.form-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.form-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.panel).classList.add('active');
+      });
+    });
 
-function abrirLightbox(src, idx, idMod) {
-  _lbImgs = _galData[idMod] || [src]; _lbIdx = idx;
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('lightbox').classList.add('open');
-}
+    // ── Escolher pacote → rola ao formulário ─────────────────
+    function escolherPacote(nome) {
+      document.querySelector('[data-panel="panelExp"]').click();
+      document.getElementById('contato').scrollIntoView({ behavior: 'smooth' });
+    }
 
-function fecharLightbox() { document.getElementById('lightbox').classList.remove('open'); }
-function navLightbox(dir) {
-  _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
-  document.getElementById('lightboxImg').src = _lbImgs[_lbIdx];
-}
-document.addEventListener('keydown', e => { if(e.key === 'Escape') fecharLightbox(); if(e.key === 'ArrowRight') navLightbox(1); if(e.key === 'ArrowLeft') navLightbox(-1); });
+    // ── Enviar aula experimental ──────────────────────────────
+    document.getElementById('btnEnviarExp').addEventListener('click', async () => {
+      const nome  = document.getElementById('exp-nome').value.trim();
+      const tel   = document.getElementById('exp-tel').value.trim();
+      const email = document.getElementById('exp-email').value.trim();
+      const modal = document.getElementById('exp-modal').value;
+      if (!nome || !tel || !email || !modal) { alert('Preencha nome, WhatsApp, e-mail e modalidade.'); return; }
 
-// ── ESCOLHER PACOTE (direciona para formulário) ───────────────
-function escolherPacote(nome, valor) {
-  document.querySelector('[data-panel="panelAulaExp"]').click();
-  document.getElementById('contato').scrollIntoView({ behavior:'smooth' });
-  const textarea = document.querySelector('#formAulaExp textarea[name="mensagem"]');
-  if (textarea && !textarea.value) textarea.value = `Gostaria de mais informações sobre o ${nome} (R$ ${valor.toFixed ? valor.toFixed(0) : valor}).`;
-}
+      const btn = document.getElementById('btnEnviarExp');
+      btn.textContent = 'Enviando…'; btn.disabled = true;
 
-// ── FORM AULA EXPERIMENTAL ────────────────────────────────────
-document.getElementById('formAulaExp').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const btn = this.querySelector('button[type="submit"]');
-  btn.textContent = 'Enviando…'; btn.disabled = true;
-  const fd = new FormData(this);
-  const r = await fetch('/solicitar-aula-experimental', { method:'POST', body:fd });
-  const d = await r.json();
-  btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false;
-  if (d.ok) {
-    document.getElementById('successExp').style.display = 'block';
-    document.getElementById('errorExp').style.display = 'none';
-    this.reset();
-    // abrir WhatsApp automaticamente
-    const nome = fd.get('nome') || '';
-    const modal = fd.get('modalidade') || '';
-    const txt = encodeURIComponent(`Olá! Sou ${nome} e acabei de solicitar uma aula experimental de ${modal} pelo site. Gostaria de confirmar o horário e enviar o comprovante.`);
-    setTimeout(() => window.open(`https://wa.me/5534998348127?text=${txt}`, '_blank'), 1000);
-  } else {
-    document.getElementById('errorExp').textContent = d.mensagem;
-    document.getElementById('errorExp').style.display = 'block';
-  }
-});
+      const fd = new FormData();
+      fd.append('nome', nome);
+      fd.append('telefone', tel);
+      fd.append('email', email);
+      fd.append('modalidade', modal);
+      fd.append('horario_preferido', document.getElementById('exp-horario').value);
+      fd.append('mensagem', document.getElementById('exp-msg').value);
 
-// ── FORM CONTATO ──────────────────────────────────────────────
-document.getElementById('formContato').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const btn = this.querySelector('button[type="submit"]');
-  btn.textContent = 'Enviando…'; btn.disabled = true;
-  const fd = new FormData(this);
-  const r = await fetch('/contato', { method:'POST', body:fd });
-  btn.textContent = 'Enviar mensagem →'; btn.disabled = false;
-  // Contato usa redirect com flash — se ok redireciona
-  if (r.redirected || r.ok) {
-    document.getElementById('successContato').style.display = 'block';
-    document.getElementById('errorContato').style.display = 'none';
-    this.reset();
-  }
-});
-</script>
+      try {
+        const r = await fetch('/solicitar-aula-experimental', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          document.getElementById('successExp').style.display = 'block';
+          const txt = encodeURIComponent(`Olá! Sou ${nome} e solicitei uma aula experimental de ${modal} pelo site. Gostaria de confirmar o horário e enviar o comprovante.`);
+          document.getElementById('wppAutoLink').href = `https://wa.me/5534998348127?text=${txt}`;
+          btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false;
+          setTimeout(() => window.open(`https://wa.me/5534998348127?text=${txt}`, '_blank'), 800);
+        } else {
+          alert(d.mensagem || 'Erro ao enviar. Tente novamente.');
+          btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false;
+        }
+      } catch {
+        alert('Erro de conexão. Tente novamente.'); btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false;
+      }
+    });
+
+    // ── Enviar mensagem geral ─────────────────────────────────
+    document.getElementById('btnEnviarMsg').addEventListener('click', async () => {
+      const nome  = document.getElementById('msg-nome').value.trim();
+      const tel   = document.getElementById('msg-tel').value.trim();
+      const email = document.getElementById('msg-email').value.trim();
+      const msg   = document.getElementById('msg-texto').value.trim();
+      if (!nome || !tel || !email) { alert('Preencha nome, telefone e e-mail.'); return; }
+
+      const btn = document.getElementById('btnEnviarMsg');
+      btn.textContent = 'Enviando…'; btn.disabled = true;
+
+      const fd = new FormData();
+      fd.append('nome', nome); fd.append('telefone', tel); fd.append('email', email);
+      fd.append('modalidade', document.getElementById('msg-assunto').value);
+      fd.append('mensagem', msg);
+
+      try {
+        await fetch('/contato', { method: 'POST', body: fd });
+        document.getElementById('successMsg').style.display = 'block';
+        btn.textContent = 'Enviar mensagem →'; btn.disabled = false;
+      } catch {
+        alert('Erro de conexão. Tente novamente.'); btn.textContent = 'Enviar mensagem →'; btn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>

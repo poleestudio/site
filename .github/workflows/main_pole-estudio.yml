@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python app to Azure Web App - pole-estudio
 
 on:
@@ -10,41 +6,53 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_NAME: pole-estudio
+  PYTHON_VERSION: "3.12"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read   # required for actions/checkout
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
 
-      # 🛠️ Build local (opcional) para pegar erros cedo
-      - name: Create and start virtual environment and install dependencies
+      - name: Create virtual environment
+        run: python -m venv antenv
+
+      - name: Install dependencies
         run: |
-          python -m venv antenv
           source antenv/bin/activate
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Exclui o venv do artifact para reduzir o tamanho
-      - name: Upload artifact for deployment jobs
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: python-app
           path: |
             .
             !antenv/
+            !.git/
+            !.github/
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      contents: read   # não usamos OIDC aqui
+      contents: read
+    environment:
+      name: Production
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
@@ -53,11 +61,11 @@ jobs:
           name: python-app
           path: .
 
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
         with:
-          app-name: 'pole-estudio'
-          slot-name: 'Production'
-          package: .
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: Production
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
