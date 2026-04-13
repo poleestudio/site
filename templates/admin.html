@@ -230,6 +230,28 @@
     </div>
   </a>
 
+<!-- AULAS EXPERIMENTAIS -->
+<a href="{{ url_for('admin_aulas_experimentais') }}" class="mod-card">
+  <div class="mod-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+      <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>
+    </svg>
+  </div>
+  <div>
+    <div class="mod-title">Aulas &amp; Experimentais</div>
+    <div class="mod-desc">Controle e gestão das solicitações de aulas experimentais.</div>
+  </div>
+  <div class="mod-count">{{ total_experimentais }} solicitações</div>
+  <div class="mod-arrow">
+    <span class="mod-arrow-label">Gerenciar</span>
+    <div class="mod-arrow-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </div>
+  </div>
+</a>
+
   <!-- PACOTES -->
   <a href="{{ url_for('admin_pacotes_page') }}" class="mod-card">
     <div class="mod-icon">

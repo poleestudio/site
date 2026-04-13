@@ -409,12 +409,13 @@ def salvar_arquivo(file, pasta, exts):
 def admin_page():
     conn = cursor = None
     try:
-        conn = get_conn(); cursor = conn.cursor()
- 
+        conn = get_conn()
+        cursor = conn.cursor()
+
         def count(sql):
             cursor.execute(sql)
             return cursor.fetchone()[0] or 0
- 
+
         return render_template(
             "admin.html",
             user_name=session.get("user_name", "Administrador"),
@@ -422,14 +423,25 @@ def admin_page():
             total_modalidades=count("SELECT COUNT(*) FROM modalidades WHERE ativo=1"),
             total_turmas=count("SELECT COUNT(*) FROM turmas WHERE ativo=1"),
             total_pacotes=count("SELECT COUNT(*) FROM pacotes"),
+            total_experimentais=count("SELECT COUNT(*) FROM aulas_experimentais")
         )
+
     except pyodbc.Error as e:
         flash(str(e), "erro")
-        return render_template("admin.html", user_name=session.get("user_name","Administrador"),
-            total_usuarios=0,total_modalidades=0,total_turmas=0,total_pacotes=0)
+        return render_template(
+            "admin.html",
+            user_name=session.get("user_name", "Administrador"),
+            total_usuarios=0,
+            total_modalidades=0,
+            total_turmas=0,
+            total_pacotes=0,
+            total_experimentais=0
+        )
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
  
  
 # ================================================================
