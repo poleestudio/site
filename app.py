@@ -92,13 +92,226 @@ def login_required(tipo=None):
         return wrapper
     return decorator
 
+# ── Pasta base das modalidades ────────────────────────────────
+MODAL_ROOT = os.path.join("static", "modalidades")
+IMG_EXTS   = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+VID_EXTS   = {".mp4", ".mov", ".webm"}
+
+def listar_galeria(slug):
+    """Retorna lista de arquivos de imagem na pasta galeria/ do slug."""
+    pasta = os.path.join(MODAL_ROOT, slug, "galeria")
+    if not os.path.isdir(pasta):
+        return []
+    arqs = sorted(os.listdir(pasta))
+    return [f for f in arqs if os.path.splitext(f)[1].lower() in IMG_EXTS]
 
 # ========== PÁGINAS PRINCIPAIS ==========
 
 @app.route("/")
 def home():
-    return render_template("index.html")
-
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # ── Modalidades + galeria ──────────────────────────────
+        cursor.execute("""
+            SELECT
+                m.id_modalidade, m.titulo, m.resumo, m.descricao,
+                m.nivel, m.slug, m.foto_professora,
+                c.nome_completo AS responsavel_nome,
+                c.tipo_cadastro AS responsavel_tipo
+            FROM modalidades m
+            LEFT JOIN cadastro c ON c.id_cadastro = m.id_responsavel_cadastro
+            WHERE m.ativo = 1
+            ORDER BY m.titulo
+        """)
+        modalidades = []
+        galeria_data = {}  # { id_modalidade: [url_estatica, ...] }
+ 
+        for r in cursor.fetchall():
+            slug = r[5] or ""
+            gal  = listar_galeria(slug)
+            # foto de capa = foto_professora ou primeira da galeria
+            foto_capa = r[6] or (gal[0] if gal else "")
+ 
+            modalidades.append({
+                "id_modalidade":    r[0],
+                "titulo":           r[1],
+                "resumo":           r[2] or "",
+                "descricao":        r[3] or "",
+                "nivel":            r[4] or "",
+                "slug":             slug,
+                "foto_capa":        foto_capa,
+                "galeria":          gal,
+                "responsavel_nome": r[7] or "",
+                "responsavel_tipo": r[8] or "",
+            })
+            # URLs para o lightbox (JSON no frontend)
+            galeria_data[r[0]] = [
+                f"/static/modalidades/{slug}/galeria/{f}" for f in gal
+            ]
+ 
+        # ── Professoras (professores + admins) ─────────────────
+        cursor.execute("""
+            SELECT DISTINCT
+                c.id_cadastro, c.nome_completo, c.tipo_cadastro,
+                m.slug, m.foto_professora,
+                m.titulo AS modalidade_nome
+            FROM cadastro c
+            LEFT JOIN modalidades m ON m.id_responsavel_cadastro = c.id_cadastro AND m.ativo = 1
+            WHERE c.tipo_cadastro IN ('professor', 'administrador')
+            ORDER BY c.nome_completo
+        """)
+        _raw_prof = cursor.fetchall()
+ 
+        # Agrupar por professor (pode ser responsável por várias modalidades)
+        prof_map = {}
+        for r in _raw_prof:
+            pid = r[0]
+            if pid not in prof_map:
+                prof_map[pid] = {
+                    "id_cadastro":  pid,
+                    "nome_completo":r[1],
+                    "tipo_cadastro":r[2],
+                    "slug":         r[3] or "",
+                    "foto_professora": r[4] or "",
+                    "instagram":    "",
+                    "modalidades":  [],
+                }
+            if r[5] and r[5] not in prof_map[pid]["modalidades"]:
+                prof_map[pid]["modalidades"].append(r[5])
+ 
+        professoras = list(prof_map.values())
+ 
+        # ── Turmas com horários ────────────────────────────────
+        cursor.execute("""
+            SELECT
+                t.id_turma,
+                m.titulo AS modalidade,
+                s.nome   AS sala,
+                h.hora_inicio,
+                h.hora_fim,
+                h.dias_semana,
+                c.nome_completo AS professora,
+                t.capacidade_maxima
+            FROM turmas t
+            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+            JOIN salas       s ON s.id_sala        = t.id_sala
+            JOIN horarios    h ON h.id_horario     = t.id_horario
+            LEFT JOIN cadastro c ON c.id_cadastro  = m.id_responsavel_cadastro
+            WHERE t.ativo = 1
+            ORDER BY h.hora_inicio, m.titulo
+        """)
+        turmas = []
+        dias_set = set()
+        for r in cursor.fetchall():
+            turmas.append({
+                "id_turma":         r[0],
+                "modalidade":       r[1],
+                "sala":             r[2],
+                "hora_inicio":      str(r[3])[:5] if r[3] else "",
+                "hora_fim":         str(r[4])[:5] if r[4] else "",
+                "dias_semana":      r[5] or "",
+                "professora":       r[6] or "",
+                "capacidade_maxima":r[7] or 0,
+            })
+            # contar dias distintos
+            for d in (r[5] or "").split(","):
+                d = d.strip().lower()
+                if d:
+                    dias_set.add(d.split()[0])
+ 
+        # ── Pacotes ativos ─────────────────────────────────────
+        cursor.execute("""
+            SELECT p.id_pacote, p.nome, p.tipo_cobranca, p.valor,
+                   p.aulas_por_semana, p.qt_modalidades, p.observacao
+            FROM pacotes p
+            WHERE p.ativo = 1
+            ORDER BY p.valor
+        """)
+        pacotes = []
+        for r in cursor.fetchall():
+            pid = r[0]
+            cursor.execute("""
+                SELECT m.titulo FROM pacote_modalidades pm
+                JOIN modalidades m ON m.id_modalidade = pm.id_modalidade
+                WHERE pm.id_pacote = ?
+            """, (pid,))
+            mods_nomes = [x[0] for x in cursor.fetchall()]
+            pacotes.append({
+                "id_pacote":        pid,
+                "nome":             r[1],
+                "tipo_cobranca":    r[2],
+                "valor":            float(r[3] or 0),
+                "aulas_por_semana": r[4] or 1,
+                "qt_modalidades":   r[5] or 1,
+                "observacao":       r[6] or "",
+                "modalidades_nomes": mods_nomes,
+            })
+ 
+        # ── Stats strip ────────────────────────────────────────
+        stats = {
+            "total_modalidades": len(modalidades),
+            "total_turmas":      len(turmas),
+            "total_pacotes":     len(pacotes),
+            "dias_ativos":       len(dias_set) or 6,
+        }
+ 
+        return render_template(
+            "index.html",
+            modalidades=modalidades,
+            galeria_data=galeria_data,
+            professoras=professoras,
+            turmas=turmas,
+            pacotes=pacotes,
+            stats=stats,
+        )
+ 
+    except pyodbc.Error as e:
+        # Se banco falhar, renderiza página com dados vazios
+        return render_template(
+            "index.html",
+            modalidades=[], galeria_data={},
+            professoras=[], turmas=[], pacotes=[],
+            stats={"total_modalidades":0,"total_turmas":0,"total_pacotes":0,"dias_ativos":6},
+        )
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+# ================================================================
+# AULA EXPERIMENTAL (nova rota)
+# ================================================================
+ 
+@app.route("/solicitar-aula-experimental", methods=["POST"])
+def solicitar_aula_experimental():
+    nome              = request.form.get("nome", "").strip()
+    telefone          = request.form.get("telefone", "").strip()
+    email             = request.form.get("email", "").strip().lower()
+    cpf               = only_digits(request.form.get("cpf") or "")
+    modalidade        = request.form.get("modalidade", "").strip()
+    horario_preferido = request.form.get("horario_preferido", "").strip()
+    mensagem          = request.form.get("mensagem", "").strip()
+ 
+    if not nome or not telefone or not email or not modalidade:
+        return jsonify(ok=False, mensagem="Preencha os campos obrigatórios: nome, telefone, e-mail e modalidade."), 400
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO aulas_experimentais
+                (nome, telefone, email, cpf, modalidade, horario_preferido, mensagem, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'pendente')
+        """, (nome, telefone, email, cpf or None, modalidade, horario_preferido or None, mensagem or None))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Solicitação recebida! Entraremos em contato pelo WhatsApp para confirmar.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=f"Erro ao registrar solicitação: {str(e)}"), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
 
 @app.route("/login", methods=["GET"])
 def login_page():
@@ -1110,30 +1323,29 @@ def desmatricular_aluno():
         if conn: conn.close()
                           
 
-# ========== CONTATO ==========
-
+# ================================================================
+# CONTATO GERAL (substitui a rota contato() existente)
+# ================================================================
+ 
 @app.route("/contato", methods=["POST"])
 def contato():
-    nome = request.form.get("nome", "").strip()
-    telefone = request.form.get("telefone", "").strip()
-    email = request.form.get("email", "").strip()
-    modalidade = request.form.get("modalidade", "").strip()
-    mensagem = request.form.get("mensagem", "").strip()
-
-    if not nome or not telefone or not email or not modalidade:
-        flash("Por favor, preencha os campos obrigatórios.", "erro")
-        return redirect(url_for("home") + "#contato")
-
+    nome      = request.form.get("nome", "").strip()
+    telefone  = request.form.get("telefone", "").strip()
+    email     = request.form.get("email", "").strip()
+    modalidade= request.form.get("modalidade", "").strip()
+    mensagem  = request.form.get("mensagem", "").strip()
+ 
+    if not nome or not telefone or not email:
+        return jsonify(ok=False, mensagem="Preencha nome, telefone e e-mail."), 400
+ 
+    # Log simples — pode integrar e-mail/CRM futuramente
     print({
-        "nome": nome,
-        "telefone": telefone,
-        "email": email,
-        "modalidade": modalidade,
-        "mensagem": mensagem,
+        "tipo": "contato_geral",
+        "nome": nome, "telefone": telefone, "email": email,
+        "modalidade": modalidade, "mensagem": mensagem,
     })
-
-    flash("Mensagem enviada com sucesso! Em breve entraremos em contato. ✓", "sucesso")
-    return redirect(url_for("home") + "#contato")
+    return jsonify(ok=True, mensagem="Mensagem recebida! Retornaremos em breve.")
+ 
 
 
 # ========== CADASTRO DE ALUNO ==========
@@ -2994,8 +3206,71 @@ def reativar_aluno():
         if cursor: cursor.close()
         if conn:   conn.close()
  
+ # ================================================================
+# ADMIN: AULAS EXPERIMENTAIS (nova sub-página)
+# ================================================================
  
-
+@app.route("/admin/aulas-experimentais")
+@login_required(tipo="administrador")
+def admin_aulas_experimentais():
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id_experimental, nome, telefone, email, cpf,
+                   modalidade, horario_preferido, mensagem, status, criado_em
+            FROM aulas_experimentais
+            ORDER BY criado_em DESC
+        """)
+        solicitacoes = []
+        for r in cursor.fetchall():
+            solicitacoes.append({
+                "id":               r[0],
+                "nome":             r[1],
+                "telefone":         r[2],
+                "email":            r[3] or "",
+                "cpf":              r[4] or "",
+                "modalidade":       r[5],
+                "horario_preferido":r[6] or "",
+                "mensagem":         r[7] or "",
+                "status":           r[8] or "pendente",
+                "criado_em":        str(r[9])[:16] if r[9] else "",
+            })
+        return render_template("admin_aulas_experimentais.html",
+            user_name=session.get("user_name","Administrador"),
+            solicitacoes=solicitacoes)
+    except pyodbc.Error as e:
+        flash(str(e), "erro")
+        return render_template("admin_aulas_experimentais.html",
+            user_name=session.get("user_name","Administrador"), solicitacoes=[])
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/aula-experimental/<int:id_exp>/status", methods=["POST"])
+@login_required(tipo="administrador")
+def atualizar_status_experimental(id_exp):
+    data   = request.get_json(silent=True) or {}
+    status = data.get("status", "").strip()
+    obs    = data.get("obs", "").strip()
+    if status not in {"pendente", "confirmada", "realizada", "cancelada"}:
+        return jsonify(ok=False, mensagem="Status inválido."), 400
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE aulas_experimentais SET status=?, observacao_admin=?
+            WHERE id_experimental=?
+        """, (status, obs, id_exp))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Status atualizado.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
            
 if __name__ == "__main__":
     app.run(debug=True)

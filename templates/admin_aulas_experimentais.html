@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aulas Experimentais · Clara Lucatti Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bordo:#8B0021;--bordo-light:#A3002A;--bordo-pale:#f5e6ea;--cream:#fdf8f5;--warm-white:#fff9f6;--text-dark:#2a1a1f;--text-mid:#6b4a55;--text-light:#b08090;--shadow:0 18px 45px rgba(139,0,33,0.08);}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;}
+    a{text-decoration:none;color:inherit;}button{border:none;background:none;cursor:pointer;font:inherit;}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(253,248,245,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,0,33,0.08);}
+    .nav-left{display:flex;align-items:center;gap:1rem;}
+    .btn-back{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);padding:0.5rem 1rem;border:1.5px solid rgba(139,0,33,0.15);border-radius:50px;transition:all 0.3s;}
+    .btn-back:hover{border-color:var(--bordo);color:var(--bordo);}
+    .nav-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;letter-spacing:0.1em;}
+    .main{padding:2.5rem 3rem;}
+    .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+    .kpi-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;padding:1.3rem 1.5rem;box-shadow:var(--shadow);}
+    .kpi-num{font-family:'Cormorant Garamond',serif;font-size:2.4rem;color:var(--bordo);line-height:1;}
+    .kpi-label{font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-light);margin-top:0.2rem;}
+    .filters{display:flex;gap:0.7rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;}
+    .filter-btn{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.45rem 1rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.12);color:var(--text-light);background:none;cursor:pointer;transition:all 0.25s;}
+    .filter-btn.active,.filter-btn:hover{background:var(--bordo);color:#fff;border-color:var(--bordo);}
+    .search-box{background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.45rem 1.1rem;font-family:'Jost',sans-serif;font-size:0.84rem;color:var(--text-dark);outline:none;min-width:200px;}
+    .sol-grid{display:grid;gap:1rem;}
+    .sol-card{background:var(--cream);border:1px solid rgba(139,0,33,0.09);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);transition:all 0.3s;}
+    .sol-card:hover{box-shadow:0 24px 50px rgba(139,0,33,0.12);}
+    .sol-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid rgba(139,0,33,0.07);flex-wrap:wrap;gap:0.8rem;}
+    .sol-aluno{display:flex;align-items:center;gap:0.8rem;}
+    .ava{width:38px;height:38px;border-radius:50%;background:var(--bordo-pale);color:var(--bordo);font-size:0.8rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .sol-nome{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:300;}
+    .sol-contato{font-size:0.76rem;color:var(--text-light);}
+    .status-pill{display:inline-flex;padding:0.25rem 0.75rem;border-radius:50px;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;}
+    .s-pendente{background:#faeeda;color:#854F0B;}
+    .s-confirmada{background:#e6f0f5;color:#005577;}
+    .s-realizada{background:#eaf3de;color:#3B6D11;}
+    .s-cancelada{background:#f1efee;color:#5F5E5A;}
+    .sol-body{padding:1rem 1.4rem;display:grid;grid-template-columns:1fr auto;gap:1.2rem;align-items:start;}
+    .sol-info{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;}
+    .sol-info-item{}
+    .sol-info-label{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.2rem;}
+    .sol-info-val{font-size:0.88rem;color:var(--text-dark);}
+    .sol-msg{grid-column:1/-1;font-size:0.83rem;color:var(--text-mid);line-height:1.65;padding:0.65rem 0.9rem;background:var(--warm-white);border-radius:12px;border-left:2px solid rgba(139,0,33,0.15);margin-top:0.5rem;}
+    .sol-actions{display:flex;flex-direction:column;gap:0.5rem;min-width:160px;}
+    .btn-wpp{display:flex;align-items:center;justify-content:center;gap:0.5rem;background:#25D366;color:#fff;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.65rem 1rem;border-radius:50px;border:none;cursor:pointer;transition:all 0.3s;}
+    .btn-wpp:hover{background:#1eba59;}
+    .btn-confirmar{background:#e6f0f5;color:#005577;border:1.5px solid rgba(0,85,119,0.2);font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.6rem 0.9rem;border-radius:50px;cursor:pointer;transition:all 0.3s;}
+    .btn-confirmar:hover{background:#cce4f0;}
+    .btn-cancelar{background:#f1efee;color:#5F5E5A;border:1.5px solid rgba(95,94,90,0.2);font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.6rem 0.9rem;border-radius:50px;cursor:pointer;transition:all 0.3s;}
+    .btn-cancelar:hover{background:#e2e0dc;}
+    .btn-realizada{background:#eaf3de;color:#3B6D11;border:1.5px solid rgba(59,109,17,0.2);font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.6rem 0.9rem;border-radius:50px;cursor:pointer;transition:all 0.3s;}
+    .btn-realizada:hover{background:#d2ebbe;}
+    .sol-date{font-size:0.7rem;color:var(--text-light);padding-top:0.8rem;border-top:1px solid rgba(139,0,33,0.07);margin-top:0.8rem;}
+    .empty{text-align:center;padding:4rem;color:var(--text-light);}
+    @media(max-width:900px){.main{padding:1.5rem;}.sol-info{grid-template-columns:1fr 1fr;}.sol-body{grid-template-columns:1fr;}.kpi-strip{grid-template-columns:repeat(2,1fr);}nav{padding:1rem 1.5rem;}}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a href="{{ url_for('admin_page') }}" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Painel
+    </a>
+    <span class="nav-title">Aulas Experimentais</span>
+  </div>
+  <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);">{{ user_name }}</span>
+</nav>
+
+<main class="main">
+  <!-- KPIs -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-num">{{ solicitacoes | selectattr('status','eq','pendente') | list | length }}</div>
+      <div class="kpi-label">Pendentes</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">{{ solicitacoes | selectattr('status','eq','confirmada') | list | length }}</div>
+      <div class="kpi-label">Confirmadas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">{{ solicitacoes | selectattr('status','eq','realizada') | list | length }}</div>
+      <div class="kpi-label">Realizadas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">{{ solicitacoes | length }}</div>
+      <div class="kpi-label">Total</div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters">
+    <button class="filter-btn active" data-f="">Todas</button>
+    <button class="filter-btn" data-f="pendente">Pendentes</button>
+    <button class="filter-btn" data-f="confirmada">Confirmadas</button>
+    <button class="filter-btn" data-f="realizada">Realizadas</button>
+    <button class="filter-btn" data-f="cancelada">Canceladas</button>
+    <input class="search-box" id="busca" type="text" placeholder="Buscar por nome ou modalidade…">
+  </div>
+
+  <!-- Lista -->
+  <div class="sol-grid" id="solGrid">
+    {% for s in solicitacoes %}
+    <div class="sol-card" data-status="{{ s.status }}" data-nome="{{ s.nome|lower }}" data-modal="{{ s.modalidade|lower }}">
+      <div class="sol-head">
+        <div class="sol-aluno">
+          <div class="ava">{{ s.nome[0]|upper }}{{ s.nome.split(' ')[-1][0]|upper if s.nome.split(' ')|length > 1 else '' }}</div>
+          <div>
+            <div class="sol-nome">{{ s.nome }}</div>
+            <div class="sol-contato">{{ s.telefone }} · {{ s.email }}</div>
+          </div>
+        </div>
+        <span class="status-pill s-{{ s.status }}">{{ s.status | capitalize }}</span>
+      </div>
+      <div class="sol-body">
+        <div>
+          <div class="sol-info">
+            <div class="sol-info-item"><div class="sol-info-label">Modalidade</div><div class="sol-info-val">{{ s.modalidade }}</div></div>
+            <div class="sol-info-item"><div class="sol-info-label">Horário preferido</div><div class="sol-info-val">{{ s.horario_preferido or '—' }}</div></div>
+            <div class="sol-info-item"><div class="sol-info-label">CPF</div><div class="sol-info-val">{{ s.cpf[:3] ~ '.***.**-' ~ s.cpf[-2:] if s.cpf|length >= 5 else (s.cpf or '—') }}</div></div>
+            {% if s.mensagem %}
+            <div class="sol-msg" style="grid-column:1/-1;">{{ s.mensagem }}</div>
+            {% endif %}
+          </div>
+          <div class="sol-date">Solicitado em {{ s.criado_em }}</div>
+        </div>
+        <div class="sol-actions">
+          <!-- WhatsApp -->
+          <a class="btn-wpp" href="https://wa.me/{{ s.telefone | replace('(','') | replace(')','') | replace(' ','') | replace('-','') | replace('+','') }}" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Chamar no WhatsApp
+          </a>
+          {% if s.status == 'pendente' %}
+          <button class="btn-confirmar" onclick="atualizarStatus({{ s.id }}, 'confirmada', this)">Confirmar aula</button>
+          <button class="btn-cancelar" onclick="atualizarStatus({{ s.id }}, 'cancelada', this)">Cancelar</button>
+          {% elif s.status == 'confirmada' %}
+          <button class="btn-realizada" onclick="atualizarStatus({{ s.id }}, 'realizada', this)">Marcar como realizada</button>
+          <button class="btn-cancelar" onclick="atualizarStatus({{ s.id }}, 'cancelada', this)">Cancelar</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty"><p>Nenhuma solicitação de aula experimental ainda.</p></div>
+    {% endfor %}
+  </div>
+</main>
+
+<script>
+  // Filtros
+  let filtroAtivo = '';
+  document.querySelectorAll('.filter-btn[data-f]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn[data-f]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); filtroAtivo = btn.dataset.f; filtrar();
+    });
+  });
+  document.getElementById('busca').addEventListener('input', filtrar);
+  function filtrar() {
+    const q = document.getElementById('busca').value.toLowerCase();
+    document.querySelectorAll('.sol-card').forEach(c => {
+      const stOk = !filtroAtivo || c.dataset.status === filtroAtivo;
+      const bOk  = !q || c.dataset.nome.includes(q) || c.dataset.modal.includes(q);
+      c.style.display = stOk && bOk ? '' : 'none';
+    });
+  }
+
+  // Atualizar status
+  async function atualizarStatus(id, status, btn) {
+    const label = { confirmada:'Confirmar aula', cancelada:'Cancelar', realizada:'Marcar como realizada' };
+    if (!confirm(`${label[status] || status}?`)) return;
+    const r = await fetch(`/admin/aula-experimental/${id}/status`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status })
+    });
+    const d = await r.json();
+    alert(d.mensagem);
+    if (d.ok) location.reload();
+  }
+</script>
+</body>
+</html>
