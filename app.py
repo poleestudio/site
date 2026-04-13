@@ -2716,54 +2716,7 @@ def aluno_inscrever():
         if cursor: cursor.close()
         if conn:   conn.close()
  
- 
-@app.route("/aluno/cancelar-aula", methods=["POST"])
-@login_required(tipo="aluno")
-def aluno_cancelar_aula():
-    data_req  = request.get_json(silent=True) or {}
-    id_turma  = data_req.get("id_turma")
-    data_aula = data_req.get("data_aula")
-    id_aluno  = session["user_id"]
- 
-    if not id_turma or not data_aula:
-        return jsonify(ok=False, mensagem="Informe a turma e a data."), 400
- 
-    conn = cursor = None
-    try:
-        conn = get_conn()
-        cursor = conn.cursor()
- 
-        cursor.execute("SELECT 1 FROM matriculas WHERE id_turma=? AND id_aluno=? AND ativo=1", (id_turma, id_aluno))
-        if not cursor.fetchone():
-            return jsonify(ok=False, mensagem="Você não está inscrita nesta turma."), 400
- 
-        if _tabela_existe(cursor, "reposicoes"):
-            # Verificar se já cancelou esta data
-            cursor.execute("""
-                SELECT 1 FROM reposicoes
-                WHERE id_aluno=? AND id_turma_orig=? AND data_aula_orig=? AND tipo='normal'
-            """, (id_aluno, id_turma, data_aula))
-            if cursor.fetchone():
-                return jsonify(ok=False, mensagem="Você já cancelou esta aula."), 400
- 
-            valida_ate = fim_do_mes()
-            cursor.execute("""
-                INSERT INTO reposicoes(id_aluno, tipo, usada, data_aula_orig, id_turma_orig, valida_ate)
-                VALUES(?, 'normal', 0, ?, ?, ?)
-            """, (id_aluno, data_aula, id_turma, valida_ate))
-            conn.commit()
-            return jsonify(ok=True, mensagem="Aula cancelada. Uma reposição foi creditada para o mês.")
-        else:
-            conn.commit()
-            return jsonify(ok=True, mensagem="Presença na aula cancelada.")
- 
-    except pyodbc.Error as e:
-        if conn: conn.rollback()
-        return jsonify(ok=False, mensagem=str(e)), 500
-    finally:
-        if cursor: cursor.close()
-        if conn:   conn.close()
- 
+
 @app.route("/aluno/cancelar-aula", methods=["POST"])
 @login_required(tipo="aluno")
 def aluno_cancelar_aula():
