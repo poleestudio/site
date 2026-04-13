@@ -114,6 +114,56 @@ def login_page():
 
     return render_template("login.html")
 
+@app.route("/esqueci-senha", methods=["POST"])
+def esqueci_senha():
+    try:
+        data = request.get_json(silent=True) or {}
+
+        email = (data.get("email") or "").strip().lower()
+        cpf = only_digits(data.get("cpf") or "")
+        nova_senha = data.get("nova_senha") or ""
+
+        if not email or not cpf or not nova_senha:
+            return jsonify(ok=False, mensagem="Dados obrigatórios não informados."), 400
+
+        if len(cpf) != 11:
+            return jsonify(ok=False, mensagem="Informe um CPF válido com 11 dígitos."), 400
+
+        if not senha_forte_valida(nova_senha):
+            return jsonify(ok=False, mensagem="A nova senha não atende aos critérios mínimos de segurança."), 400
+
+        senha_hash = generate_password_hash(nova_senha)
+
+        with get_conn() as conn:
+            cursor = conn.cursor()
+
+            # Ajuste o nome da tabela/colunas se no seu banco forem diferentes
+            cursor.execute("""
+                SELECT id
+                FROM alunos
+                WHERE LOWER(LTRIM(RTRIM(email))) = ?
+                  AND cpf = ?
+            """, (email, cpf))
+
+            row = cursor.fetchone()
+
+            if not row:
+                return jsonify(ok=False, mensagem="Aluno não encontrado para este e-mail e CPF."), 404
+
+            aluno_id = row[0]
+
+            cursor.execute("""
+                UPDATE alunos
+                SET senha = ?
+                WHERE id = ?
+            """, (senha_hash, aluno_id))
+
+            conn.commit()
+
+        return jsonify(ok=True, mensagem="Senha atualizada com sucesso. Faça login com a nova senha."), 200
+
+    except Exception as e:
+        return jsonify(ok=False, mensagem=f"Erro interno ao redefinir senha: {str(e)}"), 500
 # ── helpers ──────────────────────────────────────────────────────
 def slugify(txt):
     txt = unicodedata.normalize("NFKD", txt).encode("ascii", "ignore").decode()

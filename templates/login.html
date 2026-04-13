@@ -55,7 +55,6 @@
     button, input, select { font: inherit; }
     .hidden { display: none !important; }
 
-    /* NAVBAR BÁSICA (mesma identidade do site) */
     .app-navbar {
       position: sticky;
       top: 0;
@@ -131,7 +130,6 @@
       background: var(--bordo-pale);
     }
 
-    /* LAYOUT LOGIN */
     .login-layout {
       max-width: 1180px;
       margin: 2rem auto;
@@ -276,8 +274,7 @@
       margin-bottom: 0.45rem;
     }
 
-    input,
-    select {
+    input, select {
       width: 100%;
       background: var(--cream);
       border: 1.5px solid rgba(139, 0, 33, 0.10);
@@ -288,8 +285,7 @@
       min-height: 48px;
     }
 
-    input:focus,
-    select:focus {
+    input:focus, select:focus {
       border-color: var(--bordo);
       box-shadow: 0 0 0 4px rgba(139, 0, 33, 0.06);
     }
@@ -371,6 +367,85 @@
 
     .consent-text strong { color: var(--text-dark); }
 
+    .forgot-link-wrap {
+      margin-top: 0.85rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .forgot-link {
+      background: transparent;
+      border: none;
+      color: var(--bordo);
+      cursor: pointer;
+      font-size: 0.88rem;
+      line-height: 1.4;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      min-height: 44px;
+      padding: 0.35rem 0.5rem;
+    }
+
+    .forgot-link:hover {
+      color: var(--bordo-light);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(42, 26, 31, 0.45);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 100;
+    }
+
+    .modal-card {
+      width: min(100%, 560px);
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      padding: 1.8rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-top: 0.25rem;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      padding: 0.85rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      min-height: 44px;
+      border: 1px solid rgba(139, 0, 33, 0.16);
+      background: transparent;
+      color: var(--bordo);
+      flex: 1;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bordo-pale);
+    }
+
+    .modal-actions .btn-primary {
+      flex: 1;
+      border: none;
+    }
+
     :focus-visible {
       outline: 2px solid var(--bordo);
       outline-offset: 3px;
@@ -404,6 +479,10 @@
       .switch-btn {
         flex: 1;
         text-align: center;
+      }
+
+      .modal-actions {
+        flex-direction: column;
       }
     }
 
@@ -478,6 +557,12 @@
         <button type="submit" class="btn-primary app-btn-wide">
           Entrar
         </button>
+
+        <div class="forgot-link-wrap">
+          <button type="button" id="forgotPasswordBtn" class="forgot-link">
+            Esqueceu a senha?
+          </button>
+        </div>
       </form>
 
       <!-- CADASTRO -->
@@ -544,6 +629,61 @@
     </section>
   </main>
 
+  <!-- MODAL ESQUECI A SENHA -->
+  <div id="forgotModal" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+      <div class="auth-header" style="margin-bottom: 0.6rem;">
+        <div>
+          <h2 class="auth-title" id="forgotTitle" style="font-size: 2rem;">Recuperar senha</h2>
+          <p class="auth-subtitle" style="margin-bottom: 0;">
+            Informe seu e-mail e CPF para cadastrar uma nova senha.
+          </p>
+        </div>
+      </div>
+
+      <form id="forgotForm" novalidate>
+        <div class="form-group">
+          <label for="email_forgot">E-mail</label>
+          <input id="email_forgot" name="email_forgot" type="email" placeholder="Digite seu e-mail cadastrado" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cpf_forgot">CPF</label>
+          <input id="cpf_forgot" name="cpf_forgot" type="text" placeholder="000.000.000-00" maxlength="14" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nova_senha">Nova senha</label>
+            <input id="nova_senha" name="nova_senha" type="password" placeholder="Digite a nova senha" required>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmar_nova_senha">Confirmar nova senha</label>
+            <input id="confirmar_nova_senha" name="confirmar_nova_senha" type="password" placeholder="Repita a nova senha" required>
+          </div>
+        </div>
+
+        <div class="password-rules" id="forgotPasswordRules">
+          <div class="password-rules-title">A nova senha precisa ter</div>
+          <div class="password-rule" data-forgot-rule="length">• Pelo menos 8 caracteres</div>
+          <div class="password-rule" data-forgot-rule="upper">• Pelo menos 1 letra maiúscula</div>
+          <div class="password-rule" data-forgot-rule="lower">• Pelo menos 1 letra minúscula</div>
+          <div class="password-rule" data-forgot-rule="number">• Pelo menos 1 número</div>
+          <div class="password-rule" data-forgot-rule="special">• Pelo menos 1 símbolo</div>
+        </div>
+
+        <div class="alert alert-error hidden" id="forgotError"></div>
+        <div class="alert alert-success hidden" id="forgotSuccess"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="forgotCancelBtn">Cancelar</button>
+          <button type="submit" class="btn-primary">Redefinir senha</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     const tabLoginBtn = document.getElementById('tabLoginBtn');
     const tabSignupBtn = document.getElementById('tabSignupBtn');
@@ -561,6 +701,16 @@
     const cpfInput = document.getElementById('cpf');
     const termoSeguranca = document.getElementById('termo_seguranca');
     const termoImagem = document.getElementById('termo_imagem');
+
+    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+    const forgotModal = document.getElementById('forgotModal');
+    const forgotForm = document.getElementById('forgotForm');
+    const forgotCancelBtn = document.getElementById('forgotCancelBtn');
+    const forgotError = document.getElementById('forgotError');
+    const forgotSuccess = document.getElementById('forgotSuccess');
+    const cpfForgotInput = document.getElementById('cpf_forgot');
+    const forgotPasswordInput = document.getElementById('nova_senha');
+    const forgotPasswordConfirmInput = document.getElementById('confirmar_nova_senha');
 
     function showLogin() {
       loginForm.classList.remove('hidden');
@@ -602,14 +752,69 @@
       return Object.values(rules).every(Boolean);
     }
 
-    passwordInput.addEventListener('input', updatePasswordRules);
+    function updateForgotPasswordRules() {
+      const rules = passwordChecks(forgotPasswordInput.value);
+      Object.entries(rules).forEach(([key, ok]) => {
+        const el = document.querySelector(`[data-forgot-rule="${key}"]`);
+        if (el) el.classList.toggle('ok', ok);
+      });
+      return Object.values(rules).every(Boolean);
+    }
 
-    cpfInput.addEventListener('input', () => {
-      let v = cpfInput.value.replace(/\D/g, '').slice(0, 11);
+    passwordInput.addEventListener('input', updatePasswordRules);
+    forgotPasswordInput.addEventListener('input', updateForgotPasswordRules);
+
+    function maskCpf(value) {
+      let v = value.replace(/\D/g, '').slice(0, 11);
       v = v.replace(/(\d{3})(\d)/, '$1.$2');
       v = v.replace(/(\d{3})(\d)/, '$1.$2');
       v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-      cpfInput.value = v;
+      return v;
+    }
+
+    cpfInput.addEventListener('input', () => {
+      cpfInput.value = maskCpf(cpfInput.value);
+    });
+
+    cpfForgotInput.addEventListener('input', () => {
+      cpfForgotInput.value = maskCpf(cpfForgotInput.value);
+    });
+
+    function openForgotModal() {
+      forgotModal.classList.remove('hidden');
+      forgotModal.setAttribute('aria-hidden', 'false');
+      forgotError.classList.add('hidden');
+      forgotSuccess.classList.add('hidden');
+      updateForgotPasswordRules();
+    }
+
+    function closeForgotModal() {
+      forgotModal.classList.add('hidden');
+      forgotModal.setAttribute('aria-hidden', 'true');
+      forgotForm.reset();
+      forgotError.classList.add('hidden');
+      forgotSuccess.classList.add('hidden');
+      document.querySelectorAll('[data-forgot-rule]').forEach(el => el.classList.remove('ok'));
+    }
+
+    forgotPasswordBtn.addEventListener('click', () => {
+      const emailLogin = document.getElementById('email_login').value.trim();
+      openForgotModal();
+      if (emailLogin) {
+        document.getElementById('email_forgot').value = emailLogin;
+      }
+    });
+
+    forgotCancelBtn.addEventListener('click', closeForgotModal);
+
+    forgotModal.addEventListener('click', (e) => {
+      if (e.target === forgotModal) closeForgotModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !forgotModal.classList.contains('hidden')) {
+        closeForgotModal();
+      }
     });
 
     loginForm.addEventListener('submit', async function(e) {
@@ -724,6 +929,77 @@
       } catch (err) {
         signupError.textContent = 'Erro de comunicação com o servidor.';
         signupError.classList.remove('hidden');
+      }
+    });
+
+    forgotForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      forgotError.classList.add('hidden');
+      forgotSuccess.classList.add('hidden');
+
+      const email = document.getElementById('email_forgot').value.trim();
+      const cpf = cpfForgotInput.value.replace(/\D/g, '');
+      const novaSenha = forgotPasswordInput.value;
+      const confirmarNovaSenha = forgotPasswordConfirmInput.value;
+
+      if (!email || !cpf || !novaSenha || !confirmarNovaSenha) {
+        forgotError.textContent = 'Preencha todos os campos obrigatórios.';
+        forgotError.classList.remove('hidden');
+        return;
+      }
+
+      if (cpf.length !== 11) {
+        forgotError.textContent = 'Informe um CPF válido com 11 dígitos.';
+        forgotError.classList.remove('hidden');
+        return;
+      }
+
+      if (!updateForgotPasswordRules()) {
+        forgotError.textContent = 'A nova senha não atende aos critérios mínimos de segurança.';
+        forgotError.classList.remove('hidden');
+        return;
+      }
+
+      if (novaSenha !== confirmarNovaSenha) {
+        forgotError.textContent = 'As novas senhas não conferem.';
+        forgotError.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const resp = await fetch('{{ url_for("esqueci_senha") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({
+            email: email,
+            cpf: cpf,
+            nova_senha: novaSenha
+          })
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          forgotError.textContent = data.mensagem || 'Erro ao redefinir a senha.';
+          forgotError.classList.remove('hidden');
+          return;
+        }
+
+        forgotSuccess.textContent = data.mensagem || 'Senha redefinida com sucesso.';
+        forgotSuccess.classList.remove('hidden');
+
+        setTimeout(() => {
+          closeForgotModal();
+          showLogin();
+          document.getElementById('email_login').value = email;
+          document.getElementById('senha_login').focus();
+        }, 1200);
+      } catch (err) {
+        forgotError.textContent = 'Erro de comunicação com o servidor.';
+        forgotError.classList.remove('hidden');
       }
     });
   </script>
