@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horários & Turmas · Clara Lucatti Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bordo:#8B0021;
+      --bordo-light:#A3002A;
+      --bordo-pale:#f5e6ea;
+      --cream:#fdf8f5;
+      --warm-white:#fff9f6;
+      --text-dark:#2a1a1f;
+      --text-mid:#6b4a55;
+      --text-light:#b08090;
+      --shadow:0 18px 45px rgba(139,0,33,0.08);
+    }
+
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+    body{
+      background:var(--warm-white);
+      color:var(--text-dark);
+      font-family:'Jost',sans-serif;
+      font-weight:300;
+    }
+
+    a{text-decoration:none;color:inherit;}
+    button{border:none;background:none;cursor:pointer;font:inherit;}
+
+    nav{
+      position:sticky;
+      top:0;
+      z-index:100;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:1rem 3rem;
+      background:rgba(253,248,245,0.95);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(139,0,33,0.08);
+    }
+
+    .nav-left{display:flex;align-items:center;gap:1rem;}
+
+    .btn-back{
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      font-size:0.72rem;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--text-light);
+      padding:0.5rem 1rem;
+      border:1.5px solid rgba(139,0,33,0.15);
+      border-radius:50px;
+      transition:all 0.3s;
+    }
+
+    .btn-back:hover{
+      border-color:var(--bordo);
+      color:var(--bordo);
+    }
+
+    .nav-title{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.1rem;
+      font-weight:300;
+      letter-spacing:0.1em;
+    }
+
+    .tabs{
+      display:flex;
+      gap:0;
+      border-bottom:1px solid rgba(139,0,33,0.08);
+      background:var(--cream);
+      padding:0 3rem;
+    }
+
+    .tab-btn{
+      font-size:0.72rem;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      padding:1rem 1.5rem;
+      color:var(--text-light);
+      border-bottom:2px solid transparent;
+      transition:all 0.3s;
+      background:none;
+      cursor:pointer;
+    }
+
+    .tab-btn.active{
+      color:var(--bordo);
+      border-bottom-color:var(--bordo);
+    }
+
+    .tab-panel{display:none;}
+    .tab-panel.active{display:grid;}
+
+    #tabSalas{
+      grid-template-columns:380px 1fr;
+      min-height:calc(100vh - 120px);
+    }
+
+    #tabTurmas{
+      grid-template-columns:460px 1fr;
+      min-height:calc(100vh - 120px);
+    }
+
+    .sidebar{
+      background:var(--cream);
+      border-right:1px solid rgba(139,0,33,0.08);
+      padding:2rem 1.8rem;
+      position:sticky;
+      top:120px;
+      height:calc(100vh - 120px);
+      overflow-y:auto;
+    }
+
+    .sidebar-title{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.6rem;
+      font-weight:300;
+      margin-bottom:0.3rem;
+    }
+
+    .sidebar-sub{
+      font-size:0.82rem;
+      color:var(--text-light);
+      line-height:1.7;
+      margin-bottom:1.6rem;
+    }
+
+    .form-group{margin-bottom:0.95rem;}
+
+    .form-group label{
+      display:block;
+      font-size:0.66rem;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--text-light);
+      margin-bottom:0.4rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea{
+      width:100%;
+      background:var(--warm-white);
+      border:1.5px solid rgba(139,0,33,0.12);
+      border-radius:14px;
+      padding:0.8rem 1rem;
+      font-family:'Jost',sans-serif;
+      font-size:0.88rem;
+      color:var(--text-dark);
+      transition:border-color 0.3s;
+      outline:none;
+      appearance:none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus{
+      border-color:var(--bordo);
+      box-shadow:0 0 0 4px rgba(139,0,33,0.06);
+    }
+
+    .form-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0.8rem;
+    }
+
+    .dias-check{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.5rem;
+      margin-top:0.3rem;
+    }
+
+    .dia-label{
+      display:flex;
+      align-items:center;
+      gap:0.3rem;
+      font-size:0.76rem;
+      color:var(--text-mid);
+      padding:0.35rem 0.8rem;
+      border:1.5px solid rgba(139,0,33,0.12);
+      border-radius:50px;
+      cursor:pointer;
+      transition:all 0.25s;
+      user-select:none;
+    }
+
+    .dia-label input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .dia-label.checked{
+      background:var(--bordo);
+      color:#fff;
+      border-color:var(--bordo);
+    }
+
+    .btn-primary{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:0.6rem;
+      background:var(--bordo);
+      color:#fff;
+      font-size:0.74rem;
+      font-weight:400;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      padding:0.9rem;
+      border-radius:50px;
+      width:100%;
+      margin-top:0.5rem;
+      transition:all 0.3s;
+      box-shadow:0 8px 28px rgba(139,0,33,0.2);
+    }
+
+    .btn-primary:hover{
+      background:var(--bordo-light);
+      transform:translateY(-2px);
+    }
+
+    .btn-secondary{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      margin-top:0.5rem;
+      padding:0.8rem;
+      border-radius:50px;
+      border:1.5px solid rgba(139,0,33,0.15);
+      color:var(--bordo);
+      font-size:0.72rem;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      transition:all 0.3s;
+    }
+
+    .btn-secondary:hover{background:var(--bordo-pale);}
+
+    .main{
+      padding:2rem 2.2rem;
+      background:var(--warm-white);
+    }
+
+    .main-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:1.5rem;
+    }
+
+    .main-title{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.5rem;
+      font-weight:300;
+    }
+
+    .salas-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:1rem;
+    }
+
+    .sala-card{
+      background:var(--cream);
+      border:1px solid rgba(139,0,33,0.08);
+      border-radius:18px;
+      padding:1.2rem 1.4rem;
+      transition:all 0.3s;
+    }
+
+    .sala-card:hover{
+      box-shadow:var(--shadow);
+      border-color:rgba(139,0,33,0.2);
+    }
+
+    .sala-nome{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.25rem;
+      font-weight:300;
+      margin-bottom:0.25rem;
+    }
+
+    .sala-desc{
+      font-size:0.8rem;
+      color:var(--text-light);
+      line-height:1.6;
+      margin-bottom:0.9rem;
+    }
+
+    .turmas-list{display:grid;gap:0.9rem;}
+
+    .turma-card{
+      background:var(--cream);
+      border:1px solid rgba(139,0,33,0.08);
+      border-radius:20px;
+      padding:1.3rem 1.5rem;
+      display:flex;
+      align-items:center;
+      gap:1.2rem;
+      flex-wrap:wrap;
+      transition:all 0.3s;
+    }
+
+    .turma-card:hover{
+      box-shadow:var(--shadow);
+      border-color:rgba(139,0,33,0.18);
+    }
+
+    .turma-icon{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      background:var(--bordo-pale);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .turma-info{
+      flex:1;
+      min-width:220px;
+    }
+
+    .turma-nome{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.2rem;
+      font-weight:300;
+      margin-bottom:0.2rem;
+    }
+
+    .turma-meta{
+      font-size:0.78rem;
+      color:var(--text-light);
+      line-height:1.6;
+    }
+
+    .cap-bar-wrap{min-width:120px;}
+
+    .cap-label{
+      font-size:0.64rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      color:var(--text-light);
+      margin-bottom:0.3rem;
+    }
+
+    .cap-bar{
+      height:6px;
+      border-radius:3px;
+      background:rgba(139,0,33,0.1);
+      overflow:hidden;
+    }
+
+    .cap-fill{
+      height:100%;
+      border-radius:3px;
+      background:var(--bordo);
+      transition:width 0.5s;
+    }
+
+    .cap-fill.quase{background:#e6a820;}
+    .cap-fill.cheio{background:#c0392b;}
+
+    .pill{
+      display:inline-flex;
+      padding:0.25rem 0.7rem;
+      border-radius:50px;
+      background:var(--bordo-pale);
+      color:var(--bordo);
+      font-size:0.6rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+
+    .btn-sm{
+      padding:0.45rem 0.9rem;
+      border-radius:50px;
+      font-size:0.66rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      border:1.5px solid rgba(139,0,33,0.15);
+      color:var(--text-mid);
+      transition:all 0.25s;
+      cursor:pointer;
+      background:none;
+    }
+
+    .btn-sm:hover{
+      border-color:var(--bordo);
+      color:var(--bordo);
+      background:var(--bordo-pale);
+    }
+
+    @media (max-width: 900px) {
+      #tabSalas,
+      #tabTurmas {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid rgba(139,0,33,0.08);
+      }
+
+      nav,
+      .tabs {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+
+      .main {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="{{ url_for('admin_page') }}" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"></path>
+      </svg>
+      Painel
+    </a>
+    <span class="nav-title">Horários &amp; Turmas</span>
+  </div>
+  <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);">
+    {{ user_name }}
+  </span>
+</nav>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tabSalas">Salas</button>
+  <button class="tab-btn" data-tab="tabTurmas">Turmas &amp; Horários</button>
+</div>
+
+<div class="tab-panel active" id="tabSalas">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Nova sala</h2>
+    <p class="sidebar-sub">Cada sala tem um nome e pode ter uma descrição breve.</p>
+
+    <input type="hidden" id="s-id">
+
+    <div class="form-group">
+      <label>Nome da sala</label>
+      <input id="s-nome" type="text" placeholder="Ex.: Studio 1 · Pole">
+    </div>
+
+    <div class="form-group">
+      <label>Descrição</label>
+      <input id="s-desc" type="text" placeholder="Descrição breve (opcional)">
+    </div>
+
+    <button class="btn-primary" id="btnSalvarSala">Salvar sala</button>
+    <button class="btn-secondary" id="btnLimparSala">Limpar</button>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <div class="main-title">Salas cadastradas</div>
+    </div>
+
+    <div class="salas-grid">
+      {% for s in salas %}
+      <div class="sala-card"
+           data-id="{{ s.id_sala }}"
+           data-nome="{{ s.nome }}"
+           data-desc="{{ s.descricao }}">
+        <div class="sala-nome">{{ s.nome }}</div>
+        <div class="sala-desc">{{ s.descricao or 'Sem descrição' }}</div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+          <button class="btn-sm btn-edit-sala">Editar</button>
+          <button class="btn-sm del" data-id="{{ s.id_sala }}">Excluir</button>
+        </div>
+      </div>
+      {% else %}
+      <div style="color:var(--text-light);padding:2rem;">Nenhuma sala cadastrada.</div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+
+<div class="tab-panel" id="tabTurmas">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Nova turma</h2>
+    <p class="sidebar-sub">Defina modalidade, professora, sala, horário, dias e capacidade da turma.</p>
+
+    <input type="hidden" id="t-id">
+
+    <div class="form-group">
+      <label>Modalidade</label>
+      <select id="t-modal">
+        <option value="">Selecione</option>
+        {% for m in modalidades %}
+        <option value="{{ m.id_modalidade }}">{{ m.titulo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Professora</label>
+      <select id="t-prof">
+        <option value="">Selecione</option>
+        {% for p in professoras %}
+        <option value="{{ p.id_professora }}">{{ p.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Sala</label>
+      <select id="t-sala">
+        <option value="">Selecione</option>
+        {% for s in salas %}
+        <option value="{{ s.id_sala }}">{{ s.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Início</label>
+        <input id="t-ini" type="time">
+      </div>
+      <div class="form-group">
+        <label>Fim</label>
+        <input id="t-fim" type="time">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Dias da semana</label>
+      <div class="dias-check">
+        {% for dia in ['Seg','Ter','Qua','Qui','Sex','Sáb'] %}
+        <label class="dia-label">
+          <input type="checkbox" value="{{ dia }}">
+          <span>{{ dia }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Nome de exibição (opcional)</label>
+      <input id="t-nome" type="text" placeholder="Ex.: Turma Iniciante Manhã">
+    </div>
+
+    <div class="form-group">
+      <label>Capacidade máxima de alunos</label>
+      <input id="t-cap" type="number" min="1" max="50" placeholder="Ex.: 10">
+    </div>
+
+    <button class="btn-primary" id="btnSalvarTurma">Salvar turma</button>
+    <button class="btn-secondary" id="btnLimparTurma">Limpar</button>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <div class="main-title">Turmas cadastradas</div>
+    </div>
+
+    <div class="turmas-list">
+      {% for t in turmas %}
+      {% set ocupacao = t.alunos_matriculados or 0 %}
+      {% set cap = t.capacidade_maxima or 0 %}
+      {% set pct = ((ocupacao / cap * 100) | int) if cap > 0 else 0 %}
+
+      <div class="turma-card"
+           data-id="{{ t.id_turma }}"
+           data-modal="{{ t.id_modalidade }}"
+           data-sala="{{ t.id_sala }}"
+           data-prof="{{ t.id_professora or '' }}"
+           data-ini="{{ t.hora_inicio }}"
+           data-fim="{{ t.hora_fim }}"
+           data-dias="{{ t.dias_semana }}"
+           data-nome="{{ t.nome_exibicao }}"
+           data-cap="{{ cap }}">
+
+        <div class="turma-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 7v5l3 3"></path>
+          </svg>
+        </div>
+
+        <div class="turma-info">
+          <div class="turma-nome">{{ t.nome_exibicao or (t.modalidade ~ ' · ' ~ t.sala) }}</div>
+          <div class="turma-meta">
+            {{ t.dias_semana }} · {{ t.hora_inicio }} às {{ t.hora_fim }} · {{ t.sala }}
+            {% if t.professora %} · {{ t.professora }}{% endif %}
+          </div>
+        </div>
+
+        {% if cap > 0 %}
+        <div class="cap-bar-wrap">
+          <div class="cap-label">{{ ocupacao }}/{{ cap }} alunos</div>
+          <div class="cap-bar">
+            <div class="cap-fill {% if pct >= 100 %}cheio{% elif pct >= 75 %}quase{% endif %}" style="width:{{ [pct,100]|min }}%;"></div>
+          </div>
+        </div>
+        {% endif %}
+
+        <span class="pill">{{ t.modalidade }}</span>
+
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn-sm btn-edit-turma">Editar</button>
+          <button class="btn-sm del" data-id="{{ t.id_turma }}">Excluir</button>
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:4rem;color:var(--text-light);">Nenhuma turma cadastrada ainda.</div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+
+<script>
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  document.querySelectorAll(".dia-label input").forEach(input => {
+    input.addEventListener("change", () => {
+      input.closest(".dia-label").classList.toggle("checked", input.checked);
+    });
+  });
+
+  function getDias() {
+    return Array.from(document.querySelectorAll(".dia-label input:checked"))
+      .map(i => i.value)
+      .join(", ");
+  }
+
+  function setDias(diasStr) {
+    const dias = (diasStr || "")
+      .split(",")
+      .map(d => d.trim())
+      .filter(Boolean);
+
+    document.querySelectorAll(".dia-label").forEach(label => {
+      const input = label.querySelector("input");
+      const marcado = dias.includes(input.value);
+      input.checked = marcado;
+      label.classList.toggle("checked", marcado);
+    });
+  }
+
+  document.getElementById("btnSalvarSala").addEventListener("click", async () => {
+    const payload = {
+      id_sala: document.getElementById("s-id").value || null,
+      nome: document.getElementById("s-nome").value,
+      descricao: document.getElementById("s-desc").value
+    };
+
+    const r = await fetch("/admin/sala", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const d = await r.json();
+    alert(d.mensagem);
+    if (d.ok) location.reload();
+  });
+
+  document.getElementById("btnLimparSala").addEventListener("click", () => {
+    document.getElementById("s-id").value = "";
+    document.getElementById("s-nome").value = "";
+    document.getElementById("s-desc").value = "";
+  });
+
+  document.querySelectorAll(".btn-edit-sala").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const c = btn.closest(".sala-card");
+      document.getElementById("s-id").value = c.dataset.id;
+      document.getElementById("s-nome").value = c.dataset.nome || "";
+      document.getElementById("s-desc").value = c.dataset.desc || "";
+      document.querySelector('[data-tab="tabSalas"]').click();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  document.querySelectorAll("#tabSalas .del").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Excluir sala?")) return;
+
+      const r = await fetch(`/admin/sala/${btn.dataset.id}`, { method: "DELETE" });
+      const d = await r.json();
+      alert(d.mensagem);
+      if (d.ok) location.reload();
+    });
+  });
+
+  document.getElementById("btnSalvarTurma").addEventListener("click", async () => {
+    const payload = {
+      id_turma: document.getElementById("t-id").value || null,
+      id_modalidade: document.getElementById("t-modal").value,
+      id_professora: document.getElementById("t-prof").value || null,
+      id_sala: document.getElementById("t-sala").value,
+      hora_inicio: document.getElementById("t-ini").value,
+      hora_fim: document.getElementById("t-fim").value,
+      dias_semana: getDias(),
+      nome_exibicao: document.getElementById("t-nome").value,
+      capacidade_maxima: parseInt(document.getElementById("t-cap").value) || null
+    };
+
+    if (!payload.id_modalidade || !payload.id_sala || !payload.hora_inicio || !payload.hora_fim || !payload.dias_semana) {
+      alert("Preencha modalidade, sala, horários e dias.");
+      return;
+    }
+
+    const r = await fetch("/admin/turma", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const d = await r.json();
+    alert(d.mensagem);
+    if (d.ok) location.reload();
+  });
+
+  document.getElementById("btnLimparTurma").addEventListener("click", () => {
+    document.getElementById("t-id").value = "";
+    ["t-modal", "t-prof", "t-sala", "t-ini", "t-fim"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+    document.getElementById("t-nome").value = "";
+    document.getElementById("t-cap").value = "";
+
+    document.querySelectorAll(".dia-label").forEach(label => {
+      const input = label.querySelector("input");
+      input.checked = false;
+      label.classList.remove("checked");
+    });
+  });
+
+  document.querySelectorAll(".btn-edit-turma").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const c = btn.closest(".turma-card");
+      document.getElementById("t-id").value = c.dataset.id;
+      document.getElementById("t-modal").value = c.dataset.modal || "";
+      document.getElementById("t-prof").value = c.dataset.prof || "";
+      document.getElementById("t-sala").value = c.dataset.sala || "";
+      document.getElementById("t-ini").value = c.dataset.ini || "";
+      document.getElementById("t-fim").value = c.dataset.fim || "";
+      document.getElementById("t-nome").value = c.dataset.nome || "";
+      document.getElementById("t-cap").value = c.dataset.cap || "";
+      setDias(c.dataset.dias || "");
+      document.querySelector('[data-tab="tabTurmas"]').click();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  document.querySelectorAll("#tabTurmas .del").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Excluir turma?")) return;
+
+      const r = await fetch(`/admin/turma/${btn.dataset.id}`, { method: "DELETE" });
+      const d = await r.json();
+      alert(d.mensagem);
+      if (d.ok) location.reload();
+    });
+  });
+</script>
+
+</body>
+</html>

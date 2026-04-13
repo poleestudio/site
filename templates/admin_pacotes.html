@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pacotes & Planos · Clara Lucatti Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bordo:#8B0021;
+      --bordo-light:#A3002A;
+      --bordo-pale:#f5e6ea;
+      --cream:#fdf8f5;
+      --warm-white:#fff9f6;
+      --text-dark:#2a1a1f;
+      --text-mid:#6b4a55;
+      --text-light:#b08090;
+      --shadow:0 18px 45px rgba(139,0,33,0.08);
+    }
+
+    *,*::before,*::after{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      background:var(--warm-white);
+      color:var(--text-dark);
+      font-family:'Jost',sans-serif;
+      font-weight:300;
+    }
+
+    a{text-decoration:none;color:inherit;}
+    button{border:none;background:none;cursor:pointer;font:inherit;}
+
+    nav{
+      position:sticky;
+      top:0;
+      z-index:100;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:1rem 3rem;
+      background:rgba(253,248,245,0.95);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(139,0,33,0.08);
+    }
+
+    .nav-left{
+      display:flex;
+      align-items:center;
+      gap:1rem;
+    }
+
+    .btn-back{
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      font-size:0.72rem;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--text-light);
+      padding:0.5rem 1rem;
+      border:1.5px solid rgba(139,0,33,0.15);
+      border-radius:50px;
+      transition:all 0.3s;
+    }
+
+    .btn-back:hover{
+      border-color:var(--bordo);
+      color:var(--bordo);
+    }
+
+    .nav-title{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.1rem;
+      font-weight:300;
+      letter-spacing:0.1em;
+    }
+
+    .page-layout{
+      display:grid;
+      grid-template-columns:440px 1fr;
+      min-height:calc(100vh - 65px);
+    }
+
+    .sidebar{
+      background:var(--cream);
+      border-right:1px solid rgba(139,0,33,0.08);
+      padding:2.5rem 2rem;
+      position:sticky;
+      top:65px;
+      height:calc(100vh - 65px);
+      overflow-y:auto;
+    }
+
+    .sidebar-title{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.8rem;
+      font-weight:300;
+      margin-bottom:0.4rem;
+    }
+
+    .sidebar-sub{
+      font-size:0.85rem;
+      color:var(--text-light);
+      line-height:1.7;
+      margin-bottom:1.8rem;
+    }
+
+    .form-group{
+      margin-bottom:1rem;
+    }
+
+    .form-group label.form-label{
+      display:block;
+      font-size:0.68rem;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--text-light);
+      margin-bottom:0.45rem;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group select,
+    .form-group textarea{
+      width:100%;
+      background:var(--warm-white);
+      border:1.5px solid rgba(139,0,33,0.12);
+      border-radius:14px;
+      padding:0.85rem 1rem;
+      font-family:'Jost',sans-serif;
+      font-size:0.9rem;
+      color:var(--text-dark);
+      transition:border-color 0.3s;
+      outline:none;
+      appearance:none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus{
+      border-color:var(--bordo);
+      box-shadow:0 0 0 4px rgba(139,0,33,0.06);
+    }
+
+    .form-group textarea{
+      min-height:80px;
+      resize:vertical;
+    }
+
+    .form-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0.8rem;
+    }
+
+    .mod-checks{
+      display:grid;
+      gap:0.55rem;
+      max-height:220px;
+      overflow-y:auto;
+      padding-right:0.3rem;
+    }
+
+    .mod-check-item{
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+      font-size:0.86rem;
+      color:var(--text-mid);
+      padding:0.7rem 0.85rem;
+      border:1.5px solid rgba(139,0,33,0.10);
+      border-radius:12px;
+      cursor:pointer;
+      transition:all 0.25s;
+      background:var(--warm-white);
+      user-select:none;
+    }
+
+    .mod-check-item:hover{
+      border-color:rgba(139,0,33,0.25);
+      background:#fff;
+    }
+
+    .mod-check-item input[type="checkbox"]{
+      width:16px;
+      height:16px;
+      accent-color:var(--bordo);
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .mod-check-item.selected{
+      background:var(--bordo-pale);
+      border-color:rgba(139,0,33,0.22);
+      color:var(--bordo);
+    }
+
+    .help-text{
+      font-size:0.74rem;
+      color:var(--text-light);
+      margin-top:0.45rem;
+      line-height:1.6;
+    }
+
+    .btn-primary{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:0.6rem;
+      background:var(--bordo);
+      color:#fff;
+      font-size:0.76rem;
+      font-weight:400;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      padding:0.95rem;
+      border-radius:50px;
+      width:100%;
+      margin-top:0.5rem;
+      transition:all 0.3s;
+      box-shadow:0 8px 28px rgba(139,0,33,0.2);
+    }
+
+    .btn-primary:hover{
+      background:var(--bordo-light);
+      transform:translateY(-2px);
+    }
+
+    .btn-secondary{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      margin-top:0.6rem;
+      padding:0.85rem;
+      border-radius:50px;
+      border:1.5px solid rgba(139,0,33,0.15);
+      color:var(--bordo);
+      font-size:0.74rem;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      transition:all 0.3s;
+    }
+
+    .btn-secondary:hover{
+      background:var(--bordo-pale);
+    }
+
+    .main{
+      padding:2.5rem 2.2rem;
+      background:var(--warm-white);
+    }
+
+    .planos-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+      gap:1.4rem;
+    }
+
+    .plano-card{
+      background:var(--cream);
+      border:1px solid rgba(139,0,33,0.08);
+      border-radius:24px;
+      padding:2rem;
+      box-shadow:var(--shadow);
+      transition:all 0.3s;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .plano-card::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:3px;
+      background:var(--bordo);
+      opacity:0.6;
+    }
+
+    .plano-card:hover{
+      transform:translateY(-5px);
+      box-shadow:0 24px 60px rgba(139,0,33,0.12);
+    }
+
+    .plano-status{
+      position:absolute;
+      top:1.2rem;
+      right:1.2rem;
+      display:inline-flex;
+      padding:0.25rem 0.7rem;
+      border-radius:50px;
+      font-size:0.6rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+
+    .status-ativo{background:#eaf3de;color:#3B6D11;}
+    .status-inativo{background:#f1efee;color:#6b4a55;}
+
+    .plano-nome{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.65rem;
+      font-weight:300;
+      margin-bottom:0.3rem;
+    }
+
+    .plano-tipo{
+      font-size:0.7rem;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--text-light);
+      margin-bottom:1rem;
+    }
+
+    .plano-valor{
+      font-family:'Cormorant Garamond',serif;
+      font-size:2.4rem;
+      color:var(--bordo);
+      line-height:1;
+    }
+
+    .plano-valor small{
+      font-family:'Jost',sans-serif;
+      font-size:0.75rem;
+      color:var(--text-light);
+      letter-spacing:0.08em;
+    }
+
+    .plano-detalhe{
+      margin:1rem 0;
+      font-size:0.84rem;
+      color:var(--text-mid);
+      line-height:1.8;
+    }
+
+    .plano-mods{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.4rem;
+      margin-top:0.8rem;
+    }
+
+    .pill{
+      display:inline-flex;
+      padding:0.25rem 0.7rem;
+      border-radius:50px;
+      background:var(--bordo-pale);
+      color:var(--bordo);
+      font-size:0.6rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+
+    .plano-actions{
+      display:flex;
+      gap:0.5rem;
+      margin-top:1.2rem;
+      padding-top:1rem;
+      border-top:1px solid rgba(139,0,33,0.08);
+    }
+
+    .btn-sm{
+      flex:1;
+      padding:0.55rem;
+      border-radius:50px;
+      font-size:0.66rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      border:1.5px solid rgba(139,0,33,0.15);
+      color:var(--text-mid);
+      transition:all 0.25s;
+      cursor:pointer;
+      background:none;
+    }
+
+    .btn-sm:hover{
+      border-color:var(--bordo);
+      color:var(--bordo);
+      background:var(--bordo-pale);
+    }
+
+    @media(max-width:900px){
+      .page-layout{grid-template-columns:1fr;}
+      .sidebar{
+        position:static;
+        height:auto;
+        border-right:none;
+        border-bottom:1px solid rgba(139,0,33,0.08);
+      }
+      nav{padding:1rem 1.5rem;}
+      .main{padding:1.5rem;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="{{ url_for('admin_page') }}" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Painel
+    </a>
+    <span class="nav-title">Pacotes &amp; Planos</span>
+  </div>
+  <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);">
+    {{ user_name }}
+  </span>
+</nav>
+
+<div class="page-layout">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Novo pacote</h2>
+    <p class="sidebar-sub">Configure o plano com valor, frequência semanal e quais modalidades são permitidas.</p>
+
+    <input type="hidden" id="p-id">
+
+    <div class="form-group">
+      <label class="form-label" for="p-nome">Nome do pacote</label>
+      <input id="p-nome" type="text" placeholder="Ex.: Plano Duo">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="p-tipo">Tipo de cobrança</label>
+        <select id="p-tipo">
+          <option value="mensal">Mensal</option>
+          <option value="semestral">Semestral</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="p-valor">Valor (R$)</label>
+        <input id="p-valor" type="number" step="0.01" min="0" placeholder="279.00">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="p-aulas">Aulas/semana</label>
+        <input id="p-aulas" type="number" min="1" max="7" placeholder="2">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="p-qtmod">Qtd. modalidades</label>
+        <input id="p-qtmod" type="number" min="1" value="1" placeholder="1">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Modalidades permitidas</label>
+      <div class="mod-checks">
+        {% for m in modalidades %}
+        <label class="mod-check-item" for="mod-{{ m.id_modalidade }}">
+          <input
+            type="checkbox"
+            id="mod-{{ m.id_modalidade }}"
+            value="{{ m.id_modalidade }}"
+            class="chk-mod"
+          >
+          <span>{{ m.titulo }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="help-text" id="modsHelp">Selecionadas 0 de 1 modalidade(s).</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="p-status">Status</label>
+      <select id="p-status">
+        <option value="ativo">Ativo</option>
+        <option value="inativo">Inativo</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="p-obs">Observação</label>
+      <textarea id="p-obs" placeholder="Detalhes adicionais do plano…"></textarea>
+    </div>
+
+    <button class="btn-primary" id="btnSalvarPacote">Salvar pacote</button>
+    <button class="btn-secondary" id="btnLimparPacote">Limpar</button>
+  </aside>
+
+  <main class="main">
+    <div style="margin-bottom:1.8rem;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;">
+        Planos cadastrados
+        <span style="font-size:0.85rem;color:var(--text-light);font-family:'Jost',sans-serif;">
+          · {{ pacotes|length }} planos
+        </span>
+      </div>
+    </div>
+
+    <div class="planos-grid">
+      {% for p in pacotes %}
+      <div class="plano-card"
+           data-id="{{ p.id_pacote }}"
+           data-nome="{{ p.nome }}"
+           data-tipo="{{ p.tipo_cobranca }}"
+           data-valor="{{ p.valor }}"
+           data-aulas="{{ p.aulas_por_semana }}"
+           data-qtmod="{{ p.qt_modalidades }}"
+           data-status="{{ 'ativo' if p.ativo else 'inativo' }}"
+           data-obs="{{ p.observacao or '' }}"
+           data-mods="{{ p.modalidades_ids|join(',') if p.modalidades_ids else '' }}">
+
+        <span class="plano-status status-{{ 'ativo' if p.ativo else 'inativo' }}">
+          {{ 'Ativo' if p.ativo else 'Inativo' }}
+        </span>
+
+        <div class="plano-nome">{{ p.nome }}</div>
+        <div class="plano-tipo">{{ p.tipo_cobranca|capitalize }}</div>
+
+        <div class="plano-valor">
+          R$ {{ '%.2f'|format(p.valor) }}
+          <small>/{{ 'mês' if p.tipo_cobranca == 'mensal' else 'semestre' }}</small>
+        </div>
+
+        <div class="plano-detalhe">
+          {{ p.aulas_por_semana }} aula{{ 's' if p.aulas_por_semana != 1 else '' }} por semana<br>
+          {{ p.qt_modalidades or 1 }} modalidade{{ 's' if (p.qt_modalidades or 1) != 1 else '' }} permitida{{ 's' if (p.qt_modalidades or 1) != 1 else '' }}
+        </div>
+
+        <div class="plano-mods">
+          {% for nome_m in p.modalidades_nomes %}
+          <span class="pill">{{ nome_m }}</span>
+          {% endfor %}
+        </div>
+
+        <div class="plano-actions">
+          <button class="btn-sm btn-edit-pacote">Editar</button>
+          <button class="btn-sm btn-del-pacote" data-id="{{ p.id_pacote }}">Excluir</button>
+        </div>
+      </div>
+      {% else %}
+      <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-light);">
+        Nenhum pacote cadastrado ainda.
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+
+<script>
+  function getLimiteModalidades() {
+    const valor = parseInt(document.getElementById("p-qtmod").value, 10);
+    return valor > 0 ? valor : 1;
+  }
+
+  function getChecksModalidades() {
+    return Array.from(document.querySelectorAll(".chk-mod"));
+  }
+
+  function getModsSelecionadas() {
+    return getChecksModalidades()
+      .filter(chk => chk.checked)
+      .map(chk => chk.value);
+  }
+
+  function atualizarVisualChecks() {
+    getChecksModalidades().forEach(chk => {
+      chk.closest(".mod-check-item").classList.toggle("selected", chk.checked);
+    });
+
+    const selecionadas = getModsSelecionadas().length;
+    const limite = getLimiteModalidades();
+    document.getElementById("modsHelp").textContent =
+      `Selecionadas ${selecionadas} de ${limite} modalidade(s).`;
+  }
+
+  function setMods(ids) {
+    const arr = ids ? ids.split(",").map(v => v.trim()).filter(Boolean) : [];
+    const limite = getLimiteModalidades();
+
+    getChecksModalidades().forEach(chk => {
+      chk.checked = false;
+    });
+
+    arr.slice(0, limite).forEach(id => {
+      const chk = document.querySelector(`.chk-mod[value="${id}"]`);
+      if (chk) chk.checked = true;
+    });
+
+    atualizarVisualChecks();
+  }
+
+  getChecksModalidades().forEach(chk => {
+    chk.addEventListener("change", function() {
+      const limite = getLimiteModalidades();
+      const selecionadas = getModsSelecionadas();
+
+      if (selecionadas.length > limite) {
+        this.checked = false;
+        alert(`Você pode selecionar no máximo ${limite} modalidade(s).`);
+      }
+
+      atualizarVisualChecks();
+    });
+  });
+
+  document.getElementById("p-qtmod").addEventListener("input", () => {
+    const input = document.getElementById("p-qtmod");
+    let limite = parseInt(input.value, 10) || 1;
+
+    if (limite < 1) {
+      limite = 1;
+      input.value = "1";
+    }
+
+    const marcados = getChecksModalidades().filter(chk => chk.checked);
+
+    if (marcados.length > limite) {
+      marcados.forEach((chk, i) => {
+        if (i >= limite) chk.checked = false;
+      });
+      alert(`Foram mantidas apenas ${limite} modalidade(s) selecionada(s).`);
+    }
+
+    atualizarVisualChecks();
+  });
+
+  document.getElementById("btnSalvarPacote").addEventListener("click", async () => {
+    const payload = {
+      id_pacote: document.getElementById("p-id").value || null,
+      nome: document.getElementById("p-nome").value,
+      tipo_cobranca: document.getElementById("p-tipo").value,
+      valor: parseFloat(document.getElementById("p-valor").value) || 0,
+      aulas_por_semana: parseInt(document.getElementById("p-aulas").value) || 1,
+      qt_modalidades: parseInt(document.getElementById("p-qtmod").value) || 1,
+      status: document.getElementById("p-status").value,
+      observacao: document.getElementById("p-obs").value,
+      modalidades_ids: getModsSelecionadas()
+    };
+
+    if (!payload.nome.trim()) {
+      alert("Informe o nome do pacote.");
+      return;
+    }
+
+    if (payload.modalidades_ids.length === 0) {
+      alert("Selecione pelo menos uma modalidade.");
+      return;
+    }
+
+    if (payload.modalidades_ids.length > payload.qt_modalidades) {
+      alert(`Selecione no máximo ${payload.qt_modalidades} modalidade(s).`);
+      return;
+    }
+
+    const r = await fetch("/admin/pacote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const d = await r.json();
+    alert(d.mensagem);
+    if (d.ok) location.reload();
+  });
+
+  document.getElementById("btnLimparPacote").addEventListener("click", () => {
+    document.getElementById("p-id").value = "";
+    document.getElementById("p-nome").value = "";
+    document.getElementById("p-tipo").value = "mensal";
+    document.getElementById("p-valor").value = "";
+    document.getElementById("p-aulas").value = "";
+    document.getElementById("p-qtmod").value = "1";
+    document.getElementById("p-status").value = "ativo";
+    document.getElementById("p-obs").value = "";
+
+    getChecksModalidades().forEach(chk => {
+      chk.checked = false;
+    });
+
+    atualizarVisualChecks();
+  });
+
+  document.querySelectorAll(".btn-edit-pacote").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const c = btn.closest(".plano-card");
+
+      document.getElementById("p-id").value = c.dataset.id || "";
+      document.getElementById("p-nome").value = c.dataset.nome || "";
+      document.getElementById("p-tipo").value = c.dataset.tipo || "mensal";
+      document.getElementById("p-valor").value = c.dataset.valor || "";
+      document.getElementById("p-aulas").value = c.dataset.aulas || "";
+      document.getElementById("p-qtmod").value = c.dataset.qtmod || "1";
+      document.getElementById("p-status").value = c.dataset.status || "ativo";
+      document.getElementById("p-obs").value = c.dataset.obs || "";
+      setMods(c.dataset.mods || "");
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  document.querySelectorAll(".btn-del-pacote").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Excluir este pacote?")) return;
+
+      const r = await fetch(`/admin/pacote/${btn.dataset.id}`, {
+        method: "DELETE"
+      });
+
+      const d = await r.json();
+      alert(d.mensagem);
+      if (d.ok) location.reload();
+    });
+  });
+
+  atualizarVisualChecks();
+</script>
+
+</body>
+</html>

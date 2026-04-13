@@ -3,1037 +3,371 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Painel administrativo do Estúdio Clara Lucatti para gestão de usuários, modalidades, horários, turmas, salas, pacotes e cadastros.">
   <title>Clara Lucatti · Administração</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
-
   <style>
     :root {
-      --bordo: #8B0021;
-      --bordo-light: #A3002A;
-      --bordo-pale: #f5e6ea;
-      --cream: #fdf8f5;
-      --warm-white: #fff9f6;
-      --blush: #f0dde3;
-      --taupe: #c9a8b2;
-      --text-dark: #2a1a1f;
-      --text-mid: #6b4a55;
-      --text-light: #b08090;
-      --border-soft: rgba(139, 0, 33, 0.10);
-      --shadow-soft: 0 18px 45px rgba(139, 0, 33, 0.08);
-      --shadow-strong: 0 20px 60px rgba(139, 0, 33, 0.12);
-      --success-bg: #eef8f1;
-      --success-text: #2f6b41;
-      --error-bg: #fff1f3;
-      --error-text: #8b0021;
+      --bordo: #8B0021; --bordo-light: #A3002A; --bordo-pale: #f5e6ea;
+      --cream: #fdf8f5; --warm-white: #fff9f6; --blush: #f0dde3;
+      --taupe: #c9a8b2; --text-dark: #2a1a1f; --text-mid: #6b4a55;
+      --text-light: #b08090; --border-soft: rgba(139,0,33,0.10);
+      --shadow: 0 18px 45px rgba(139,0,33,0.08);
     }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;}
+    a{text-decoration:none;color:inherit;}
+    button{border:none;background:none;cursor:pointer;font:inherit;}
 
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--warm-white);
-      color: var(--text-dark);
-      font-family: 'Jost', sans-serif;
-      font-weight: 300;
-      overflow-x: hidden;
+    nav{
+      position:sticky;top:0;z-index:100;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:1.1rem 3.5rem;
+      background:rgba(253,248,245,0.95);backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(139,0,33,0.08);
     }
-    img, video { max-width: 100%; display: block; }
-    a { text-decoration: none; color: inherit; }
-    button, input, select, textarea { font: inherit; }
-    button { border: none; background: none; cursor: pointer; }
-    :focus-visible { outline: 2px solid var(--bordo); outline-offset: 3px; border-radius: 10px; }
+    .nav-logo{display:flex;align-items:center;gap:0.8rem;}
+    .nav-logo-img{width:38px;height:38px;border-radius:50%;object-fit:cover;}
+    .nav-brand{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.1rem;letter-spacing:0.12em;color:var(--text-dark);text-transform:uppercase;line-height:1.1;}
+    .nav-brand span{display:block;font-size:0.6rem;letter-spacing:0.22em;color:var(--bordo);font-weight:400;}
+    .nav-right{display:flex;align-items:center;gap:1.2rem;}
+    .nav-user{font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);}
+    .btn-logout{font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.6rem 1.3rem;border:1.5px solid var(--bordo);color:var(--bordo);border-radius:50px;transition:all 0.3s;}
+    .btn-logout:hover{background:var(--bordo);color:#fff;}
 
-    nav {
-      position: sticky;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.3rem 4rem;
-      background: rgba(253, 248, 245, 0.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(139, 0, 33, 0.08);
+    .hero{
+      padding:5rem 3.5rem 3rem;
+      display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;
+      border-bottom:1px solid rgba(139,0,33,0.07);
     }
-    .nav-logo { display: flex; align-items: center; gap: 0.8rem; }
-    .nav-logo-mark {
-      width: 42px; height: 42px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--bordo), var(--bordo-light));
-      color: #fff; display: flex; align-items: center; justify-content: center;
-      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; letter-spacing: 0.08em;
-      box-shadow: 0 8px 24px rgba(139, 0, 33, 0.22);
+    .hero-text h1{
+      font-family:'Cormorant Garamond',serif;font-weight:300;
+      font-size:clamp(2.4rem,4vw,3.8rem);line-height:1.05;color:var(--text-dark);
     }
-    .nav-brand {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300; font-size: 1.15rem; letter-spacing: 0.12em;
-      color: var(--text-dark); text-transform: uppercase; line-height: 1.1;
-    }
-    .nav-brand span {
-      display: block; font-size: 0.65rem; letter-spacing: 0.22em;
-      color: var(--bordo); font-weight: 400;
-    }
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
-    .nav-links a {
-      font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--text-mid); position: relative; transition: color 0.3s;
-    }
-    .nav-links a::after {
-      content: ''; position: absolute; bottom: -3px; left: 0; right: 100%;
-      height: 1px; background: var(--bordo); transition: right 0.3s ease;
-    }
-    .nav-links a:hover { color: var(--bordo); }
-    .nav-links a:hover::after { right: 0; }
-    .nav-actions { display: flex; align-items: center; gap: 0.8rem; }
-    .nav-cta {
-      font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
-      padding: 0.72rem 1.5rem; border: 1.5px solid var(--bordo); color: var(--bordo);
-      border-radius: 50px; transition: all 0.35s ease;
-      min-height: 44px;
-    }
-    .nav-cta:hover { background: var(--bordo); color: #fff; }
+    .hero-text h1 em{font-style:italic;color:var(--bordo);}
+    .hero-text p{color:var(--text-light);font-size:0.95rem;line-height:1.8;margin-top:0.8rem;max-width:480px;}
+    .kpi-row{display:flex;gap:2rem;flex-shrink:0;}
+    .kpi-item{text-align:center;}
+    .kpi-num{font-family:'Cormorant Garamond',serif;font-size:2.8rem;color:var(--bordo);line-height:1;}
+    .kpi-label{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-light);margin-top:0.2rem;}
 
-    .admin-hero {
-      min-height: 58vh;
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      overflow: hidden;
-      position: relative;
-    }
-    .hero-left {
-      display: flex; flex-direction: column; justify-content: center;
-      padding: 8rem 4rem 5rem 6rem; position: relative; z-index: 2;
-    }
-    .hero-eyebrow {
-      font-size: 0.7rem; letter-spacing: 0.28em; text-transform: uppercase;
-      color: var(--bordo); margin-bottom: 1.8rem; display: flex; align-items: center; gap: 1rem;
-    }
-    .hero-eyebrow::before { content: ''; width: 40px; height: 1px; background: var(--bordo); }
-    .hero-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300; font-size: clamp(3rem, 5vw, 4.8rem);
-      line-height: 1.05; color: var(--text-dark); margin-bottom: 0.6rem;
-    }
-    .hero-title em { font-style: italic; color: var(--bordo); display: block; }
-    .hero-subtitle {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300; font-size: clamp(1rem, 2vw, 1.35rem);
-      color: var(--text-light); margin: 1.2rem 0 2.2rem; line-height: 1.7; max-width: 520px;
-    }
-    .hero-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-    .btn-primary {
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.7rem;
-      background: var(--bordo); color: #fff; font-size: 0.78rem; font-weight: 400;
-      letter-spacing: 0.14em; text-transform: uppercase; padding: 1rem 2rem;
-      border-radius: 50px; transition: all 0.35s ease; box-shadow: 0 8px 30px rgba(139, 0, 33, 0.22);
-      min-height: 46px;
-    }
-    .btn-primary:hover { background: var(--bordo-light); transform: translateY(-2px); }
-    .btn-secondary {
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
-      min-height: 46px; padding: 0.95rem 1.4rem; border-radius: 50px;
-      border: 1.5px solid rgba(139, 0, 33, 0.16); color: var(--bordo);
-      font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase;
-      transition: all 0.3s ease;
-    }
-    .btn-secondary:hover { background: var(--bordo-pale); }
-    .btn-danger {
-      display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0.9rem 1.2rem;
-      border-radius: 50px; border: 1.5px solid rgba(139, 0, 33, 0.12); color: var(--text-mid);
-      font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; transition: all 0.3s ease;
-    }
-    .btn-danger:hover { border-color: var(--bordo); color: var(--bordo); background: var(--bordo-pale); }
+    .modules{padding:3rem 3.5rem 5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1.4rem;}
 
-    .hero-right { position: relative; overflow: hidden; min-height: 360px; }
-    .hero-bg-shape {
-      position: absolute; inset: 2rem 2rem 2rem 0; background: var(--bordo-pale);
-      border-radius: 280px 0 0 280px;
+    .mod-card{
+      background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:28px;
+      padding:2.2rem 2rem;box-shadow:var(--shadow);
+      display:flex;flex-direction:column;gap:1.2rem;
+      transition:transform 0.3s,box-shadow 0.3s,border-color 0.3s;
+      cursor:pointer;position:relative;overflow:hidden;
     }
-    .hero-ornament {
-      position: absolute; top: 50%; left: 54%; transform: translate(-50%, -50%);
-      opacity: 0.07; animation: rotateSlow 30s linear infinite;
+    .mod-card::before{
+      content:'';position:absolute;inset:0;border-radius:28px;
+      background:linear-gradient(135deg,rgba(139,0,33,0.03),transparent);
+      opacity:0;transition:opacity 0.3s;
     }
-    .hero-logo-display {
-      position: absolute; top: 50%; left: 54%;
-      width: min(360px, 65%); height: min(360px, 65%);
-      transform: translate(-50%, -50%);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 2; animation: floatLogo 6s ease-in-out infinite;
-    }
-    .hero-logo-display .logo-circle {
-      width: 100%; height: 100%; border-radius: 50%;
-      background: linear-gradient(135deg, rgba(139,0,33,0.9), rgba(163,0,42,0.75));
-      display: flex; align-items: center; justify-content: center; color: #fff;
-      font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: 0.16em;
-      box-shadow: 0 20px 60px rgba(139, 0, 33, 0.2);
-    }
-    .hero-quote {
-      position: absolute; bottom: 2.5rem; left: 3rem; font-family: 'Cormorant Garamond', serif;
-      font-style: italic; font-size: 0.95rem; color: var(--bordo); opacity: 0.7; max-width: 220px; line-height: 1.6; z-index: 2;
-    }
+    .mod-card:hover{transform:translateY(-6px);box-shadow:0 28px 60px rgba(139,0,33,0.13);border-color:rgba(139,0,33,0.18);}
+    .mod-card:hover::before{opacity:1;}
 
-    .about-strip {
-      background: var(--bordo); padding: 1.4rem 6rem; display: flex; gap: 3rem; align-items: center; overflow-x: auto;
+    .mod-icon{
+      width:52px;height:52px;border-radius:16px;
+      background:var(--bordo-pale);display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
     }
-    .strip-item {
-      display: flex; align-items: center; gap: 1rem; flex-shrink: 0; color: rgba(255,255,255,0.8);
-      font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase;
-    }
-    .strip-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.4); flex-shrink: 0; }
-    .strip-num {
-      font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: #fff; line-height: 1;
-    }
+    .mod-icon svg{width:22px;height:22px;}
 
-    section { padding: 6rem; }
-    .section-label {
-      font-size: 0.68rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--bordo);
-      margin-bottom: 1rem; display: flex; align-items: center; gap: 0.8rem;
+    .mod-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:var(--text-dark);line-height:1.15;}
+    .mod-desc{font-size:0.88rem;color:var(--text-mid);line-height:1.75;flex:1;}
+    .mod-count{
+      display:inline-flex;align-items:center;gap:0.5rem;
+      font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
+      color:var(--bordo);background:var(--bordo-pale);
+      padding:0.35rem 0.85rem;border-radius:50px;width:fit-content;
     }
-    .section-label::before { content: ''; width: 30px; height: 1px; background: var(--bordo); }
-    .section-title {
-      font-family: 'Cormorant Garamond', serif; font-weight: 300;
-      font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.15; color: var(--text-dark); margin-bottom: 1.2rem;
+    .mod-arrow{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-top:auto;padding-top:1rem;border-top:1px solid rgba(139,0,33,0.08);
     }
-    .section-title em { font-style: italic; color: var(--bordo); }
-    .section-copy {
-      max-width: 720px; color: var(--text-mid); font-size: 0.98rem; line-height: 1.85; margin-bottom: 2.6rem;
+    .mod-arrow-label{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);}
+    .mod-arrow-icon{
+      width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(139,0,33,0.15);
+      display:flex;align-items:center;justify-content:center;transition:all 0.3s;
     }
+    .mod-card:hover .mod-arrow-icon{background:var(--bordo);border-color:var(--bordo);}
+    .mod-card:hover .mod-arrow-icon svg{stroke:#fff;}
 
-    .overview { background: var(--cream); }
-    .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
-    .overview-card {
-      background: var(--warm-white); border: 1px solid rgba(139, 0, 33, 0.08); border-radius: 28px; padding: 2rem;
-      box-shadow: var(--shadow-soft); transition: transform 0.35s ease, box-shadow 0.35s ease;
+    footer{
+      background:var(--text-dark);color:rgba(255,255,255,0.35);
+      padding:2rem 3.5rem;display:flex;justify-content:space-between;align-items:center;
+      font-size:0.72rem;letter-spacing:0.08em;
     }
-    .overview-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-strong); }
-    .overview-card .kpi {
-      font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; color: var(--bordo); line-height: 1; margin-bottom: 0.6rem;
-    }
-    .overview-card h3 {
-      font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-light); margin-bottom: 0.7rem;
-    }
-    .overview-card p { color: var(--text-mid); font-size: 0.92rem; line-height: 1.7; }
+    .footer-brand{font-family:'Cormorant Garamond',serif;font-size:1rem;color:rgba(255,255,255,0.6);font-weight:300;}
 
-    .admin-section { background: var(--warm-white); }
-    .admin-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2rem; align-items: start; }
-    .admin-card {
-      background: var(--cream); border-radius: 28px; padding: 2.2rem; border: 1px solid rgba(139, 0, 33, 0.08);
-      box-shadow: var(--shadow-soft);
+    @media(max-width:900px){
+      nav{padding:1rem 1.5rem;}
+      .hero{flex-direction:column;padding:4rem 1.5rem 2rem;gap:1.5rem;}
+      .modules{grid-template-columns:1fr 1fr;padding:2rem 1.5rem 4rem;gap:1rem;}
+      .modules .mod-card:last-child{grid-column:1/-1;}
+      footer{padding:1.5rem;flex-direction:column;gap:0.5rem;text-align:center;}
     }
-    .card-title {
-      font-family: 'Cormorant Garamond', serif; font-size: 1.95rem; font-weight: 300; color: var(--text-dark); margin-bottom: 0.5rem;
-    }
-    .card-subtitle { color: var(--text-mid); font-size: 0.94rem; line-height: 1.75; margin-bottom: 1.8rem; }
-    .toolbar { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.2rem; }
-
-    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-    .form-group { margin-bottom: 1.1rem; }
-    .form-group.full { grid-column: 1 / -1; }
-    .form-group label {
-      display: block; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light); margin-bottom: 0.5rem;
-    }
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%; background: var(--warm-white); border: 1.5px solid rgba(139, 0, 33, 0.12); border-radius: 14px;
-      padding: 0.9rem 1.1rem; font-family: 'Jost', sans-serif; font-size: 0.92rem; color: var(--text-dark);
-      transition: border-color 0.3s, box-shadow 0.3s; outline: none; appearance: none;
-    }
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: var(--bordo); box-shadow: 0 0 0 4px rgba(139, 0, 33, 0.06);
-    }
-    .form-group textarea { min-height: 120px; resize: vertical; }
-    .hint { margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-light); line-height: 1.6; }
-    .upload-box {
-      background: var(--warm-white); border: 1.5px dashed rgba(139, 0, 33, 0.18); border-radius: 18px; padding: 1rem 1.1rem;
-    }
-
-    .list-wrap { display: grid; gap: 1rem; }
-    .list-card {
-      background: var(--warm-white); border: 1px solid rgba(139, 0, 33, 0.08); border-radius: 24px; padding: 1.5rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .list-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(139, 0, 33, 0.08); }
-    .list-card h3 {
-      font-family: 'Cormorant Garamond', serif; font-size: 1.55rem; font-weight: 300; color: var(--text-dark); margin-bottom: 0.4rem;
-    }
-    .list-card p { color: var(--text-mid); font-size: 0.9rem; line-height: 1.75; }
-    .card-meta { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1rem; }
-    .meta-pill {
-      display: inline-flex; padding: 0.35rem 0.85rem; border-radius: 50px; background: var(--bordo-pale); color: var(--bordo);
-      font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
-    }
-
-    .chips { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.2rem; }
-    .chip {
-      display: inline-flex; padding: 0.45rem 0.9rem; border-radius: 999px; background: var(--bordo-pale); color: var(--bordo);
-      font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
-    }
-
-    .summary-section { background: var(--cream); }
-    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-    .table-card {
-      background: var(--warm-white); border-radius: 28px; border: 1px solid rgba(139, 0, 33, 0.08); overflow: hidden; box-shadow: var(--shadow-soft);
-    }
-    .table-head { padding: 1.5rem 1.6rem 1rem; }
-    .table-head h3 {
-      font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 300; color: var(--text-dark); margin-bottom: 0.3rem;
-    }
-    .table-head p { color: var(--text-mid); font-size: 0.9rem; }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 560px; }
-    th, td { padding: 1rem 1.4rem; text-align: left; border-top: 1px solid rgba(139, 0, 33, 0.08); }
-    th {
-      font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light); background: var(--cream);
-    }
-    td { font-size: 0.9rem; color: var(--text-mid); }
-
-    .flash-wrap {
-      margin: 1.25rem 6rem 0;
-      display: grid;
-      gap: 0.8rem;
-    }
-    .flash {
-      padding: 1rem 1.2rem;
-      border-radius: 16px;
-      font-size: 0.92rem;
-      line-height: 1.6;
-      border: 1px solid transparent;
-    }
-    .flash.success,
-    .flash.sucesso {
-      background: var(--success-bg);
-      color: var(--success-text);
-      border-color: rgba(47,107,65,.15);
-    }
-    .flash.error,
-    .flash.erro {
-      background: var(--error-bg);
-      color: var(--error-text);
-      border-color: rgba(139,0,33,.12);
-    }
-
-    footer {
-      background: var(--text-dark); color: rgba(255, 255, 255, 0.4); padding: 3rem 6rem;
-      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-    }
-    .footer-brand {
-      font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 300; color: rgba(255, 255, 255, 0.72); letter-spacing: 0.1em;
-    }
-    .footer-copy { font-size: 0.72rem; letter-spacing: 0.08em; }
-
-    @keyframes floatLogo {
-      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-      50% { transform: translate(-50%, -50%) translateY(-18px); }
-    }
-    @keyframes rotateSlow {
-      from { transform: translate(-50%, -50%) rotate(0deg); }
-      to { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-
-    @media (max-width: 1100px) {
-      .overview-grid { grid-template-columns: repeat(2, 1fr); }
-      .admin-grid, .summary-grid, .admin-hero { grid-template-columns: 1fr; }
-      .hero-right { min-height: 320px; }
-      .hero-bg-shape { inset: 0 2rem 2rem 2rem; border-radius: 40px; }
-    }
-    @media (max-width: 900px) {
-      nav { padding: 1.2rem 2rem; }
-      .nav-links { display: none; }
-      section { padding: 5rem 2rem; }
-      .flash-wrap { margin: 1rem 2rem 0; }
-      .hero-left { padding: 7rem 2rem 3rem; }
-      .about-strip { padding: 1.4rem 2rem; gap: 1.5rem; }
-      footer { flex-direction: column; text-align: center; padding: 2rem; }
-      .form-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 640px) {
-      .hero-actions, .toolbar, .card-actions, .nav-actions { flex-direction: column; align-items: stretch; }
-      .overview-grid, .summary-grid { grid-template-columns: 1fr; }
-      .hero-quote { left: 1.5rem; bottom: 1.5rem; max-width: 180px; font-size: 0.82rem; }
-      .hero-logo-display { width: min(220px, 62vw); height: min(220px, 62vw); }
-      .strip-item { font-size: 0.62rem; gap: 0.8rem; }
-      .strip-num { font-size: 1.5rem; }
+    @media(max-width:600px){
+      .modules{grid-template-columns:1fr;}
+      .kpi-row{gap:1.2rem;}
     }
   </style>
 </head>
 <body>
 
-  <nav>
-    <a href="{{ url_for('home') }}" class="nav-logo" aria-label="Ir para o site público">
-      <div class="nav-logo-mark">CL</div>
-      <div class="nav-brand">Clara Lucatti <span>Administração do Estúdio</span></div>
-    </a>
-
-    <ul class="nav-links">
-      <li><a href="#visao-geral">Visão Geral</a></li>
-      <li><a href="#usuarios">Usuários</a></li>
-      <li><a href="#modalidades">Modalidades</a></li>
-      <li><a href="#horarios">Horários</a></li>
-      <li><a href="#pacotes">Pacotes</a></li>
-      <li><a href="#resumos">Resumos</a></li>
-    </ul>
-
-    <div class="nav-actions">
-      <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);">
-        {{ user_name }}
-      </span>
-      <button type="button" class="nav-cta" id="btnLogout">Sair</button>
-    </div>
-  </nav>
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-wrap">
-        {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
-  <section class="admin-hero" id="home">
-    <div class="hero-left">
-      <div class="hero-eyebrow">Painel Administrativo</div>
-      <h1 class="hero-title">Gerencie o estúdio com <em>organização e elegância</em></h1>
-      <p class="hero-subtitle">
-        Uma tela pensada para manter a mesma identidade da página inicial, com cadastros de usuários,
-        modalidades, professoras, horários, salas, turmas, pacotes e resumos administrativos.
-      </p>
-      <div class="hero-actions">
-        <a href="#usuarios" class="btn-primary">Cadastrar usuário</a>
-        <a href="#modalidades" class="btn-secondary">Cadastrar modalidade</a>
-      </div>
-    </div>
-
-    <div class="hero-right">
-      <div class="hero-bg-shape"></div>
-      <svg class="hero-ornament" width="420" height="420" viewBox="0 0 500 500" aria-hidden="true">
-        <circle cx="250" cy="250" r="220" fill="none" stroke="#8B0021" stroke-width="1" stroke-dasharray="6 14"></circle>
-        <circle cx="250" cy="250" r="170" fill="none" stroke="#8B0021" stroke-width="0.5" stroke-dasharray="3 8"></circle>
-      </svg>
-      <div class="hero-logo-display">
-        <div class="logo-circle">CL</div>
-      </div>
-      <div class="hero-quote">"Gestão, controle e cuidado com cada detalhe do estúdio"</div>
-    </div>
-  </section>
-
-  <div class="about-strip">
-    <div class="strip-item"><div class="strip-num">{{ usuarios|length }}</div><div>Usuários<br>cadastrados</div></div>
-    <div class="strip-dot"></div>
-    <div class="strip-item"><div class="strip-num">{{ modalidades|length }}</div><div>Modalidades<br>cadastradas</div></div>
-    <div class="strip-dot"></div>
-    <div class="strip-item"><div class="strip-num">{{ turmas|length }}</div><div>Turmas<br>ativas</div></div>
-    <div class="strip-dot"></div>
-    <div class="strip-item"><div class="strip-num">{{ pacotes|length }}</div><div>Pacotes<br>disponíveis</div></div>
+<nav>
+  <a href="{{ url_for('home') }}" class="nav-logo">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="nav-logo-img">
+    <div class="nav-brand">Clara Lucatti <span>Administração</span></div>
+  </a>
+  <div class="nav-right">
+    <span class="nav-user">{{ user_name }}</span>
+    <button class="btn-logout" id="btnLogout">Sair</button>
   </div>
+</nav>
 
-  <section class="overview" id="visao-geral">
-    <div class="section-label">Indicadores</div>
-    <h2 class="section-title">Visão geral do <em>painel</em></h2>
-    <p class="section-copy">A interface usa a linguagem visual da home, mas adaptada para um painel administrativo responsivo com formulários, listagens e tabelas. Templates Jinja permitem renderizar essas listas com dados reais vindos das rotas Flask. [web:59][web:61]</p>
-
-    <div class="overview-grid">
-      <article class="overview-card">
-        <h3>Usuários</h3>
-        <div class="kpi">{{ usuarios|length }}</div>
-        <p>Cadastro centralizado de alunos, professores e administradores na mesma tela.</p>
-      </article>
-      <article class="overview-card">
-        <h3>Modalidades</h3>
-        <div class="kpi">{{ modalidades|length }}</div>
-        <p>Cadastro completo com título, resumo, descrição, professora, Instagram e galeria de mídia.</p>
-      </article>
-      <article class="overview-card">
-        <h3>Turmas</h3>
-        <div class="kpi">{{ turmas|length }}</div>
-        <p>Controle de aulas por sala, frequência semanal e horários.</p>
-      </article>
-      <article class="overview-card">
-        <h3>Pacotes</h3>
-        <div class="kpi">{{ pacotes|length }}</div>
-        <p>Planos mensais ou semestrais com combinações de modalidades.</p>
-      </article>
-    </div>
-  </section>
-
-  <section class="admin-section" id="usuarios">
-    <div class="section-label">Gestão de acessos</div>
-    <h2 class="section-title">Cadastrar alunos, professores e <em>administradores</em></h2>
-    <p class="section-copy">
-      Área única para criar acessos do sistema usando a mesma tabela <code>cadastro</code>, diferenciando apenas pelo campo <code>tipo_cadastro</code>.
-    </p>
-
-    <div class="admin-grid">
-      <article class="admin-card">
-        <h3 class="card-title">Novo usuário</h3>
-        <p class="card-subtitle">Cadastro centralizado para alunos, professores e administradores.</p>
-
-        <form class="form-grid" id="formUsuario" onsubmit="return false;">
-          <div class="form-group">
-            <label for="u-nome">Nome completo</label>
-            <input id="u-nome" type="text" placeholder="Nome completo">
-          </div>
-
-          <div class="form-group">
-            <label for="u-tipo">Tipo de usuário</label>
-            <select id="u-tipo">
-              <option value="aluno">Aluno</option>
-              <option value="professor">Professor</option>
-              <option value="administrador">Administrador</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="u-email">E-mail</label>
-            <input id="u-email" type="email" placeholder="email@dominio.com">
-          </div>
-
-          <div class="form-group">
-            <label for="u-cpf">CPF</label>
-            <input id="u-cpf" type="text" placeholder="Somente números">
-          </div>
-
-          <div class="form-group full">
-            <label for="u-senha">Senha</label>
-            <input id="u-senha" type="password" placeholder="Senha forte">
-          </div>
-
-          <div class="form-group full">
-            <label style="display:flex;align-items:center;gap:.6rem;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--text-mid);">
-              <input id="u-termo-imagem" type="checkbox" style="width:auto;">
-              Autoriza uso de imagem
-            </label>
-          </div>
-
-          <div class="form-group full">
-            <label style="display:flex;align-items:center;gap:.6rem;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--text-mid);">
-              <input id="u-termo-seguranca" type="checkbox" style="width:auto;">
-              Aceita o termo de segurança
-            </label>
-          </div>
-        </form>
-
-        <div class="toolbar">
-          <button type="button" class="btn-primary" id="btnSalvarUsuario">Salvar usuário</button>
-          <button type="button" class="btn-secondary" id="btnLimparUsuario">Limpar</button>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="padding:1rem 3.5rem 0;">
+      {% for cat, msg in messages %}
+        <div style="padding:0.9rem 1.2rem;border-radius:14px;margin-bottom:0.6rem;font-size:0.9rem;
+          {% if cat=='sucesso' or cat=='success' %}background:#eef8f1;color:#2f6b41;border:1px solid rgba(47,107,65,.15);
+          {% else %}background:#fff1f3;color:#8b0021;border:1px solid rgba(139,0,33,.12);{% endif %}">
+          {{ msg }}
         </div>
-      </article>
-
-      <article class="admin-card">
-        <h3 class="card-title">Usuários cadastrados</h3>
-        <p class="card-subtitle">Dados reais vindos da tabela <code>cadastro</code>.</p>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>CPF</th>
-                <th>Tipo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for u in usuarios %}
-              <tr>
-                <td>{{ u.nome_completo }}</td>
-                <td>{{ u.email }}</td>
-                <td>{{ u.cpf }}</td>
-                <td>{{ u.tipo_cadastro }}</td>
-              </tr>
-              {% else %}
-              <tr>
-                <td colspan="4">Nenhum usuário cadastrado.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </article>
+      {% endfor %}
     </div>
-  </section>
+  {% endif %}
+{% endwith %}
 
-  <section class="admin-section" id="modalidades">
-    <div class="section-label">Cadastros principais</div>
-    <h2 class="section-title">Modalidades e <em>professoras</em></h2>
-    <p class="section-copy">Formulário principal para criar e manter as modalidades do estúdio, conectado ao SQL Server e renderizado com Jinja no template. [web:59][web:66]</p>
-
-    <div class="admin-grid">
-      <article class="admin-card">
-        <h3 class="card-title">Nova modalidade</h3>
-        <p class="card-subtitle">Cadastre nome, resumo, descrição, professora, foto e mídias da modalidade.</p>
-
-        <form class="form-grid" id="formModalidade" onsubmit="return false;">
-          <input type="hidden" id="id_modalidade">
-
-          <div class="form-group">
-            <label for="titulo">Título da modalidade</label>
-            <input id="titulo" type="text" placeholder="Ex.: Pole Coreográfico Bases">
-          </div>
-
-<div class="form-group">
-  <label for="professora">Responsável pela modalidade</label>
-  <select id="professora" name="id_professora">
-    <option value="">Selecione</option>
-    {% for pessoa in responsaveis_modalidade %}
-      <option value="{{ pessoa.id_cadastro }}">
-        {{ pessoa.nome_completo }} — {{ pessoa.tipo_cadastro|capitalize }}
-      </option>
-    {% endfor %}
-  </select>
+<div class="hero">
+  <div class="hero-text">
+    <h1>Painel de <em>administração</em></h1>
+    <p>Gerencie usuários, modalidades, horários, turmas, pacotes e a alocação de alunos em cada aula de forma centralizada.</p>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-item">
+      <div class="kpi-num">{{ total_usuarios }}</div>
+      <div class="kpi-label">Usuários</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-num">{{ total_modalidades }}</div>
+      <div class="kpi-label">Modalidades</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-num">{{ total_turmas }}</div>
+      <div class="kpi-label">Turmas</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-num">{{ total_pacotes }}</div>
+      <div class="kpi-label">Pacotes</div>
+    </div>
+  </div>
 </div>
 
-          <div class="form-group full">
-            <label for="resumo">Resumo</label>
-            <input id="resumo" type="text" placeholder="Texto curto para listagens e cards">
-          </div>
+<div class="modules">
 
-          <div class="form-group full">
-            <label for="descricao">Descrição completa</label>
-            <textarea id="descricao" placeholder="Detalhes da modalidade, objetivo da aula, nível, benefícios e proposta corporal"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="nivel">Nível</label>
-            <select id="nivel">
-              <option value="">Selecione</option>
-              <option>Iniciante</option>
-              <option>Intermediário</option>
-              <option>Avançado</option>
-              <option>Misto</option>
-            </select>
-          </div>
-
-          <div class="form-group full">
-            <label>Foto da professora</label>
-            <div class="upload-box">
-              <input id="foto-prof" type="file" accept="image/*">
-              <div class="hint">No backend Flask, envie o arquivo para <strong>static/modalidades/slug/professora/</strong>.</div>
-            </div>
-          </div>
-
-          <div class="form-group full">
-            <label>Fotos e vídeos da modalidade</label>
-            <div class="upload-box">
-              <input id="midias" type="file" accept="image/*,video/*" multiple>
-              <div class="hint">Estrutura sugerida: <strong>static/modalidades/slug-da-modalidade/galeria/</strong>.</div>
-            </div>
-          </div>
-        </form>
-
-        <div class="toolbar">
-          <button type="button" class="btn-primary" id="btnSalvarModalidade">Salvar modalidade</button>
-          <button type="button" class="btn-secondary" id="btnLimparModalidade">Limpar</button>
-        </div>
-      </article>
-
-      <article class="admin-card">
-        <h3 class="card-title">Modalidades cadastradas</h3>
-        <p class="card-subtitle">Visualização rápida para editar ou remover qualquer modalidade.</p>
-
-        <div class="list-wrap" id="lista-modalidades">
-          {% for m in modalidades %}
-          <div class="list-card" data-id="{{ m.id_modalidade }}"
-               data-titulo="{{ m.titulo }}"
-               data-resumo="{{ m.resumo }}"
-               data-nivel="{{ m.nivel }}">
-            <h3>{{ m.titulo }}</h3>
-            {% if m.resumo %}
-            <p>{{ m.resumo }}</p>
-            {% endif %}
-            <div class="card-meta">
-              {% if m.professora %}
-              <span class="meta-pill">{{ m.professora }}</span>
-              {% endif %}
-              {% if m.instagram_prof %}
-              <span class="meta-pill">{{ m.instagram_prof }}</span>
-              {% endif %}
-              {% if m.nivel %}
-              <span class="meta-pill">{{ m.nivel }}</span>
-              {% endif %}
-            </div>
-            <div class="toolbar">
-              <button type="button" class="btn-secondary btn-edit-modalidade">Editar</button>
-              <button type="button" class="btn-danger btn-delete-modalidade">Excluir</button>
-            </div>
-          </div>
-          {% else %}
-            <p style="font-size:0.9rem;color:var(--text-light);">Nenhuma modalidade cadastrada ainda.</p>
-          {% endfor %}
-        </div>
-      </article>
+  <!-- USUÁRIOS -->
+  <a href="{{ url_for('admin_usuarios') }}" class="mod-card">
+    <div class="mod-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
     </div>
-  </section>
-
-  <section class="admin-section" id="horarios">
-    <div class="section-label">Operação do estúdio</div>
-    <h2 class="section-title">Horários, salas e <em>turmas</em></h2>
-    <p class="section-copy">Organize a grade operacional e use esses dados para alimentar a agenda pública do site.</p>
-
-    <div class="admin-grid">
-      <article class="admin-card">
-        <h3 class="card-title">Novo horário</h3>
-        <p class="card-subtitle">Informe qual aula será oferecida, em que sala, quando começa, quando termina e quantas vezes acontece por semana.</p>
-
-        <form class="form-grid" id="formHorario" onsubmit="return false;">
-          <div class="form-group">
-            <label for="aula">Qual aula</label>
-            <select id="aula">
-              {% for m in modalidades %}
-              <option value="{{ m.id_modalidade }}">{{ m.titulo }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="sala">Sala</label>
-            <select id="sala">
-              {% for s in salas %}
-              <option value="{{ s.id_sala }}">{{ s.nome }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="inicio">Quando começa</label>
-            <input id="inicio" type="time">
-          </div>
-          <div class="form-group">
-            <label for="fim">Quando termina</label>
-            <input id="fim" type="time">
-          </div>
-          <div class="form-group">
-            <label for="frequencia">Quantas vezes na semana</label>
-            <input id="frequencia" type="number" min="1" max="7" placeholder="2">
-          </div>
-          <div class="form-group">
-            <label for="dias">Dias da semana</label>
-            <input id="dias" type="text" placeholder="Ex.: segunda e quarta">
-          </div>
-        </form>
-
-        <div class="toolbar">
-          <button type="button" class="btn-primary">Salvar horário</button>
-          <button type="button" class="btn-secondary">Nova turma</button>
-        </div>
-      </article>
-
-      <article class="admin-card">
-        <h3 class="card-title">Salas e turmas</h3>
-        <p class="card-subtitle">Cadastre quantas salas quiser e gerencie as turmas com liberdade para excluir quando necessário.</p>
-
-        <div class="chips">
-          {% for s in salas %}
-          <span class="chip">{{ s.nome }}</span>
-          {% endfor %}
-        </div>
-
-        <div class="list-wrap">
-          {% for t in turmas %}
-          <div class="list-card" data-id="{{ t.id_turma }}">
-            <h3>{{ t.nome_exibicao or ('Turma · ' ~ t.modalidade) }}</h3>
-            <p>{{ t.dias_semana }} {{ t.hora_inicio }} às {{ t.hora_fim }} · {{ t.sala }}</p>
-            <div class="card-meta">
-              <span class="meta-pill">{{ t.professora }}</span>
-              {% if t.vezes_semana %}
-              <span class="meta-pill">{{ t.vezes_semana }}x/semana</span>
-              {% endif %}
-            </div>
-            <div class="toolbar">
-              <button type="button" class="btn-secondary">Editar</button>
-              <button type="button" class="btn-danger">Excluir turma</button>
-            </div>
-          </div>
-          {% else %}
-            <p style="font-size:0.9rem;color:var(--text-light);">Nenhuma turma cadastrada.</p>
-          {% endfor %}
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="admin-section" id="pacotes">
-    <div class="section-label">Comercial</div>
-    <h2 class="section-title">Pacotes e <em>planos</em></h2>
-    <p class="section-copy">Área de configuração dos planos que serão mostrados para as alunas, com liberdade para combinar modalidades e frequência.</p>
-
-    <div class="admin-grid">
-      <article class="admin-card">
-        <h3 class="card-title">Novo pacote</h3>
-        <p class="card-subtitle">Defina valor mensal ou semestral, quantidade de modalidades liberadas, aulas por semana e observações do plano.</p>
-
-        <form class="form-grid" id="formPacote" onsubmit="return false;">
-          <div class="form-group">
-            <label for="pacote">Nome do pacote</label>
-            <input id="pacote" type="text" placeholder="Ex.: Plano Duo">
-          </div>
-          <div class="form-group">
-            <label for="tipo-cobranca">Tipo de cobrança</label>
-            <select id="tipo-cobranca">
-              <option>Mensal</option>
-              <option>Semestral</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="valor">Valor</label>
-            <input id="valor" type="text" placeholder="R$ 279,00">
-          </div>
-          <div class="form-group">
-            <label for="aulas-semana">Aulas por semana</label>
-            <input id="aulas-semana" type="number" min="1" max="7" placeholder="2">
-          </div>
-          <div class="form-group full">
-            <label for="modalidades-pacote">Modalidades permitidas</label>
-            <select id="modalidades-pacote" multiple size="6">
-              {% for m in modalidades %}
-              <option value="{{ m.id_modalidade }}">{{ m.titulo }}</option>
-              {% endfor %}
-            </select>
-            <div class="hint">Você pode permitir quantas modalidades quiser nesse plano.</div>
-          </div>
-          <div class="form-group">
-            <label for="qt-modalidades">Quantidade de modalidades</label>
-            <input id="qt-modalidades" type="number" min="1" placeholder="2">
-          </div>
-          <div class="form-group">
-            <label for="status">Status do pacote</label>
-            <select id="status">
-              <option>Ativo</option>
-              <option>Rascunho</option>
-              <option>Indisponível</option>
-            </select>
-          </div>
-          <div class="form-group full">
-            <label for="obs">Observação</label>
-            <textarea id="obs" placeholder="Ex.: pacote com combinações livres, turma fixa ou remarcação permitida."></textarea>
-          </div>
-        </form>
-
-        <div class="toolbar">
-          <button type="button" class="btn-primary">Salvar pacote</button>
-          <button type="button" class="btn-secondary">Pré-visualizar</button>
-        </div>
-      </article>
-
-      <article class="admin-card">
-        <h3 class="card-title">Pacotes cadastrados</h3>
-        <p class="card-subtitle">Consulta rápida para editar e excluir os planos já criados.</p>
-
-        <div class="list-wrap">
-          {% for p in pacotes %}
-          <div class="list-card" data-id="{{ p.id_pacote }}">
-            <h3>{{ p.nome }}</h3>
-            <p>{{ p.tipo_cobranca|capitalize }}, {{ p.aulas_por_semana }} aulas por semana.</p>
-            <div class="card-meta">
-              <span class="meta-pill">R$ {{ '%.2f'|format(p.valor) }}</span>
-              <span class="meta-pill">{{ 'Ativo' if p.ativo else 'Inativo' }}</span>
-            </div>
-            <div class="toolbar">
-              <button type="button" class="btn-secondary">Editar</button>
-              <button type="button" class="btn-danger">Excluir</button>
-            </div>
-          </div>
-          {% else %}
-            <p style="font-size:0.9rem;color:var(--text-light);">Nenhum pacote cadastrado.</p>
-          {% endfor %}
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="summary-section" id="resumos">
-    <div class="section-label">Acompanhamento</div>
-    <h2 class="section-title">Resumo de <em>cadastros</em></h2>
-    <p class="section-copy">A área de resumo consolida dados em tabelas, um padrão comum e eficiente para painéis administrativos responsivos. [web:65][web:62]</p>
-
-    <div class="summary-grid">
-      <article class="table-card">
-        <div class="table-head">
-          <h3>Usuários do sistema</h3>
-          <p>Resumo rápido dos acessos cadastrados.</p>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>Tipo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for u in usuarios %}
-              <tr>
-                <td>{{ u.nome_completo }}</td>
-                <td>{{ u.email }}</td>
-                <td>{{ u.tipo_cadastro }}</td>
-              </tr>
-              {% else %}
-              <tr><td colspan="3">Nenhum usuário cadastrado.</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </article>
-
-      <article class="table-card">
-        <div class="table-head">
-          <h3>Professoras</h3>
-          <p>Consulta resumida com Instagram e vínculo administrativo.</p>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Professora</th>
-                <th>Instagram</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for prof in professoras %}
-              <tr>
-                <td>{{ prof.nome }}</td>
-                <td>{{ prof.instagram }}</td>
-              </tr>
-              {% else %}
-              <tr><td colspan="2">Nenhuma professora cadastrada.</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <footer>
     <div>
-      <div class="footer-brand">Clara Lucatti · Administração</div>
-      <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:0.3rem;letter-spacing:0.08em">
-        Gestão interna do estúdio, usuários, modalidades, horários e pacotes
+      <div class="mod-title">Usuários</div>
+      <div class="mod-desc">Cadastre alunos, professores e administradores. Defina tipo de acesso, CPF, e-mail e senha.</div>
+    </div>
+    <div class="mod-count">{{ total_usuarios }} cadastrados</div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Gerenciar</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </div>
     </div>
-    <div class="footer-copy">© 2026 Clara Lucatti. Painel administrativo.</div>
-  </footer>
+  </a>
 
-  <script>
-    async function salvarUsuarioAdmin() {
-      const payload = {
-        nome_completo: document.getElementById("u-nome").value,
-        email: document.getElementById("u-email").value,
-        cpf: document.getElementById("u-cpf").value,
-        senha: document.getElementById("u-senha").value,
-        tipo_cadastro: document.getElementById("u-tipo").value,
-        termo_imagem: document.getElementById("u-termo-imagem").checked,
-        termo_seguranca: document.getElementById("u-termo-seguranca").checked
-      };
+  <!-- MODALIDADES -->
+  <a href="{{ url_for('admin_modalidades') }}" class="mod-card">
+    <div class="mod-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="3"/>
+      </svg>
+    </div>
+    <div>
+      <div class="mod-title">Modalidades</div>
+      <div class="mod-desc">Cadastre aulas com nome, descrição, nível, professora responsável e galeria de fotos.</div>
+    </div>
+    <div class="mod-count">{{ total_modalidades }} ativas</div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Gerenciar</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
 
-      const resp = await fetch("{{ url_for('cadastrar_usuario_admin') }}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+  <!-- HORÁRIOS & TURMAS -->
+  <a href="{{ url_for('admin_horarios') }}" class="mod-card">
+    <div class="mod-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>
+      </svg>
+    </div>
+    <div>
+      <div class="mod-title">Horários &amp; Turmas</div>
+      <div class="mod-desc">Crie turmas, defina horários, dias da semana, sala e a capacidade máxima de alunos por turma.</div>
+    </div>
+    <div class="mod-count">{{ total_turmas }} turmas</div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Gerenciar</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
 
-      const data = await resp.json();
-      alert(data.mensagem);
+  <!-- PACOTES -->
+  <a href="{{ url_for('admin_pacotes_page') }}" class="mod-card">
+    <div class="mod-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 7V5a2 2 0 0 0-4 0"/>
+      </svg>
+    </div>
+    <div>
+      <div class="mod-title">Pacotes &amp; Planos</div>
+      <div class="mod-desc">Configure planos mensais ou semestrais com número de aulas semanais e modalidades permitidas.</div>
+    </div>
+    <div class="mod-count">{{ total_pacotes }} planos</div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Gerenciar</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
 
-      if (data.ok) {
-        window.location.reload();
-      }
-    }
+  <!-- ALOCAÇÃO -->
+  <a href="{{ url_for('admin_alocacao') }}" class="mod-card">
+    <div class="mod-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+      </svg>
+    </div>
+    <div>
+      <div class="mod-title">Alocação de Alunos</div>
+      <div class="mod-desc">Visualize a grade semanal, aloque alunos nas turmas conforme seus planos e controle a capacidade.</div>
+    </div>
+    <div class="mod-count">Grade semanal</div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Gerenciar</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
 
-    document.getElementById("btnSalvarUsuario").addEventListener("click", salvarUsuarioAdmin);
+  <!-- PRIMEIRA AULA -->
+  <a href="{{ url_for('admin_primeira_aula') }}" class="mod-card">
+    <div class="mod-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <path d="M9 12h6M9 16h4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="mod-title">Primeira Aula</div>
+      <div class="mod-desc">Configure a lista do que levar e fazer na primeira aula de cada modalidade, com a função de cada item.</div>
+    </div>
+    <div class="mod-count">Por modalidade</div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Gerenciar</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
 
-    document.getElementById("btnLimparUsuario").addEventListener("click", () => {
-      document.getElementById("u-nome").value = "";
-      document.getElementById("u-email").value = "";
-      document.getElementById("u-cpf").value = "";
-      document.getElementById("u-senha").value = "";
-      document.getElementById("u-tipo").value = "aluno";
-      document.getElementById("u-termo-imagem").checked = false;
-      document.getElementById("u-termo-seguranca").checked = false;
-    });
+  <!-- WORKSHOPS -->
+  <a href="{{ url_for('admin_workshops') }}" class="mod-card">
+    <div class="mod-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        <circle cx="12" cy="16" r="2"/><path d="M12 14v-2"/>
+      </svg>
+    </div>
+    <div>
+      <div class="mod-title">Workshops</div>
+      <div class="mod-desc">Cadastre eventos especiais com data, vagas, valor, instrutor e gerencie as inscrições dos participantes.</div>
+    </div>
+    <div class="mod-count">Eventos especiais</div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Gerenciar</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
+  <!-- CONTROLE DE PACOTES -->
+  <a href="{{ url_for('admin_pacotes_controle') }}" class="mod-card">
+    <div class="mod-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <rect x="3" y="4" width="18" height="16" rx="3"/>
+        <path d="M8 10h8M8 14h5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="mod-title">Controle de Pacotes</div>
+      <div class="mod-desc">
+        Acompanhe uso dos pacotes, aulas consumidas por semana e situação de cada aluna em tempo real.
+      </div>
+    </div>
+    <div class="mod-count">Visão de consumo</div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Abrir painel</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  </a>
+  <!-- VOLTAR AO SITE -->
+  <a href="{{ url_for('home') }}" class="mod-card" style="border-style:dashed;background:transparent;box-shadow:none;">
+    <div class="mod-icon" style="background:rgba(139,0,33,0.05);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" stroke-linecap="round">
+        <path d="M3 12l9-9 9 9"/><path d="M9 21V9h6v12"/>
+      </svg>
+    </div>
+    <div>
+      <div class="mod-title">Site público</div>
+      <div class="mod-desc">Voltar para a página principal do estúdio.</div>
+    </div>
+    <div class="mod-arrow">
+      <span class="mod-arrow-label">Ir para o site</span>
+      <div class="mod-arrow-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </a>
 
-    async function salvarModalidade() {
-      const payload = {
-        id_modalidade: document.querySelector("#id_modalidade").value || null,
-        titulo: document.querySelector("#titulo").value,
-        resumo: document.querySelector("#resumo").value,
-        descricao: document.querySelector("#descricao").value,
-        id_professora: document.querySelector("#professora").value || null,
-        nivel: document.querySelector("#nivel").value
-      };
+</div>
 
-      const resp = await fetch("{{ url_for('salvar_modalidade') }}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+<footer>
+  <span class="footer-brand">Clara Lucatti · Administração</span>
+  <span>© 2026 Clara Lucatti. Painel interno.</span>
+</footer>
 
-      const data = await resp.json();
-      alert(data.mensagem);
-      if (data.ok) {
-        window.location.reload();
-      }
-    }
-
-    const btnSalvarModalidade = document.getElementById("btnSalvarModalidade");
-    if (btnSalvarModalidade) {
-      btnSalvarModalidade.addEventListener("click", salvarModalidade);
-    }
-
-    const btnLimparModalidade = document.getElementById("btnLimparModalidade");
-    if (btnLimparModalidade) {
-      btnLimparModalidade.addEventListener("click", () => {
-        document.querySelector("#id_modalidade").value = "";
-        document.querySelector("#titulo").value = "";
-        document.querySelector("#resumo").value = "";
-        document.querySelector("#descricao").value = "";
-        document.querySelector("#professora").value = "";
-        document.querySelector("#nivel").value = "";
-      });
-    }
-
-    document.querySelectorAll(".btn-edit-modalidade").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const card = btn.closest(".list-card");
-        document.querySelector("#id_modalidade").value = card.dataset.id;
-        document.querySelector("#titulo").value = card.dataset.titulo || "";
-        document.querySelector("#resumo").value = card.dataset.resumo || "";
-        document.querySelector("#nivel").value = card.dataset.nivel || "";
-        window.scrollTo({ top: document.getElementById("modalidades").offsetTop - 80, behavior: "smooth" });
-      });
-    });
-
-    document.querySelectorAll(".btn-delete-modalidade").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const card = btn.closest(".list-card");
-        const id = card.dataset.id;
-        if (!confirm("Tem certeza que deseja excluir esta modalidade?")) return;
-
-        const resp = await fetch(`/admin/modalidade/${id}`, { method: "DELETE" });
-        const data = await resp.json();
-        alert(data.mensagem);
-        if (data.ok) {
-          window.location.reload();
-        }
-      });
-    });
-
-    const btnLogout = document.getElementById("btnLogout");
-    if (btnLogout) {
-      btnLogout.addEventListener("click", async () => {
-        try {
-          await fetch("{{ url_for('logout') }}", { method: "POST" });
-        } catch (e) {}
-        window.location.href = "{{ url_for('home') }}";
-      });
-    }
-  </script>
+<script>
+  document.getElementById("btnLogout").addEventListener("click", async () => {
+    try { await fetch("{{ url_for('logout') }}", { method: "POST" }); } catch(e){}
+    window.location.href = "{{ url_for('home') }}";
+  });
+</script>
 </body>
 </html>

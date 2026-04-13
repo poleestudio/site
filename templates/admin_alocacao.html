@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alocação de Alunos · Clara Lucatti Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bordo:#8B0021;--bordo-light:#A3002A;--bordo-pale:#f5e6ea;--cream:#fdf8f5;--warm-white:#fff9f6;--text-dark:#2a1a1f;--text-mid:#6b4a55;--text-light:#b08090;--shadow:0 18px 45px rgba(139,0,33,0.08);}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;}
+    a{text-decoration:none;color:inherit;} button{border:none;background:none;cursor:pointer;font:inherit;}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(253,248,245,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,0,33,0.08);}
+    .nav-left{display:flex;align-items:center;gap:1rem;}
+    .btn-back{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);padding:0.5rem 1rem;border:1.5px solid rgba(139,0,33,0.15);border-radius:50px;transition:all 0.3s;}
+    .btn-back:hover{border-color:var(--bordo);color:var(--bordo);}
+    .nav-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;letter-spacing:0.1em;}
+    /* Grade semanal */
+    .grade-wrap{padding:2rem 3rem;}
+    .grade-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+    .grade-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;}
+    .legend{display:flex;flex-wrap:wrap;gap:0.7rem;}
+    .leg-item{display:flex;align-items:center;gap:0.4rem;font-size:0.68rem;color:var(--text-mid);}
+    .leg-dot{width:10px;height:10px;border-radius:50%;}
+    .week-table{width:100%;border-collapse:collapse;background:var(--cream);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);}
+    .week-table th{padding:0.9rem 0.6rem;font-size:0.65rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-light);background:var(--warm-white);border-bottom:1px solid rgba(139,0,33,0.08);text-align:center;}
+    .week-table th:first-child{text-align:right;padding-right:1rem;width:72px;}
+    .week-table td{border:1px solid rgba(139,0,33,0.05);padding:4px;min-width:100px;height:64px;vertical-align:top;position:relative;}
+    .week-table td.hora{font-size:0.64rem;color:var(--text-light);text-align:right;padding-right:0.6rem;vertical-align:middle;white-space:nowrap;background:var(--warm-white);border-right:1px solid rgba(139,0,33,0.08);}
+    .aula-pill{border-radius:10px;padding:5px 7px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;border:1.5px solid transparent;margin-bottom:3px;}
+    .aula-pill:hover{transform:scale(1.03);box-shadow:0 6px 18px rgba(139,0,33,0.12);}
+    .aula-pill.selected{border-color:var(--bordo)!important;box-shadow:0 0 0 2px rgba(139,0,33,0.2);}
+    .aula-pill.cheia{opacity:0.6;}
+    .aula-title{font-size:0.66rem;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .aula-cap{font-size:0.58rem;margin-top:1px;}
+    .cap-mini{height:3px;border-radius:2px;margin-top:3px;background:rgba(0,0,0,0.08);}
+    .cap-fill{height:100%;border-radius:2px;}
+    /* Painel direito */
+    .main-split{display:grid;grid-template-columns:1fr 380px;gap:0;min-height:calc(100vh - 65px);}
+    .col-grade{padding:2.5rem 2.5rem 2.5rem 3rem;overflow-y:auto;}
+    .col-detalhe{background:var(--cream);border-left:1px solid rgba(139,0,33,0.08);padding:2rem 1.8rem;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto;display:flex;flex-direction:column;gap:1.2rem;}
+    .det-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;color:var(--text-light);}
+    .det-empty svg{opacity:0.25;margin-bottom:1rem;}
+    .det-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;}
+    .det-meta{font-size:0.82rem;color:var(--text-light);line-height:1.7;}
+    .cap-bar-big{height:8px;border-radius:4px;background:rgba(139,0,33,0.1);overflow:hidden;margin:0.5rem 0;}
+    .cap-fill-big{height:100%;border-radius:4px;background:var(--bordo);transition:width 0.5s;}
+    .cap-fill-big.quase{background:#e6a820;}
+    .cap-fill-big.cheio{background:#c0392b;}
+    .alunos-list{display:grid;gap:0.5rem;flex:1;overflow-y:auto;}
+    .aluno-row{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.9rem;background:var(--warm-white);border:1px solid rgba(139,0,33,0.08);border-radius:14px;transition:all 0.25s;}
+    .aluno-row:hover{border-color:rgba(139,0,33,0.2);}
+    .ava{width:32px;height:32px;border-radius:50%;background:var(--bordo-pale);color:var(--bordo);font-size:0.7rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .aluno-info{flex:1;min-width:0;}
+    .aluno-nome{font-size:0.86rem;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .aluno-plano{font-size:0.72rem;color:var(--text-light);}
+    .btn-rem{width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(139,0,33,0.15);display:flex;align-items:center;justify-content:center;font-size:0.72rem;color:var(--text-light);cursor:pointer;background:none;flex-shrink:0;transition:all 0.2s;}
+    .btn-rem:hover{border-color:var(--bordo);color:var(--bordo);background:var(--bordo-pale);}
+    .add-box{padding-top:1rem;border-top:1px solid rgba(139,0,33,0.08);}
+    .add-box label{font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);display:block;margin-bottom:0.5rem;}
+    .add-row{display:flex;gap:0.6rem;}
+    .sel-aluno{flex:1;background:var(--warm-white);border:1.5px solid rgba(139,0,33,0.12);border-radius:14px;padding:0.7rem 0.9rem;font-family:'Jost',sans-serif;font-size:0.86rem;color:var(--text-dark);outline:none;appearance:none;transition:border-color 0.3s;}
+    .sel-aluno:focus{border-color:var(--bordo);}
+    .btn-add{background:var(--bordo);color:#fff;border-radius:14px;padding:0.7rem 1.1rem;font-size:0.74rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.3s;}
+    .btn-add:hover{background:var(--bordo-light);}
+    .btn-add:disabled{opacity:0.4;cursor:not-allowed;}
+    .pill{display:inline-flex;padding:0.25rem 0.7rem;border-radius:50px;background:var(--bordo-pale);color:var(--bordo);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;}
+    .msg-warn{font-size:0.8rem;color:#854F0B;background:#faeeda;padding:0.6rem 0.9rem;border-radius:10px;margin-top:0.5rem;line-height:1.5;}
+    .msg-err{font-size:0.8rem;color:var(--bordo);background:var(--bordo-pale);padding:0.6rem 0.9rem;border-radius:10px;margin-top:0.5rem;line-height:1.5;}
+    @media(max-width:1100px){.main-split{grid-template-columns:1fr;}.col-detalhe{position:static;height:auto;border-left:none;border-top:1px solid rgba(139,0,33,0.08);}}
+    @media(max-width:700px){.col-grade{padding:1.5rem;}.grade-wrap{padding:1.5rem 0 0;}}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a href="{{ url_for('admin_page') }}" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Painel
+    </a>
+    <span class="nav-title">Alocação de Alunos</span>
+  </div>
+  <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);">{{ user_name }}</span>
+</nav>
+
+<div class="main-split">
+  <!-- COLUNA GRADE -->
+  <div class="col-grade">
+    <div class="grade-header">
+      <div>
+        <div class="grade-title">Grade semanal</div>
+        <p style="font-size:0.84rem;color:var(--text-light);margin-top:0.3rem;">Clique em uma aula para ver e gerenciar os alunos</p>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="week-table" id="weekTable">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Segunda</th><th>Terça</th><th>Quarta</th>
+            <th>Quinta</th><th>Sexta</th><th>Sábado</th>
+          </tr>
+        </thead>
+        <tbody id="weekBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Tabela consolidada -->
+    <div style="margin-top:2.5rem;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;margin-bottom:1rem;">Todas as matrículas</div>
+      <div style="display:flex;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <select id="filtroTurma" style="background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.5rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.84rem;color:var(--text-dark);outline:none;appearance:none;">
+          <option value="">Todas as turmas</option>
+        </select>
+        <input id="buscaAluno" type="text" placeholder="Buscar aluno…" style="flex:1;min-width:180px;background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.5rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.84rem;color:var(--text-dark);outline:none;">
+      </div>
+      <div style="background:var(--cream);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);">
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;min-width:560px;">
+            <thead>
+              <tr>
+                <th style="padding:0.9rem 1.2rem;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);background:var(--warm-white);text-align:left;">Aluno</th>
+                <th style="padding:0.9rem 1.2rem;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);background:var(--warm-white);text-align:left;">Plano</th>
+                <th style="padding:0.9rem 1.2rem;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);background:var(--warm-white);text-align:left;">Turma</th>
+                <th style="padding:0.9rem 1.2rem;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);background:var(--warm-white);text-align:left;">Horário</th>
+                <th style="padding:0.9rem 1.2rem;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);background:var(--warm-white);text-align:left;">Dias</th>
+                <th style="padding:0.9rem 1.2rem;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);background:var(--warm-white);"></th>
+              </tr>
+            </thead>
+            <tbody id="tbodyConsolid"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL DETALHE -->
+  <div class="col-detalhe" id="colDetalhe">
+    <div class="det-empty" id="detEmpty">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+      <p style="max-width:220px;line-height:1.7;font-size:0.88rem;">Selecione uma aula na grade para ver os alunos matriculados.</p>
+    </div>
+    <div id="detContent" style="display:none;flex-direction:column;gap:1rem;height:100%;">
+      <div>
+        <span class="pill" id="detMod"></span>
+        <div class="det-title" id="detNome" style="margin-top:0.5rem;"></div>
+        <div class="det-meta" id="detInfo"></div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
+          <span style="font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);">Ocupação</span>
+          <span style="font-size:0.84rem;color:var(--bordo);" id="detCap"></span>
+        </div>
+        <div class="cap-bar-big"><div class="cap-fill-big" id="detCapBar"></div></div>
+      </div>
+      <div class="alunos-list" id="detAlunos"></div>
+      <div class="add-box" id="addBox">
+        <label>Adicionar aluno à turma</label>
+        <div class="add-row">
+          <select class="sel-aluno" id="selAdd"><option value="">Selecione</option></select>
+          <button class="btn-add" id="btnAdd">+</button>
+        </div>
+        <div id="addMsg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PALETA=[
+  {bg:"#f5e6ea",text:"#8B0021",fill:"#c9a8b2"},
+  {bg:"#e6f0f5",text:"#005577",fill:"#9ab8c9"},
+  {bg:"#eaf3de",text:"#3B6D11",fill:"#a8cc80"},
+  {bg:"#faeeda",text:"#854F0B",fill:"#e8b86a"},
+  {bg:"#eeedfe",text:"#534AB7",fill:"#afa9ec"},
+  {bg:"#fbeaf0",text:"#993556",fill:"#ed93b1"},
+];
+const DIAS_MAP={"seg":0,"segunda":0,"ter":1,"terça":1,"terca":1,"qua":2,"quarta":2,"qui":3,"quinta":3,"sex":4,"sexta":4,"sáb":5,"sab":5,"sabado":5,"sábado":5};
+const SLOTS=["07:00","08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+
+let turmas=[], matriculas={}, todosAlunos=[], corMap={}, turmaSel=null;
+
+async function init(){
+  const [r1,r2]=await Promise.all([fetch("/admin/alocacao/turmas"),fetch("/admin/alocacao/alunos")]);
+  const d1=await r1.json(); const d2=await r2.json();
+  turmas=d1.turmas||[]; matriculas=d1.matriculas||{}; todosAlunos=d2.alunos||[];
+  const mods=[...new Set(turmas.map(t=>t.id_modalidade))];
+  mods.forEach((id,i)=>corMap[id]=PALETA[i%PALETA.length]);
+  renderGrade(); renderLegend(); renderConsolid(); popularFiltro();
+}
+
+function parseDias(s){ return (s||"").toLowerCase().split(/[,\s·]+/).map(d=>DIAS_MAP[d.trim()]).filter(x=>x!==undefined); }
+
+function renderGrade(){
+  const body=document.getElementById("weekBody");
+  body.innerHTML="";
+  const usados=new Set();
+  turmas.forEach(t=>{
+    const h=(t.hora_inicio||"").substring(0,5);
+    const slot=SLOTS.find((s,i)=>h>=s&&h<(SLOTS[i+1]||"23:59"));
+    if(slot) usados.add(slot);
+  });
+  const slots=SLOTS.filter(s=>usados.has(s));
+  if(!slots.length) SLOTS.slice(4,9).forEach(s=>slots.push(s));
+
+  slots.forEach(slot=>{
+    const tr=document.createElement("tr");
+    const tdH=document.createElement("td"); tdH.className="hora"; tdH.textContent=slot; tr.appendChild(tdH);
+    for(let d=0;d<6;d++){
+      const td=document.createElement("td");
+      turmas.filter(t=>{
+        const h=(t.hora_inicio||"").substring(0,5);
+        const idx=SLOTS.indexOf(slot);
+        return h>=slot&&h<(SLOTS[idx+1]||"23:59")&&parseDias(t.dias_semana).includes(d);
+      }).forEach(t=>{
+        const cor=corMap[t.id_modalidade]||PALETA[0];
+        const alu=matriculas[t.id_turma]||[];
+        const cap=t.capacidade_maxima||0;
+        const pct=cap>0?Math.min(Math.round(alu.length/cap*100),100):0;
+        const div=document.createElement("div");
+        div.className="aula-pill"+(alu.length>=cap&&cap>0?" cheia":"")+(turmaSel==t.id_turma?" selected":"");
+        div.dataset.id=t.id_turma;
+        div.style.background=cor.bg; div.style.borderColor=cor.fill;
+        div.innerHTML=`<div class="aula-title" style="color:${cor.text};">${t.modalidade||t.nome_exibicao}</div>
+          <div class="aula-cap" style="color:${cor.text};">${alu.length}${cap>0?'/'+cap:''} aluno${alu.length!==1?'s':''}</div>
+          <div class="cap-mini"><div class="cap-fill" style="width:${pct}%;background:${cor.text};opacity:0.5;"></div></div>`;
+        div.addEventListener("click",()=>selecionarTurma(t.id_turma));
+        td.appendChild(div);
+      });
+      tr.appendChild(td);
+    }
+    body.appendChild(tr);
+  });
+}
+
+function renderLegend(){
+  const wrap=document.getElementById("legend"); wrap.innerHTML="";
+  const seen=new Set();
+  turmas.forEach(t=>{
+    if(seen.has(t.id_modalidade)) return; seen.add(t.id_modalidade);
+    const cor=corMap[t.id_modalidade]||PALETA[0];
+    const i=document.createElement("div"); i.className="leg-item";
+    i.innerHTML=`<div class="leg-dot" style="background:${cor.fill};"></div><span>${t.modalidade}</span>`;
+    wrap.appendChild(i);
+  });
+}
+
+function selecionarTurma(id){
+  turmaSel=id;
+  document.querySelectorAll(".aula-pill").forEach(p=>{p.classList.toggle("selected",p.dataset.id==id);});
+  const t=turmas.find(x=>x.id_turma==id); if(!t) return;
+  const alu=matriculas[id]||[];
+  const cap=t.capacidade_maxima||0;
+  const pct=cap>0?Math.min(Math.round(alu.length/cap*100),100):0;
+
+  document.getElementById("detEmpty").style.display="none";
+  const dc=document.getElementById("detContent"); dc.style.display="flex";
+
+  document.getElementById("detMod").textContent=t.modalidade||"";
+  document.getElementById("detNome").textContent=t.nome_exibicao||(t.modalidade+" · "+t.sala);
+  document.getElementById("detInfo").textContent=`${t.dias_semana} · ${(t.hora_inicio||"").substring(0,5)} às ${(t.hora_fim||"").substring(0,5)} · ${t.sala}`;
+  document.getElementById("detCap").textContent=`${alu.length}${cap>0?" / "+cap:""} aluno${alu.length!==1?"s":""}`;
+  const bar=document.getElementById("detCapBar");
+  bar.style.width=cap>0?pct+"%":"0%";
+  bar.className="cap-fill-big"+(pct>=100?" cheio":pct>=75?" quase":"");
+
+  // lista alunos
+  const listEl=document.getElementById("detAlunos"); listEl.innerHTML="";
+  if(!alu.length){
+    listEl.innerHTML=`<p style="text-align:center;color:var(--text-light);font-size:0.86rem;padding:1.5rem 0;">Nenhum aluno matriculado.</p>`;
+  } else {
+    alu.forEach(a=>{
+      const ini=a.nome_completo.split(" ").slice(0,2).map(p=>p[0].toUpperCase()).join("");
+      const row=document.createElement("div"); row.className="aluno-row";
+      row.innerHTML=`<div class="ava">${ini}</div>
+        <div class="aluno-info">
+          <div class="aluno-nome">${a.nome_completo}</div>
+          <div class="aluno-plano">${a.plano||a.email||""}</div>
+        </div>
+        <button class="btn-rem" data-id="${a.id_cadastro}" title="Remover">✕</button>`;
+      row.querySelector(".btn-rem").addEventListener("click", async()=>{
+        if(!confirm(`Remover ${a.nome_completo}?`)) return;
+        const r=await fetch("/admin/alocacao/desmatricular",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({id_turma:id,id_aluno:a.id_cadastro})});
+        const d=await r.json();
+        if(d.ok){matriculas[id]=(matriculas[id]||[]).filter(x=>x.id_cadastro!==a.id_cadastro);selecionarTurma(id);renderGrade();renderConsolid();}
+        else alert(d.mensagem);
+      });
+      listEl.appendChild(row);
+    });
+  }
+
+  // select adicionar
+  const sel=document.getElementById("selAdd"); sel.innerHTML='<option value="">Selecione o aluno</option>';
+  const matriculados=(matriculas[id]||[]).map(a=>a.id_cadastro);
+  const cap2=t.capacidade_maxima||0;
+  const cheia=cap2>0&&alu.length>=cap2;
+  const btnAdd=document.getElementById("btnAdd");
+  const msgEl=document.getElementById("addMsg"); msgEl.innerHTML="";
+
+  if(cheia){
+    btnAdd.disabled=true;
+    msgEl.innerHTML=`<div class="msg-err">Turma lotada · Capacidade máxima atingida (${cap2} alunos).</div>`;
+  } else {
+    btnAdd.disabled=false;
+    todosAlunos.filter(a=>!matriculados.includes(a.id_cadastro)).forEach(a=>{
+      const opt=document.createElement("option"); opt.value=a.id_cadastro;
+      opt.textContent=`${a.nome_completo}${a.plano?" · "+a.plano:""}`;
+      sel.appendChild(opt);
+    });
+  }
+
+  if(window.innerWidth<=1100) document.getElementById("colDetalhe").scrollIntoView({behavior:"smooth"});
+}
+
+document.getElementById("btnAdd").addEventListener("click", async()=>{
+  const id_aluno=parseInt(document.getElementById("selAdd").value);
+  if(!id_aluno||!turmaSel) return;
+  const msgEl=document.getElementById("addMsg"); msgEl.innerHTML="";
+  const r=await fetch("/admin/alocacao/matricular",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id_turma:turmaSel,id_aluno})});
+  const d=await r.json();
+  if(d.ok){
+    const al=todosAlunos.find(a=>a.id_cadastro===id_aluno);
+    if(al){if(!matriculas[turmaSel])matriculas[turmaSel]=[];matriculas[turmaSel].push(al);}
+    selecionarTurma(turmaSel); renderGrade(); renderConsolid();
+  } else {
+    msgEl.innerHTML=`<div class="${d.codigo==='TURMA_CHEIA'||d.codigo==='PLANO_INCOMPATIVEL'?'msg-warn':'msg-err'}">${d.mensagem}</div>`;
+  }
+});
+
+function renderConsolid(filtroTurma="",filtroAluno=""){
+  const tbody=document.getElementById("tbodyConsolid"); tbody.innerHTML="";
+  let n=0;
+  turmas.forEach(t=>{
+    if(filtroTurma&&t.id_turma!=filtroTurma) return;
+    (matriculas[t.id_turma]||[]).forEach(a=>{
+      if(filtroAluno&&!a.nome_completo.toLowerCase().includes(filtroAluno.toLowerCase())) return;
+      const tr=document.createElement("tr");
+      tr.style.borderTop="1px solid rgba(139,0,33,0.06)";
+      tr.innerHTML=`
+        <td style="padding:0.85rem 1.2rem;font-size:0.88rem;color:var(--text-dark);">${a.nome_completo}</td>
+        <td style="padding:0.85rem 1.2rem;font-size:0.8rem;color:var(--text-light);">${a.plano||"—"}</td>
+        <td style="padding:0.85rem 1.2rem;font-size:0.88rem;color:var(--text-mid);">${t.modalidade||t.nome_exibicao}</td>
+        <td style="padding:0.85rem 1.2rem;font-size:0.8rem;color:var(--text-light);">${(t.hora_inicio||"").substring(0,5)}–${(t.hora_fim||"").substring(0,5)}</td>
+        <td style="padding:0.85rem 1.2rem;font-size:0.8rem;color:var(--text-light);">${t.dias_semana||"—"}</td>
+        <td style="padding:0.85rem 1.2rem;">
+          <button style="font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.8rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);color:var(--text-light);cursor:pointer;background:none;transition:all 0.2s;"
+            data-t="${t.id_turma}" data-a="${a.id_cadastro}" data-n="${a.nome_completo}"
+            onmouseover="this.style.borderColor='var(--bordo)';this.style.color='var(--bordo)';"
+            onmouseout="this.style.borderColor='rgba(139,0,33,0.15)';this.style.color='var(--text-light)';"
+            class="btn-rem-consolid">Remover</button>
+        </td>`;
+      tbody.appendChild(tr); n++;
+    });
+  });
+  if(!n) tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-light);">Nenhuma matrícula encontrada.</td></tr>`;
+  document.querySelectorAll(".btn-rem-consolid").forEach(btn=>{
+    btn.addEventListener("click", async()=>{
+      if(!confirm(`Remover ${btn.dataset.n}?`)) return;
+      const r=await fetch("/admin/alocacao/desmatricular",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({id_turma:btn.dataset.t,id_aluno:btn.dataset.a})});
+      const d=await r.json();
+      if(d.ok){matriculas[btn.dataset.t]=(matriculas[btn.dataset.t]||[]).filter(x=>x.id_cadastro!=btn.dataset.a);renderConsolid(document.getElementById("filtroTurma").value,document.getElementById("buscaAluno").value);renderGrade();if(turmaSel==btn.dataset.t)selecionarTurma(turmaSel);}
+      else alert(d.mensagem);
+    });
+  });
+}
+
+function popularFiltro(){
+  const sel=document.getElementById("filtroTurma");
+  turmas.forEach(t=>{const o=document.createElement("option");o.value=t.id_turma;o.textContent=`${t.modalidade} · ${(t.hora_inicio||"").substring(0,5)} (${t.dias_semana})`;sel.appendChild(o);});
+}
+
+document.getElementById("filtroTurma").addEventListener("change",()=>renderConsolid(document.getElementById("filtroTurma").value,document.getElementById("buscaAluno").value));
+document.getElementById("buscaAluno").addEventListener("input",()=>renderConsolid(document.getElementById("filtroTurma").value,document.getElementById("buscaAluno").value));
+
+init();
+</script>
+</body>
+</html>

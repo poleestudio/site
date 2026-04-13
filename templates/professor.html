@@ -1,268 +1,536 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Área do Professor · Clara Lucatti</title>
-
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Área da Professora · Clara Lucatti</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    :root {
+      --bordo:#8B0021; --bordo-light:#A3002A; --bordo-pale:#f5e6ea;
+      --cream:#fdf8f5; --warm-white:#fff9f6;
+      --text-dark:#2a1a1f; --text-mid:#6b4a55; --text-light:#b08090;
+      --shadow:0 18px 45px rgba(139,0,33,0.08);
+      --shadow-md:0 8px 24px rgba(139,0,33,0.10);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;}
+    a{text-decoration:none;color:inherit;} button{border:none;background:none;cursor:pointer;font:inherit;}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(253,248,245,0.96);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,0,33,0.08);}
+    .nav-logo{display:flex;align-items:center;gap:0.8rem;}
+    .nav-logo img{width:36px;height:36px;border-radius:50%;object-fit:cover;}
+    .nav-brand{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1rem;letter-spacing:0.12em;text-transform:uppercase;line-height:1.1;}
+    .nav-brand span{display:block;font-size:0.58rem;letter-spacing:0.22em;color:var(--bordo);}
+    .nav-right{display:flex;align-items:center;gap:1rem;}
+    .nav-user{font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);}
+    .btn-logout{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.55rem 1.2rem;border:1.5px solid var(--bordo);color:var(--bordo);border-radius:50px;transition:all 0.3s;}
+    .btn-logout:hover{background:var(--bordo);color:#fff;}
+
+    /* TABS */
+    .tabs{display:flex;border-bottom:1px solid rgba(139,0,33,0.08);background:var(--cream);padding:0 3rem;overflow-x:auto;}
+    .tab-btn{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.95rem 1.4rem;color:var(--text-light);border-bottom:2.5px solid transparent;transition:all 0.3s;background:none;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+    .tab-btn.active{color:var(--bordo);border-bottom-color:var(--bordo);}
+    .tab-btn .badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--bordo);color:#fff;font-size:0.58rem;margin-left:0.4rem;}
+    .tab-panel{display:none;padding:2.5rem 3rem;}
+    .tab-panel.active{display:block;}
+
+    /* CARDS / GRIDS */
+    .section-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;margin-bottom:0.3rem;}
+    .section-sub{font-size:0.84rem;color:var(--text-light);line-height:1.7;margin-bottom:1.8rem;}
+
+    /* KPIs */
+    .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+    .kpi-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;padding:1.4rem 1.6rem;box-shadow:var(--shadow);}
+    .kpi-num{font-family:'Cormorant Garamond',serif;font-size:2.6rem;color:var(--bordo);line-height:1;}
+    .kpi-label{font-size:0.64rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-light);margin-top:0.2rem;}
+    .kpi-sub{font-size:0.78rem;color:var(--text-mid);margin-top:0.4rem;}
+
+    /* Turmas */
+    .turmas-grid{display:grid;gap:1.2rem;}
+    .turma-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);transition:all 0.3s;}
+    .turma-card:hover{box-shadow:var(--shadow-md);border-color:rgba(139,0,33,0.18);}
+    .turma-head{display:flex;align-items:center;justify-content:space-between;padding:1.4rem 1.6rem;border-bottom:1px solid rgba(139,0,33,0.07);flex-wrap:wrap;gap:0.8rem;}
+    .turma-nome{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;}
+    .turma-meta{font-size:0.78rem;color:var(--text-light);margin-top:0.15rem;}
+    .turma-badges{display:flex;gap:0.4rem;flex-wrap:wrap;}
+    .badge{display:inline-flex;padding:0.25rem 0.75rem;border-radius:50px;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;}
+    .badge-green{background:#eaf3de;color:#3B6D11;}
+    .badge-amber{background:#faeeda;color:#854F0B;}
+    .badge-red{background:var(--bordo-pale);color:var(--bordo);}
+    .badge-blue{background:#e6f0f5;color:#005577;}
+    .badge-gray{background:#f1efee;color:#5F5E5A;}
+    .turma-body{padding:1.2rem 1.6rem;}
+    /* barra ocupação */
+    .ocup-row{display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;}
+    .ocup-label{font-size:0.7rem;color:var(--text-light);white-space:nowrap;}
+    .ocup-bar{flex:1;height:5px;border-radius:3px;background:rgba(139,0,33,0.1);overflow:hidden;}
+    .ocup-fill{height:100%;border-radius:3px;background:var(--bordo);transition:width 0.5s;}
+    .ocup-fill.quase{background:#e6a820;}
+    .ocup-fill.cheio{background:#c0392b;}
+    .ocup-val{font-size:0.72rem;color:var(--bordo);white-space:nowrap;}
+    /* lista alunos inline */
+    .alunos-inline{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;}
+    .aluno-chip{display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border-radius:50px;background:var(--warm-white);border:1px solid rgba(139,0,33,0.1);font-size:0.72rem;color:var(--text-mid);}
+    .aluno-chip .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+    .dot-img{background:#3B6D11;} .dot-noimg{background:#e6a820;}
+    .turma-actions{display:flex;gap:0.6rem;padding-top:1rem;border-top:1px solid rgba(139,0,33,0.07);}
+    .btn-sm{padding:0.55rem 1.1rem;border-radius:50px;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;border:1.5px solid rgba(139,0,33,0.15);color:var(--text-mid);background:none;cursor:pointer;transition:all 0.25s;}
+    .btn-sm:hover{border-color:var(--bordo);color:var(--bordo);background:var(--bordo-pale);}
+    .btn-sm.danger:hover{border-color:#c0392b;color:#c0392b;background:#fdf0f0;}
+    .btn-sm.primary{background:var(--bordo);color:#fff;border-color:var(--bordo);}
+    .btn-sm.primary:hover{background:var(--bordo-light);}
+
+    /* Modal overlay */
+    .modal-bg{position:fixed;inset:0;background:rgba(42,26,31,0.55);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+    .modal-bg.open{display:flex;}
+    .modal{background:var(--warm-white);border-radius:28px;padding:2.2rem 2.4rem;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 32px 80px rgba(139,0,33,0.18);}
+    .modal-close{position:absolute;top:1.2rem;right:1.2rem;width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(139,0,33,0.15);display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:0.8rem;cursor:pointer;transition:all 0.2s;background:none;}
+    .modal-close:hover{border-color:var(--bordo);color:var(--bordo);}
+    .modal-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;margin-bottom:0.3rem;}
+    .modal-sub{font-size:0.84rem;color:var(--text-light);line-height:1.7;margin-bottom:1.5rem;}
+    .form-group{margin-bottom:1rem;}
+    .form-group label{display:block;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.4rem;}
+    .form-group textarea,.form-group select,.form-group input{width:100%;background:var(--cream);border:1.5px solid rgba(139,0,33,0.12);border-radius:14px;padding:0.8rem 1rem;font-family:'Jost',sans-serif;font-size:0.9rem;color:var(--text-dark);transition:border-color 0.3s;outline:none;appearance:none;}
+    .form-group textarea{min-height:90px;resize:vertical;}
+    .form-group textarea:focus,.form-group select:focus,.form-group input:focus{border-color:var(--bordo);box-shadow:0 0 0 4px rgba(139,0,33,0.06);}
+    .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:0.6rem;background:var(--bordo);color:#fff;font-size:0.74rem;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;padding:0.9rem 1.8rem;border-radius:50px;transition:all 0.3s;box-shadow:0 8px 24px rgba(139,0,33,0.18);cursor:pointer;border:none;}
+    .btn-primary:hover{background:var(--bordo-light);}
+    .btn-secondary{display:inline-flex;align-items:center;justify-content:center;padding:0.9rem 1.4rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);color:var(--bordo);font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.3s;cursor:pointer;background:none;}
+    .btn-secondary:hover{background:var(--bordo-pale);}
+    .btn-row{display:flex;gap:0.7rem;margin-top:1.2rem;flex-wrap:wrap;}
+    .msg{padding:0.7rem 1rem;border-radius:12px;font-size:0.82rem;margin-top:0.8rem;line-height:1.5;}
+    .msg-ok{background:#eef8f1;color:#2f6b41;border:1px solid rgba(47,107,65,.15);}
+    .msg-err{background:var(--bordo-pale);color:var(--bordo);border:1px solid rgba(139,0,33,.12);}
+    .msg-warn{background:#faeeda;color:#854F0B;border:1px solid rgba(133,79,11,.15);}
+
+    /* Alunos detalhado */
+    .aluno-row-full{display:flex;align-items:center;gap:0.9rem;padding:0.9rem 0;border-bottom:1px solid rgba(139,0,33,0.06);}
+    .aluno-row-full:last-child{border-bottom:none;}
+    .ava{width:38px;height:38px;border-radius:50%;background:var(--bordo-pale);color:var(--bordo);font-size:0.8rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .aluno-info{flex:1;min-width:0;}
+    .aluno-nome{font-size:0.9rem;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .aluno-det{font-size:0.74rem;color:var(--text-light);margin-top:0.1rem;}
+    .img-tag{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.2rem 0.6rem;border-radius:50px;}
+
+    /* Histórico cancelamentos */
+    .hist-list{display:grid;gap:0.7rem;}
+    .hist-item{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:16px;padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:0.9rem;}
+    .hist-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .hist-icon.cancel{background:#fdf0f0;} .hist-icon.repos{background:#eef8f1;}
+    .hist-body{flex:1;}
+    .hist-title{font-size:0.88rem;color:var(--text-dark);margin-bottom:0.15rem;}
+    .hist-meta{font-size:0.74rem;color:var(--text-light);}
+
+    /* Próximas aulas */
+    .agenda-grid{display:grid;gap:0.7rem;}
+    .agenda-item{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:18px;padding:1.1rem 1.4rem;display:flex;align-items:center;gap:1.2rem;transition:all 0.25s;}
+    .agenda-item:hover{border-color:rgba(139,0,33,0.2);box-shadow:var(--shadow-md);}
+    .agenda-date{text-align:center;min-width:48px;}
+    .agenda-dia{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--bordo);line-height:1;}
+    .agenda-mes{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);}
+    .agenda-info{flex:1;}
+    .agenda-nome{font-size:0.92rem;color:var(--text-dark);margin-bottom:0.15rem;}
+    .agenda-hora{font-size:0.76rem;color:var(--text-light);}
+    .agenda-ocup{font-size:0.72rem;color:var(--bordo);white-space:nowrap;}
+
+    /* Reposições geradas */
+    .repos-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:18px;padding:1.2rem 1.4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+    .repos-info{}
+    .repos-aluno{font-size:0.9rem;color:var(--text-dark);margin-bottom:0.15rem;}
+    .repos-det{font-size:0.76rem;color:var(--text-light);}
+    .repos-status{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.25rem 0.7rem;border-radius:50px;}
+    .repos-pendente{background:#faeeda;color:#854F0B;}
+    .repos-usada{background:#eaf3de;color:#3B6D11;}
+
+    @media(max-width:900px){
+      nav,.tabs,.tab-panel{padding-left:1.5rem;padding-right:1.5rem;}
+      .kpi-strip{grid-template-columns:repeat(2,1fr);}
+      .turma-head{flex-direction:column;align-items:flex-start;}
+    }
+    @media(max-width:600px){
+      .kpi-strip{grid-template-columns:1fr 1fr;}
+      .tab-panel{padding:1.5rem;}
+    }
+  </style>
 </head>
-<body class="app-body">
+<body>
 
-  <nav id="navbar" class="app-navbar">
-    <a href="{{ url_for('home') }}#home" class="nav-logo" aria-label="Ir para o início">
-      <img
-        src="{{ url_for('static', filename='logo.png') }}"
-        alt="Logo Clara Lucatti Estúdio de Dança"
-        class="nav-logo-mark"
-      >
-      <div class="nav-brand">Clara Lucatti <span>Área do professor</span></div>
-    </a>
+<nav>
+  <a href="{{ url_for('home') }}" class="nav-logo">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+    <div class="nav-brand">Clara Lucatti <span>Área da Professora</span></div>
+  </a>
+  <div class="nav-right">
+    <span class="nav-user">{{ user_name }}</span>
+    <button class="btn-logout" id="btnLogout">Sair</button>
+  </div>
+</nav>
 
-    <div class="nav-actions">
-      <span class="nav-user-chip">
-        {{ user_name if user_name else 'Professor' }}
-      </span>
-      <button type="button" class="nav-cta nav-cta-outline" id="logoutBtn">Sair</button>
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tabVisao">Visão geral</button>
+  <button class="tab-btn" data-tab="tabTurmas">Minhas turmas</button>
+  <button class="tab-btn" data-tab="tabAlunos">Alunos</button>
+  <button class="tab-btn" data-tab="tabAgenda">Agenda</button>
+  <button class="tab-btn" data-tab="tabReposicoes">Reposições <span class="badge" id="badgeReps">0</span></button>
+  <button class="tab-btn" data-tab="tabHistorico">Histórico</button>
+</div>
+
+<!-- ══ VISÃO GERAL ══ -->
+<div class="tab-panel active" id="tabVisao">
+  <div class="section-title">Olá, <em style="font-style:italic;color:var(--bordo);">{{ user_name.split()[0] }}</em></div>
+  <p class="section-sub">Aqui está um resumo da sua semana e das suas turmas ativas.</p>
+  <div class="kpi-strip" id="kpiStrip">
+    <div class="kpi-card"><div class="kpi-num" id="kTurmas">—</div><div class="kpi-label">Turmas ativas</div></div>
+    <div class="kpi-card"><div class="kpi-num" id="kAlunos">—</div><div class="kpi-label">Alunos no total</div><div class="kpi-sub" id="kAlunosSub"></div></div>
+    <div class="kpi-card"><div class="kpi-num" id="kImg">—</div><div class="kpi-label">Autorizam imagem</div></div>
+    <div class="kpi-card"><div class="kpi-num" id="kReps">—</div><div class="kpi-label">Reposições pendentes</div></div>
+  </div>
+  <div class="section-title" style="font-size:1.3rem;margin-bottom:1rem;">Próximas aulas desta semana</div>
+  <div class="agenda-grid" id="agendaVisao"></div>
+</div>
+
+<!-- ══ MINHAS TURMAS ══ -->
+<div class="tab-panel" id="tabTurmas">
+  <div class="section-title">Minhas turmas</div>
+  <p class="section-sub">Visualize a ocupação, veja os alunos e cancele aulas quando necessário. Cada cancelamento gera automaticamente uma reposição especial para cada aluno da turma.</p>
+  <div class="turmas-grid" id="turmasGrid"></div>
+</div>
+
+<!-- ══ ALUNOS ══ -->
+<div class="tab-panel" id="tabAlunos">
+  <div class="section-title">Todos os alunos</div>
+  <p class="section-sub">Alunos com ao menos uma turma sua. A bolinha verde indica autorização de uso de imagem.</p>
+  <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <input id="buscaAluno" type="text" placeholder="Buscar por nome ou e-mail…" style="flex:1;min-width:200px;background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.55rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.86rem;color:var(--text-dark);outline:none;">
+    <select id="filtroImg" style="background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.55rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.84rem;color:var(--text-dark);outline:none;appearance:none;">
+      <option value="">Todos</option>
+      <option value="1">Autoriza imagem</option>
+      <option value="0">Não autoriza</option>
+    </select>
+  </div>
+  <div id="alunosGrid"></div>
+</div>
+
+<!-- ══ AGENDA ══ -->
+<div class="tab-panel" id="tabAgenda">
+  <div class="section-title">Agenda completa</div>
+  <p class="section-sub">Todas as suas aulas dos próximos 30 dias.</p>
+  <div class="agenda-grid" id="agendaFull"></div>
+</div>
+
+<!-- ══ REPOSIÇÕES ══ -->
+<div class="tab-panel" id="tabReposicoes">
+  <div class="section-title">Reposições geradas</div>
+  <p class="section-sub">Cada aula cancelada gera uma reposição especial para cada aluno. O aluno pode usar a reposição para se inscrever em qualquer aula disponível, inclusive fora do seu pacote.</p>
+  <div id="reposGrid" style="display:grid;gap:0.8rem;"></div>
+</div>
+
+<!-- ══ HISTÓRICO ══ -->
+<div class="tab-panel" id="tabHistorico">
+  <div class="section-title">Histórico de cancelamentos</div>
+  <p class="section-sub">Registro de todas as aulas que foram canceladas por você.</p>
+  <div class="hist-list" id="histGrid"></div>
+</div>
+
+<!-- MODAL: CANCELAR AULA -->
+<div class="modal-bg" id="modalCancelar">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('modalCancelar')">✕</button>
+    <div class="modal-title">Cancelar aula</div>
+    <div class="modal-sub" id="cancelarSub">Esta ação irá gerar uma reposição especial para cada aluno matriculado.</div>
+    <input type="hidden" id="cancelarIdTurma">
+    <input type="hidden" id="cancelarDataAula">
+    <div class="form-group">
+      <label>Data da aula a cancelar</label>
+      <input id="cancelarData" type="date">
     </div>
-  </nav>
+    <div class="form-group">
+      <label>Motivo do cancelamento</label>
+      <textarea id="cancelarMotivo" placeholder="Informe o motivo para registrar no histórico e notificar os alunos…"></textarea>
+    </div>
+    <div id="cancelarMsg"></div>
+    <div class="btn-row">
+      <button class="btn-primary" id="btnConfirmarCancelar">Confirmar cancelamento</button>
+      <button class="btn-secondary" onclick="fecharModal('modalCancelar')">Voltar</button>
+    </div>
+  </div>
+</div>
 
-  <main class="app-layout">
-    <aside class="app-sidebar">
-      <div class="sidebar-user">
-        <div class="sidebar-avatar">
-          {{ (user_name[:1] if user_name else 'P')|upper }}
-        </div>
+<!-- MODAL: LISTA COMPLETA ALUNOS DA TURMA -->
+<div class="modal-bg" id="modalAlunos">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('modalAlunos')">✕</button>
+    <div class="modal-title" id="modalAlunosTitle">Alunos da turma</div>
+    <div class="modal-sub" id="modalAlunosSub"></div>
+    <div id="modalAlunosList"></div>
+  </div>
+</div>
+
+<script>
+// ── estado ─────────────────────────────────────────────────────
+let _data = null;
+
+async function carregarDados() {
+  const r = await fetch('/professor/dados');
+  _data = await r.json();
+  renderTudo();
+}
+
+function renderTudo() {
+  if (!_data || !_data.ok) return;
+  const { turmas, reposicoes, historico } = _data;
+
+  // KPIs
+  const totalAlunos = [...new Set(turmas.flatMap(t => t.alunos.map(a => a.id_cadastro)))].length;
+  const totalImg    = turmas.flatMap(t => t.alunos).filter(a => a.termo_imagem).length;
+  const repsP       = reposicoes.filter(r => !r.usada).length;
+  document.getElementById('kTurmas').textContent  = turmas.length;
+  document.getElementById('kAlunos').textContent  = totalAlunos;
+  document.getElementById('kImg').textContent     = totalImg;
+  document.getElementById('kReps').textContent    = repsP;
+  document.getElementById('badgeReps').textContent = repsP;
+  if (!totalImg && totalAlunos)
+    document.getElementById('kAlunosSub').textContent = `${totalAlunos - totalImg} sem autorização`;
+
+  // Agenda visão geral (próximas 7 aulas)
+  const agendaItens = gerarAgenda(turmas, 7);
+  renderAgenda(agendaItens, 'agendaVisao');
+  renderAgenda(gerarAgenda(turmas, 30), 'agendaFull');
+
+  // Turmas
+  renderTurmas(turmas);
+
+  // Alunos
+  renderAlunos(turmas);
+
+  // Reposições
+  renderReposicoes(reposicoes);
+
+  // Histórico
+  renderHistorico(historico);
+}
+
+// ── AGENDA ─────────────────────────────────────────────────────
+function gerarAgenda(turmas, limite) {
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const DIAS = { 'seg':1,'segunda':1,'ter':2,'terça':2,'terca':2,'qua':3,'quarta':3,'qui':4,'quinta':4,'sex':5,'sexta':5,'sáb':6,'sab':6,'sabado':6 };
+  const itens = [];
+  turmas.forEach(t => {
+    const diasStr = (t.dias_semana || '').toLowerCase().split(/[,\s·]+/).filter(Boolean);
+    const diasNum = diasStr.map(d => DIAS[d.trim()]).filter(x => x !== undefined);
+    for (let offset = 0; offset < 60 && itens.length < limite * turmas.length; offset++) {
+      const d = new Date(hoje); d.setDate(hoje.getDate() + offset);
+      if (diasNum.includes(d.getDay())) {
+        itens.push({ data: new Date(d), turma: t });
+      }
+    }
+  });
+  itens.sort((a, b) => a.data - b.data || a.turma.hora_inicio.localeCompare(b.turma.hora_inicio));
+  return itens.slice(0, limite);
+}
+
+function renderAgenda(itens, elId) {
+  const el = document.getElementById(elId);
+  if (!itens.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhuma aula encontrada.</p>'; return; }
+  const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  el.innerHTML = itens.map(({ data, turma }) => {
+    const cap = turma.capacidade_maxima || 0;
+    const ocp = turma.alunos.length;
+    const pct = cap > 0 ? Math.min(Math.round(ocp/cap*100), 100) : 0;
+    return `<div class="agenda-item">
+      <div class="agenda-date">
+        <div class="agenda-dia">${data.getDate()}</div>
+        <div class="agenda-mes">${MESES[data.getMonth()]}</div>
+      </div>
+      <div class="agenda-info">
+        <div class="agenda-nome">${turma.modalidade} · ${turma.sala}</div>
+        <div class="agenda-hora">${turma.hora_inicio} – ${turma.hora_fim}</div>
+      </div>
+      <div class="agenda-ocup">${ocp}${cap ? '/'+cap : ''} alunos${cap && pct >= 100 ? ' · lotada' : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── TURMAS ─────────────────────────────────────────────────────
+function renderTurmas(turmas) {
+  const el = document.getElementById('turmasGrid');
+  if (!turmas.length) { el.innerHTML = '<p style="color:var(--text-light);">Nenhuma turma encontrada.</p>'; return; }
+  el.innerHTML = turmas.map(t => {
+    const cap = t.capacidade_maxima || 0;
+    const ocp = t.alunos.length;
+    const pct = cap > 0 ? Math.min(Math.round(ocp/cap*100), 100) : 0;
+    const fillClass = pct >= 100 ? 'cheio' : pct >= 75 ? 'quase' : '';
+    const chips = t.alunos.slice(0, 8).map(a =>
+      `<span class="aluno-chip"><span class="dot ${a.termo_imagem ? 'dot-img':'dot-noimg'}"></span>${a.nome_completo.split(' ')[0]}</span>`
+    ).join('') + (t.alunos.length > 8 ? `<span class="aluno-chip">+${t.alunos.length-8}</span>` : '');
+    return `<div class="turma-card">
+      <div class="turma-head">
         <div>
-          <div class="sidebar-user-name">{{ user_name if user_name else 'Professor(a)' }}</div>
-          <div class="sidebar-user-meta">professor</div>
+          <div class="turma-nome">${t.nome_exibicao || (t.modalidade + ' · ' + t.sala)}</div>
+          <div class="turma-meta">${t.dias_semana} · ${t.hora_inicio} às ${t.hora_fim} · ${t.sala}</div>
+        </div>
+        <div class="turma-badges">
+          <span class="badge badge-blue">${t.modalidade}</span>
+          ${cap > 0 ? `<span class="badge ${pct>=100?'badge-red':pct>=75?'badge-amber':'badge-green'}">${ocp}/${cap}</span>` : `<span class="badge badge-gray">${ocp} alunos</span>`}
         </div>
       </div>
-
-      <nav class="sidebar-menu">
-        <button type="button" class="sidebar-item active" data-tab="resumo">Resumo</button>
-        <button type="button" class="sidebar-item" data-tab="aulas-hoje">Aulas de hoje</button>
-        <button type="button" class="sidebar-item" data-tab="turmas">Minhas turmas</button>
-        <button type="button" class="sidebar-item" data-tab="presencas">Presenças</button>
-        <button type="button" class="sidebar-item" data-tab="anotacoes">Anotações</button>
-      </nav>
-    </aside>
-
-    <section class="app-content">
-      <!-- RESUMO -->
-      <section class="app-tab active" id="tab-resumo">
-        <header class="app-tab-header">
-          <h1>Bem-vinda, {{ user_name if user_name else 'profa.' }} 🎓</h1>
-          <p>Veja um panorama rápido das suas aulas, turmas e presenças do dia.</p>
-        </header>
-
-        <div class="kpi-grid">
-          <article class="kpi-card">
-            <div class="kpi-label">Aulas hoje</div>
-            <div class="kpi-value">04</div>
-            <div class="kpi-note">Entre bases, spin e coreo</div>
-          </article>
-
-          <article class="kpi-card">
-            <div class="kpi-label">Alunas esperadas</div>
-            <div class="kpi-value">26</div>
-            <div class="kpi-note">Somando todas as turmas</div>
-          </article>
-
-          <article class="kpi-card">
-            <div class="kpi-label">Presença média</div>
-            <div class="kpi-value">87%</div>
-            <div class="kpi-note">Últimos 30 dias</div>
-          </article>
+      <div class="turma-body">
+        ${cap > 0 ? `<div class="ocup-row"><span class="ocup-label">Ocupação</span><div class="ocup-bar"><div class="ocup-fill ${fillClass}" style="width:${pct}%;"></div></div><span class="ocup-val">${pct}%</span></div>` : ''}
+        <div class="alunos-inline">${chips || '<span style="font-size:0.8rem;color:var(--text-light);">Nenhum aluno alocado</span>'}</div>
+        <div class="turma-actions">
+          <button class="btn-sm primary" onclick="abrirModalAlunos(${t.id_turma})">Ver todos os alunos</button>
+          <button class="btn-sm danger" onclick="abrirCancelar(${t.id_turma}, '${(t.nome_exibicao || t.modalidade).replace(/'/g,"\\'")}')">Cancelar aula</button>
         </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-        <div class="panel-grid">
-          <article class="panel-card">
-            <h2>Próximas aulas</h2>
-            <ul class="simple-list">
-              <li>18h00 · Bases de Pole · Turma iniciantes</li>
-              <li>19h00 · Pole Arte · Turma mista</li>
-              <li>20h00 · Pole Spin 2 e 3 · Intermediário</li>
-            </ul>
-          </article>
-
-          <article class="panel-card">
-            <h2>Pontos de atenção</h2>
-            <ul class="simple-list">
-              <li>3 alunas em retorno pós-pausa</li>
-              <li>1 aluna com restrição de ombro</li>
-              <li>Semana de gravações de coreos</li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
-      <!-- AULAS DE HOJE -->
-      <section class="app-tab" id="tab-aulas-hoje">
-        <header class="app-tab-header">
-          <h1>Aulas de hoje</h1>
-          <p>Organize rapidamente cada turma, veja alunas confirmadas e marque início de aula.</p>
-        </header>
-
-        <div class="class-list">
-          <article class="class-card">
-            <div>
-              <div class="class-time">18h00 · Sala principal</div>
-              <div class="class-name">Bases de Pole</div>
-              <div class="class-meta">10 alunas confirmadas · 2 em lista de espera</div>
-            </div>
-            <button type="button" class="checkin-btn">Abrir chamada</button>
-          </article>
-
-          <article class="class-card">
-            <div>
-              <div class="class-time">19h00 · Sala principal</div>
-              <div class="class-name">Pole Arte</div>
-              <div class="class-meta">8 alunas confirmadas · 1 remanejada</div>
-            </div>
-            <button type="button" class="checkin-btn">Abrir chamada</button>
-          </article>
-
-          <article class="class-card">
-            <div>
-              <div class="class-time">20h00 · Sala principal</div>
-              <div class="class-name">Pole Spin 2 e 3</div>
-              <div class="class-meta">8 alunas confirmadas · nível intermediário/avançado</div>
-            </div>
-            <button type="button" class="checkin-btn">Abrir chamada</button>
-          </article>
-        </div>
-      </section>
-
-      <!-- TURMAS -->
-      <section class="app-tab" id="tab-turmas">
-        <header class="app-tab-header">
-          <h1>Minhas turmas</h1>
-          <p>Visualize as turmas fixas sob sua responsabilidade.</p>
-        </header>
-
-        <div class="panel-grid">
-          <article class="panel-card">
-            <h2>Bases de Pole · Ter/Qui</h2>
-            <ul class="simple-list">
-              <li>Terça · 18h00 · sala principal</li>
-              <li>Quinta · 09h00 · sala principal</li>
-              <li>Turma: iniciantes / base técnica</li>
-              <li>Alunas ativas: 14</li>
-            </ul>
-          </article>
-
-          <article class="panel-card">
-            <h2>Pole Arte · Ter</h2>
-            <ul class="simple-list">
-              <li>Terça · 19h00 · sala principal</li>
-              <li>Foco: expressão, criação e presença</li>
-              <li>Alunas ativas: 10</li>
-            </ul>
-          </article>
-
-          <article class="panel-card">
-            <h2>Pole Spin 2 e 3 · Qui</h2>
-            <ul class="simple-list">
-              <li>Quinta · 19h00 · sala principal</li>
-              <li>Nível: intermediário / avançado</li>
-              <li>Alunas ativas: 8</li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
-      <!-- PRESENÇAS -->
-      <section class="app-tab" id="tab-presencas">
-        <header class="app-tab-header">
-          <h1>Presenças</h1>
-          <p>Registre quickly presenças do dia ou consulte a frequência recente.</p>
-        </header>
-
-        <div class="panel-card">
-          <h2>Presenças de hoje</h2>
-          <div class="presenca-list">
-            <div class="presenca-item">
-              <span>Aluna A</span>
-              <button type="button" class="tag-btn tag-btn-ok">Presente</button>
-            </div>
-            <div class="presenca-item">
-              <span>Aluna B</span>
-              <button type="button" class="tag-btn">Marcar presença</button>
-            </div>
-            <div class="presenca-item">
-              <span>Aluna C</span>
-              <button type="button" class="tag-btn">Marcar presença</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ANOTAÇÕES -->
-      <section class="app-tab" id="tab-anotacoes">
-        <header class="app-tab-header">
-          <h1>Anotações rápidas</h1>
-          <p>Registre lembretes sobre turmas, processos, ajustes de coreo e observações gerais.</p>
-        </header>
-
-        <div class="panel-card">
-          <form id="notesForm">
-            <div class="form-group">
-              <label for="nota_texto">Anotações</label>
-              <textarea id="nota_texto" rows="5" placeholder="Ex.: revisar combo de giro na turma de quinta, adaptar sequência para aluna com dor no ombro..."></textarea>
-            </div>
-            <button type="submit" class="btn-primary app-btn-inline">Salvar rascunho</button>
-            <span class="form-hint" id="notesHint" style="margin-left:0.5rem;"></span>
-          </form>
-        </div>
-      </section>
-    </section>
-  </main>
-
-  <script>
-    document.querySelectorAll('.sidebar-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.app-tab').forEach(tab => tab.classList.remove('active'));
-
-        btn.classList.add('active');
-        const tab = document.getElementById('tab-' + btn.dataset.tab);
-        if (tab) tab.classList.add('active');
-      });
-    });
-
-    document.querySelectorAll('.tag-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('tag-btn-ok');
-        btn.textContent = btn.classList.contains('tag-btn-ok') ? 'Presente' : 'Marcar presença';
-      });
-    });
-
-    const notesForm = document.getElementById('notesForm');
-    const notesHint = document.getElementById('notesHint');
-
-    if (notesForm) {
-      notesForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        notesHint.textContent = 'Rascunho atualizado (somente local por enquanto).';
-      });
+// ── ALUNOS ─────────────────────────────────────────────────────
+function renderAlunos(turmas, busca = '', filtroImg = '') {
+  const el = document.getElementById('alunosGrid');
+  const seen = new Set();
+  const alunos = [];
+  turmas.forEach(t => t.alunos.forEach(a => {
+    if (!seen.has(a.id_cadastro)) {
+      seen.add(a.id_cadastro);
+      alunos.push({ ...a, turmas: [t.modalidade] });
+    } else {
+      const ex = alunos.find(x => x.id_cadastro === a.id_cadastro);
+      if (ex && !ex.turmas.includes(t.modalidade)) ex.turmas.push(t.modalidade);
     }
+  }));
 
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        try {
-          await fetch('{{ url_for("logout") }}', {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-          });
-        } catch(e) {}
-        window.location.href = '{{ url_for("home") }}#home';
-      });
-    }
-  </script>
+  const filtrados = alunos.filter(a => {
+    const b = busca.toLowerCase();
+    const nOk = !b || a.nome_completo.toLowerCase().includes(b) || (a.email||'').toLowerCase().includes(b);
+    const iOk = filtroImg === '' || String(a.termo_imagem ? 1 : 0) === filtroImg;
+    return nOk && iOk;
+  });
+
+  if (!filtrados.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhum aluno encontrado.</p>'; return; }
+
+  el.innerHTML = `<div style="background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);">` +
+    filtrados.map((a, i) => {
+      const ini = a.nome_completo.split(' ').slice(0,2).map(p=>p[0].toUpperCase()).join('');
+      return `<div class="aluno-row-full" style="padding:0.9rem 1.4rem;${i===0?'border-top:none;':''}">
+        <div class="ava">${ini}</div>
+        <div class="aluno-info">
+          <div class="aluno-nome">${a.nome_completo}</div>
+          <div class="aluno-det">${a.email || ''} · ${a.turmas.join(', ')}</div>
+        </div>
+        <span class="img-tag ${a.termo_imagem ? 'badge-green':'badge-amber'}">${a.termo_imagem ? '✓ Imagem' : '✗ S/ imagem'}</span>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+document.getElementById('buscaAluno').addEventListener('input', () =>
+  renderAlunos(_data?.turmas || [], document.getElementById('buscaAluno').value, document.getElementById('filtroImg').value));
+document.getElementById('filtroImg').addEventListener('change', () =>
+  renderAlunos(_data?.turmas || [], document.getElementById('buscaAluno').value, document.getElementById('filtroImg').value));
+
+// ── REPOSIÇÕES ────────────────────────────────────────────────
+function renderReposicoes(repos) {
+  const el = document.getElementById('reposGrid');
+  if (!repos.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhuma reposição gerada ainda.</p>'; return; }
+  el.innerHTML = repos.map(r => `
+    <div class="repos-card">
+      <div class="repos-info">
+        <div class="repos-aluno">${r.aluno_nome}</div>
+        <div class="repos-det">Turma cancelada: ${r.turma_nome} · ${r.data_aula} · ${r.motivo || 'sem motivo informado'}</div>
+      </div>
+      <span class="repos-status ${r.usada ? 'repos-usada':'repos-pendente'}">${r.usada ? 'Usada':'Pendente'}</span>
+    </div>`).join('');
+}
+
+// ── HISTÓRICO ─────────────────────────────────────────────────
+function renderHistorico(hist) {
+  const el = document.getElementById('histGrid');
+  if (!hist.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhum cancelamento registrado.</p>'; return; }
+  el.innerHTML = hist.map(h => `
+    <div class="hist-item">
+      <div class="hist-icon cancel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 15l6-6M15 15l-6-6"/></svg>
+      </div>
+      <div class="hist-body">
+        <div class="hist-title">${h.turma_nome} · ${h.data_aula}</div>
+        <div class="hist-meta">${h.motivo || 'Motivo não informado'} · ${h.alunos_afetados} aluno(s) afetados · ${h.cancelado_em}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── MODAL CANCELAR ────────────────────────────────────────────
+function abrirCancelar(idTurma, nome) {
+  document.getElementById('cancelarIdTurma').value = idTurma;
+  document.getElementById('cancelarSub').textContent = `${nome} — cada aluno matriculado receberá uma reposição especial.`;
+  document.getElementById('cancelarData').value = new Date().toISOString().split('T')[0];
+  document.getElementById('cancelarMotivo').value = '';
+  document.getElementById('cancelarMsg').innerHTML = '';
+  abrirModal('modalCancelar');
+}
+
+document.getElementById('btnConfirmarCancelar').addEventListener('click', async () => {
+  const id    = document.getElementById('cancelarIdTurma').value;
+  const data  = document.getElementById('cancelarData').value;
+  const motivo= document.getElementById('cancelarMotivo').value.trim();
+  const msgEl = document.getElementById('cancelarMsg');
+  if (!data)   { msgEl.innerHTML = '<div class="msg msg-err">Informe a data da aula.</div>'; return; }
+  if (!motivo) { msgEl.innerHTML = '<div class="msg msg-warn">Recomendamos informar o motivo.</div>'; }
+  const r = await fetch('/professor/cancelar-aula', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id_turma: id, data_aula: data, motivo })
+  });
+  const d = await r.json();
+  msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
+  if (d.ok) { setTimeout(() => { fecharModal('modalCancelar'); carregarDados(); }, 1200); }
+});
+
+// ── MODAL ALUNOS DA TURMA ─────────────────────────────────────
+function abrirModalAlunos(idTurma) {
+  const t = _data?.turmas?.find(x => x.id_turma === idTurma);
+  if (!t) return;
+  document.getElementById('modalAlunosTitle').textContent = t.nome_exibicao || t.modalidade;
+  document.getElementById('modalAlunosSub').textContent   = `${t.alunos.length} aluno(s) · ${t.dias_semana} · ${t.hora_inicio}`;
+  const list = document.getElementById('modalAlunosList');
+  if (!t.alunos.length) { list.innerHTML = '<p style="color:var(--text-light);">Nenhum aluno nesta turma.</p>'; }
+  else {
+    list.innerHTML = t.alunos.map(a => {
+      const ini = a.nome_completo.split(' ').slice(0,2).map(p=>p[0].toUpperCase()).join('');
+      return `<div class="aluno-row-full">
+        <div class="ava">${ini}</div>
+        <div class="aluno-info">
+          <div class="aluno-nome">${a.nome_completo}</div>
+          <div class="aluno-det">${a.email || ''} · Plano: ${a.plano || '—'}</div>
+        </div>
+        <span class="img-tag ${a.termo_imagem ? 'badge-green':'badge-amber'}">${a.termo_imagem ? '✓':'✗'}</span>
+      </div>`;
+    }).join('');
+  }
+  abrirModal('modalAlunos');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+});
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  try { await fetch("{{ url_for('logout') }}", { method:'POST' }); } catch(e){}
+  window.location.href = "{{ url_for('home') }}";
+});
+
+carregarDados();
+</script>
 </body>
 </html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modalidades · Clara Lucatti Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bordo:#8B0021;--bordo-light:#A3002A;--bordo-pale:#f5e6ea;--cream:#fdf8f5;--warm-white:#fff9f6;--text-dark:#2a1a1f;--text-mid:#6b4a55;--text-light:#b08090;--shadow:0 18px 45px rgba(139,0,33,0.08);}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;}
+    a{text-decoration:none;color:inherit;} button{border:none;background:none;cursor:pointer;font:inherit;}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(253,248,245,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,0,33,0.08);}
+    .nav-left{display:flex;align-items:center;gap:1rem;}
+    .btn-back{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);padding:0.5rem 1rem;border:1.5px solid rgba(139,0,33,0.15);border-radius:50px;transition:all 0.3s;}
+    .btn-back:hover{border-color:var(--bordo);color:var(--bordo);}
+    .nav-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;letter-spacing:0.1em;}
+    .page-layout{display:grid;grid-template-columns:460px 1fr;min-height:calc(100vh - 65px);}
+    .sidebar{background:var(--cream);border-right:1px solid rgba(139,0,33,0.08);padding:2.5rem 2rem;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto;}
+    .sidebar-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;margin-bottom:0.4rem;}
+    .sidebar-sub{font-size:0.85rem;color:var(--text-light);line-height:1.7;margin-bottom:1.8rem;}
+    .form-group{margin-bottom:1rem;}
+    .form-group label{display:block;font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.45rem;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--warm-white);border:1.5px solid rgba(139,0,33,0.12);border-radius:14px;padding:0.85rem 1rem;font-family:'Jost',sans-serif;font-size:0.9rem;color:var(--text-dark);transition:border-color 0.3s;outline:none;appearance:none;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--bordo);box-shadow:0 0 0 4px rgba(139,0,33,0.06);}
+    .form-group textarea{min-height:100px;resize:vertical;}
+    .upload-zone{border:1.5px dashed rgba(139,0,33,0.2);border-radius:14px;padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--warm-white);}
+    .upload-zone:hover{border-color:var(--bordo);background:var(--bordo-pale);}
+    .upload-zone p{font-size:0.82rem;color:var(--text-light);margin-top:0.5rem;line-height:1.6;}
+    .upload-zone input{display:none;}
+    .upload-preview{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.7rem;}
+    .preview-img{width:60px;height:60px;border-radius:10px;object-fit:cover;border:1px solid rgba(139,0,33,0.1);}
+    .btn-primary{display:flex;align-items:center;justify-content:center;gap:0.6rem;background:var(--bordo);color:#fff;font-size:0.76rem;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;padding:0.95rem;border-radius:50px;width:100%;margin-top:0.5rem;transition:all 0.3s;box-shadow:0 8px 28px rgba(139,0,33,0.2);}
+    .btn-primary:hover{background:var(--bordo-light);transform:translateY(-2px);}
+    .btn-secondary{display:flex;align-items:center;justify-content:center;width:100%;margin-top:0.6rem;padding:0.85rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);color:var(--bordo);font-size:0.74rem;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.3s;}
+    .btn-secondary:hover{background:var(--bordo-pale);}
+    .main{padding:2.5rem;background:var(--warm-white);}
+    .main-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;margin-bottom:1.5rem;}
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;}
+    .mod-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:22px;overflow:hidden;transition:all 0.3s;}
+    .mod-card:hover{box-shadow:var(--shadow);transform:translateY(-4px);border-color:rgba(139,0,33,0.18);}
+    .mod-card-img{height:140px;background:var(--bordo-pale);overflow:hidden;position:relative;}
+    .mod-card-img img{width:100%;height:100%;object-fit:cover;}
+    .mod-card-img .no-img{display:flex;align-items:center;justify-content:center;height:100%;opacity:0.3;}
+    .mod-card-body{padding:1.2rem;}
+    .mod-card-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;margin-bottom:0.3rem;}
+    .mod-card-resp{font-size:0.78rem;color:var(--text-light);margin-bottom:0.7rem;}
+    .mod-card-pills{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;}
+    .pill{display:inline-flex;padding:0.25rem 0.7rem;border-radius:50px;background:var(--bordo-pale);color:var(--bordo);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;}
+    .card-actions{display:flex;gap:0.5rem;}
+    .btn-edit,.btn-del{flex:1;padding:0.55rem;border-radius:50px;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.25s;cursor:pointer;}
+    .btn-edit{border:1.5px solid rgba(139,0,33,0.15);color:var(--bordo);background:none;}
+    .btn-edit:hover{background:var(--bordo-pale);}
+    .btn-del{border:1.5px solid rgba(139,0,33,0.12);color:var(--text-light);background:none;}
+    .btn-del:hover{border-color:var(--bordo);color:var(--bordo);background:var(--bordo-pale);}
+    @media(max-width:900px){.page-layout{grid-template-columns:1fr;}.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid rgba(139,0,33,0.08);}nav{padding:1rem 1.5rem;}.main{padding:1.5rem;}.cards-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a href="{{ url_for('admin_page') }}" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Painel
+    </a>
+    <span class="nav-title">Modalidades</span>
+  </div>
+  <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);">{{ user_name }}</span>
+</nav>
+
+<div class="page-layout">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Nova modalidade</h2>
+    <p class="sidebar-sub">Preencha os dados da aula. A pasta de fotos é criada automaticamente pelo servidor.</p>
+
+    <input type="hidden" id="m-id">
+    <div class="form-group">
+      <label>Título da modalidade</label>
+      <input id="m-titulo" type="text" placeholder="Ex.: Pole Coreográfico Bases">
+    </div>
+    <div class="form-group">
+      <label>Professora responsável</label>
+      <select id="m-resp">
+        <option value="">Selecione</option>
+        {% for p in professoras %}
+        <option value="{{ p.id_cadastro }}">{{ p.nome_completo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Resumo (cards)</label>
+      <input id="m-resumo" type="text" placeholder="Texto curto para exibição em cards">
+    </div>
+    <div class="form-group">
+      <label>Descrição completa</label>
+      <textarea id="m-desc" placeholder="Objetivo, nível, benefícios, proposta corporal…"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Nível</label>
+      <select id="m-nivel">
+        <option value="">Selecione</option>
+        <option>Iniciante</option>
+        <option>Intermediário</option>
+        <option>Avançado</option>
+        <option>Misto</option>
+      </select>
+    </div>
+
+    <!-- FOTO PROFESSORA -->
+    <div class="form-group">
+      <label>Foto da professora</label>
+      <div class="upload-zone" id="zoneProf" onclick="document.getElementById('fileProf').click()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <p>Clique para selecionar a foto da professora<br><small>JPG ou PNG · salvo em static/modalidades/[slug]/professora/</small></p>
+        <input id="fileProf" type="file" accept="image/*">
+        <div class="upload-preview" id="prevProf"></div>
+      </div>
+    </div>
+
+    <!-- GALERIA MODALIDADE -->
+    <div class="form-group">
+      <label>Fotos / vídeos da modalidade</label>
+      <div class="upload-zone" id="zoneGal" onclick="document.getElementById('fileGal').click()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <p>Selecione fotos ou vídeos da aula<br><small>Múltiplos arquivos · salvo em static/modalidades/[slug]/galeria/</small></p>
+        <input id="fileGal" type="file" accept="image/*,video/*" multiple>
+        <div class="upload-preview" id="prevGal"></div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btnSalvar">Salvar modalidade</button>
+    <button class="btn-secondary" id="btnLimpar">Limpar</button>
+  </aside>
+
+  <main class="main">
+    <div class="main-title">Modalidades cadastradas <span style="font-size:0.85rem;color:var(--text-light);font-family:'Jost',sans-serif;">· {{ modalidades|length }} ativas</span></div>
+    <div class="cards-grid">
+      {% for m in modalidades %}
+      <div class="mod-card"
+           data-id="{{ m.id_modalidade }}"
+           data-titulo="{{ m.titulo }}"
+           data-resumo="{{ m.resumo }}"
+           data-nivel="{{ m.nivel }}"
+           data-resp="{{ m.id_responsavel_cadastro }}"
+           data-desc="{{ m.descricao }}">
+        <div class="mod-card-img">
+          {% if m.foto_professora %}
+            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/professora/' ~ m.foto_professora) }}" alt="{{ m.titulo }}">
+          {% else %}
+            <div class="no-img">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+          {% endif %}
+        </div>
+        <div class="mod-card-body">
+          <div class="mod-card-title">{{ m.titulo }}</div>
+          <div class="mod-card-resp">{{ m.responsavel_nome or 'Sem professora definida' }}</div>
+          <div class="mod-card-pills">
+            {% if m.nivel %}<span class="pill">{{ m.nivel }}</span>{% endif %}
+            {% if m.responsavel_tipo %}<span class="pill">{{ m.responsavel_tipo }}</span>{% endif %}
+          </div>
+          <div class="card-actions">
+            <button class="btn-edit">Editar</button>
+            <button class="btn-del" data-id="{{ m.id_modalidade }}">Excluir</button>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-light);">
+        <p>Nenhuma modalidade cadastrada ainda.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+
+<script>
+  // Preview de imagens
+  function bindPreview(inputId, previewId){
+    document.getElementById(inputId).addEventListener("change", function(){
+      const prev = document.getElementById(previewId);
+      prev.innerHTML="";
+      Array.from(this.files).forEach(f=>{
+        if(!f.type.startsWith("image/")) return;
+        const img=document.createElement("img");
+        img.className="preview-img";
+        img.src=URL.createObjectURL(f);
+        prev.appendChild(img);
+      });
+    });
+  }
+  bindPreview("fileProf","prevProf");
+  bindPreview("fileGal","prevGal");
+
+  // Salvar (multipart)
+  document.getElementById("btnSalvar").addEventListener("click", async()=>{
+    const fd = new FormData();
+    const id = document.getElementById("m-id").value;
+    if(id) fd.append("id_modalidade", id);
+    fd.append("titulo", document.getElementById("m-titulo").value);
+    fd.append("resumo", document.getElementById("m-resumo").value);
+    fd.append("descricao", document.getElementById("m-desc").value);
+    fd.append("id_responsavel_cadastro", document.getElementById("m-resp").value);
+    fd.append("nivel", document.getElementById("m-nivel").value);
+    const prof = document.getElementById("fileProf").files[0];
+    if(prof) fd.append("foto_professora", prof);
+    Array.from(document.getElementById("fileGal").files).forEach(f=>fd.append("galeria", f));
+
+    const r = await fetch("{{ url_for('salvar_modalidade') }}", {method:"POST", body:fd});
+    const d = await r.json();
+    alert(d.mensagem);
+    if(d.ok) location.reload();
+  });
+
+  // Limpar
+  document.getElementById("btnLimpar").addEventListener("click",()=>{
+    document.getElementById("m-id").value="";
+    ["m-titulo","m-resumo","m-desc"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("m-resp").value="";
+    document.getElementById("m-nivel").value="";
+    document.getElementById("prevProf").innerHTML="";
+    document.getElementById("prevGal").innerHTML="";
+  });
+
+  // Editar
+  document.querySelectorAll(".btn-edit").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const c = btn.closest(".mod-card");
+      document.getElementById("m-id").value = c.dataset.id;
+      document.getElementById("m-titulo").value = c.dataset.titulo||"";
+      document.getElementById("m-resumo").value = c.dataset.resumo||"";
+      document.getElementById("m-desc").value = c.dataset.desc||"";
+      document.getElementById("m-resp").value = c.dataset.resp||"";
+      document.getElementById("m-nivel").value = c.dataset.nivel||"";
+      window.scrollTo({top:0,behavior:"smooth"});
+    });
+  });
+
+  // Excluir
+  document.querySelectorAll(".btn-del").forEach(btn=>{
+    btn.addEventListener("click", async()=>{
+      if(!confirm("Excluir esta modalidade?")) return;
+      const r = await fetch(`/admin/modalidade/${btn.dataset.id}`,{method:"DELETE"});
+      const d = await r.json();
+      alert(d.mensagem);
+      if(d.ok) location.reload();
+    });
+  });
+</script>
+</body>
+</html>

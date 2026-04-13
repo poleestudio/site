@@ -5,6 +5,23 @@ from functools import wraps
 from dotenv import load_dotenv
 import pyodbc
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import date, datetime, timedelta
+from flask import jsonify, request, render_template, session
+import pyodbc
+import os
+import re
+import uuid
+import unicodedata
+import pyodbc
+from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta   # pip install python-dateutil
+from flask import jsonify, request, render_template, session
+import pyodbc
+from flask import (
+    Flask, render_template, request, jsonify, session,
+    flash, current_app, url_for
+)
+from werkzeug.utils import secure_filename
 
 load_dotenv("credencial.env")
 
@@ -97,348 +114,951 @@ def login_page():
 
     return render_template("login.html")
 
-
-@app.route("/aluno")
-@login_required(tipo="aluno")
-def aluno_page():
-    return render_template(
-        "aluno.html",
-        user_name=session.get("user_name", "Aluno"),
-        user_tipo=session.get("user_tipo", "aluno")
-    )
-
-
+# ── helpers ──────────────────────────────────────────────────────
+def slugify(txt):
+    txt = unicodedata.normalize("NFKD", txt).encode("ascii", "ignore").decode()
+    txt = re.sub(r"[^\w\s-]", "", txt).strip().lower()
+    return re.sub(r"[\s_-]+", "-", txt)
+ 
+UPLOAD_ROOT = os.path.join("static", "modalidades")
+ALLOWED_IMG = {"png", "jpg", "jpeg", "webp", "gif"}
+ALLOWED_VID = {"mp4", "mov", "webm"}
+ 
+def allowed(filename, exts):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in exts
+ 
+def salvar_arquivo(file, pasta, exts):
+    if not file or file.filename == "":
+        return None
+    if not allowed(file.filename, exts):
+        return None
+    os.makedirs(pasta, exist_ok=True)
+    fname = secure_filename(file.filename)
+    file.save(os.path.join(pasta, fname))
+    return fname
+ 
+ 
+# ================================================================
+# DASHBOARD PRINCIPAL (simplificado — só KPIs)
+# ================================================================
 @app.route("/admin")
 @login_required(tipo="administrador")
 def admin_page():
-    conn = None
-    cursor = None
+    conn = cursor = None
     try:
-        conn = get_conn()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT id_cadastro, nome_completo, email, cpf, tipo_cadastro
-            FROM cadastro
-            ORDER BY tipo_cadastro, nome_completo
-        """)
-        usuarios = []
-        for row in cursor.fetchall():
-            usuarios.append({
-                "id_cadastro": row[0],
-                "nome_completo": row[1],
-                "email": row[2],
-                "cpf": row[3],
-                "tipo_cadastro": row[4]
-            })
-
-        cursor.execute("""
-            SELECT id_cadastro, nome_completo, tipo_cadastro
-            FROM cadastro
-            WHERE tipo_cadastro IN ('professor', 'administrador')
-            ORDER BY nome_completo
-        """)
-        responsaveis_modalidade = []
-        for row in cursor.fetchall():
-            responsaveis_modalidade.append({
-                "id_cadastro": row[0],
-                "nome_completo": row[1],
-                "tipo_cadastro": row[2]
-            })
-
-        cursor.execute("""
-            SELECT id_professora, nome, instagram
-            FROM professoras
-            WHERE ativo = 1
-            ORDER BY nome
-        """)
-        professoras = [{"id_professora": r[0], "nome": r[1], "instagram": r[2] or ""} for r in cursor.fetchall()]
-
-        cursor.execute("""
-            SELECT m.id_modalidade,
-                   m.titulo,
-                   m.resumo,
-                   m.descricao,
-                   m.nivel,
-                   m.id_professora,
-                   p.nome,
-                   p.instagram
-            FROM modalidades m
-            LEFT JOIN professoras p ON p.id_professora = m.id_professora
-            WHERE m.ativo = 1
-            ORDER BY m.titulo
-        """)
-        modalidades = [{
-            "id_modalidade": r[0],
-            "titulo": r[1],
-            "resumo": r[2] or "",
-            "descricao": r[3] or "",
-            "nivel": r[4] or "",
-            "id_professora": r[5],
-            "professora": r[6] or "",
-            "instagram_prof": r[7] or ""
-        } for r in cursor.fetchall()]
-
-        cursor.execute("SELECT id_sala, nome, descricao FROM salas WHERE ativo = 1 ORDER BY nome")
-        salas = [{"id_sala": r[0], "nome": r[1], "descricao": r[2] or ""} for r in cursor.fetchall()]
-
-        cursor.execute("""
-            SELECT t.id_turma, t.nome_exibicao, m.titulo, s.nome, h.hora_inicio, h.hora_fim,
-                   h.vezes_semana, h.dias_semana, p.nome
-            FROM turmas t
-            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
-            JOIN salas s ON s.id_sala = t.id_sala
-            JOIN horarios h ON h.id_horario = t.id_horario
-            JOIN professoras p ON p.id_professora = t.id_professora
-            WHERE t.ativo = 1
-            ORDER BY m.titulo, h.hora_inicio
-        """)
-        turmas = [{
-            "id_turma": r[0],
-            "nome_exibicao": r[1] or "",
-            "modalidade": r[2],
-            "sala": r[3],
-            "hora_inicio": str(r[4])[:5],
-            "hora_fim": str(r[5])[:5],
-            "vezes_semana": r[6],
-            "dias_semana": r[7] or "",
-            "professora": r[8]
-        } for r in cursor.fetchall()]
-
-        cursor.execute("""
-            SELECT id_pacote, nome, tipo_cobranca, valor, aulas_por_semana, ativo
-            FROM pacotes
-            ORDER BY nome
-        """)
-        pacotes = [{
-            "id_pacote": r[0],
-            "nome": r[1],
-            "tipo_cobranca": r[2],
-            "valor": float(r[3]),
-            "aulas_por_semana": r[4],
-            "ativo": bool(r[5])
-        } for r in cursor.fetchall()]
-
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        def count(sql):
+            cursor.execute(sql)
+            return cursor.fetchone()[0] or 0
+ 
         return render_template(
             "admin.html",
             user_name=session.get("user_name", "Administrador"),
-            user_tipo=session.get("user_tipo", "administrador"),
-            usuarios=usuarios,
-            responsaveis_modalidade=responsaveis_modalidade,
-            professoras=professoras,
-            modalidades=modalidades,
-            salas=salas,
-            turmas=turmas,
-            pacotes=pacotes,
+            total_usuarios=count("SELECT COUNT(*) FROM cadastro"),
+            total_modalidades=count("SELECT COUNT(*) FROM modalidades WHERE ativo=1"),
+            total_turmas=count("SELECT COUNT(*) FROM turmas WHERE ativo=1"),
+            total_pacotes=count("SELECT COUNT(*) FROM pacotes"),
         )
-
     except pyodbc.Error as e:
-        flash(f"Erro ao carregar painel: {e}", "erro")
-        return render_template(
-            "admin.html",
-            user_name=session.get("user_name", "Administrador"),
-            user_tipo=session.get("user_tipo", "administrador"),
-            usuarios=[],
-            responsaveis_modalidade=[],
-            professoras=[],
-            modalidades=[],
-            salas=[],
-            turmas=[],
-            pacotes=[],
-        )
+        flash(str(e), "erro")
+        return render_template("admin.html", user_name=session.get("user_name","Administrador"),
+            total_usuarios=0,total_modalidades=0,total_turmas=0,total_pacotes=0)
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-
-@app.route("/admin/modalidade", methods=["POST"])
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+# ================================================================
+# SUB-PÁGINA: USUÁRIOS
+# ================================================================
+@app.route("/admin/usuarios")
 @login_required(tipo="administrador")
-def salvar_modalidade():
-    data = request.get_json(silent=True) or {}
-
-    id_modalidade = data.get("id_modalidade")  # se vier, é edição
-    titulo = (data.get("titulo") or "").strip()
-    resumo = (data.get("resumo") or "").strip()
-    descricao = (data.get("descricao") or "").strip()
-    id_professora = data.get("id_professora")
-    nivel = (data.get("nivel") or "").strip()
-
-    if not titulo:
-        return jsonify(ok=False, mensagem="Informe o título da modalidade."), 400
-
-    conn = None
-    cursor = None
+def admin_usuarios():
+    conn = cursor = None
     try:
-        conn = get_conn()
-        cursor = conn.cursor()
-
-        if id_modalidade:
-            # UPDATE
-            cursor.execute(
-                """
-                UPDATE modalidades
-                   SET titulo = ?,
-                       resumo = ?,
-                       descricao = ?,
-                       id_professora = ?,
-                       nivel = ?
-                 WHERE id_modalidade = ?
-                """,
-                (titulo, resumo, descricao, id_professora, nivel, id_modalidade)
-            )
-        else:
-            # INSERT
-            cursor.execute(
-                """
-                INSERT INTO modalidades
-                    (titulo, resumo, descricao, id_professora, nivel, ativo)
-                VALUES (?, ?, ?, ?, ?, 1)
-                """,
-                (titulo, resumo, descricao, id_professora, nivel)
-            )
-
-        conn.commit()
-        return jsonify(ok=True, mensagem="Modalidade salva com sucesso."), 200
-
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id_cadastro,nome_completo,email,cpf,tipo_cadastro
+            FROM cadastro ORDER BY nome_completo
+        """)
+        usuarios = [{"id_cadastro":r[0],"nome_completo":r[1],"email":r[2],"cpf":r[3],"tipo_cadastro":r[4]}
+                    for r in cursor.fetchall()]
+        return render_template("admin_usuarios.html",
+            user_name=session.get("user_name","Administrador"), usuarios=usuarios)
     except pyodbc.Error as e:
-        if conn:
-            conn.rollback()
-        return jsonify(ok=False, mensagem=f"Erro ao salvar modalidade: {e}"), 500
+        flash(str(e),"erro")
+        return render_template("admin_usuarios.html",
+            user_name=session.get("user_name","Administrador"), usuarios=[])
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-
-@app.route("/admin/modalidade/<int:id_modalidade>", methods=["DELETE"])
-@login_required(tipo="administrador")
-def excluir_modalidade(id_modalidade):
-    conn = None
-    cursor = None
-    try:
-        conn = get_conn()
-        cursor = conn.cursor()
-        # aqui prefiro inativar em vez de deletar duro
-        cursor.execute(
-            "UPDATE modalidades SET ativo = 0 WHERE id_modalidade = ?",
-            (id_modalidade,)
-        )
-        conn.commit()
-        return jsonify(ok=True, mensagem="Modalidade excluída (inativada)."), 200
-
-    except pyodbc.Error as e:
-        if conn:
-            conn.rollback()
-        return jsonify(ok=False, mensagem=f"Erro ao excluir modalidade: {e}"), 500
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()      
-            
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
 @app.route("/admin/cadastrar-usuario", methods=["POST"])
 @login_required(tipo="administrador")
 def cadastrar_usuario_admin():
     data = request.get_json(silent=True) or {}
-
-    nome = (data.get("nome_completo") or "").strip()
+    nome  = (data.get("nome_completo") or "").strip()
     email = (data.get("email") or "").strip().lower()
-    cpf = only_digits(data.get("cpf") or "")
+    cpf   = only_digits(data.get("cpf") or "")
     senha = data.get("senha") or ""
-    tipo_cadastro = (data.get("tipo_cadastro") or "").strip().lower()
-    termo_imagem = 1 if bool(data.get("termo_imagem")) else 0
-    termo_seguranca = 1 if bool(data.get("termo_seguranca")) else 0
-
-    tipos_validos = {"aluno", "professor", "administrador"}
-
-    if not nome or not email or not cpf or not senha or not tipo_cadastro:
-        return jsonify(ok=False, mensagem="Preencha todos os campos obrigatórios."), 400
-
-    if tipo_cadastro not in tipos_validos:
-        return jsonify(ok=False, mensagem="Tipo de cadastro inválido."), 400
-
-    if len(cpf) != 11 or not cpf.isdigit():
+    tipo  = (data.get("tipo_cadastro") or "").strip().lower()
+    t_img = 1 if data.get("termo_imagem") else 0
+    t_seg = 1 if data.get("termo_seguranca") else 0
+ 
+    if not all([nome, email, cpf, senha, tipo]):
+        return jsonify(ok=False, mensagem="Preencha todos os campos."), 400
+    if tipo not in {"aluno","professor","administrador"}:
+        return jsonify(ok=False, mensagem="Tipo inválido."), 400
+    if len(cpf) != 11:
         return jsonify(ok=False, mensagem="CPF inválido."), 400
-
     if not senha_forte_valida(senha):
-        return jsonify(
-            ok=False,
-            mensagem="A senha deve ter no mínimo 8 caracteres, com letra maiúscula, minúscula, número e símbolo."
-        ), 400
-
-    if tipo_cadastro == "aluno" and not termo_seguranca:
-        return jsonify(ok=False, mensagem="É necessário aceitar o termo de segurança para aluno."), 400
-
-    senha_hash = generate_password_hash(senha)
-
-    conn = None
-    cursor = None
-
+        return jsonify(ok=False, mensagem="Senha fraca. Use 8+ chars, maiúsc., número e símbolo."), 400
+ 
+    h = generate_password_hash(senha)
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM cadastro WHERE email=?", (email,))
+        if cursor.fetchone(): return jsonify(ok=False, mensagem="E-mail já cadastrado."), 400
+        cursor.execute("SELECT 1 FROM cadastro WHERE cpf=?", (cpf,))
+        if cursor.fetchone(): return jsonify(ok=False, mensagem="CPF já cadastrado."), 400
+        cursor.execute(
+            "INSERT INTO cadastro(nome_completo,email,cpf,senha_hash,termo_imagem,termo_seguranca,tipo_cadastro) VALUES(?,?,?,?,?,?,?)",
+            (nome,email,cpf,h,t_img,t_seg,tipo))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Usuário cadastrado com sucesso."), 201
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+@app.route("/admin/usuario/<int:id_cadastro>", methods=["DELETE"])
+@login_required(tipo="administrador")
+def excluir_usuario(id_cadastro):
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("DELETE FROM cadastro WHERE id_cadastro=?", (id_cadastro,))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Usuário removido.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+# ================================================================
+# SUB-PÁGINA: MODALIDADES
+# ================================================================
+@app.route("/admin/modalidades")
+@login_required(tipo="administrador")
+def admin_modalidades():
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        cursor.execute("""
+            SELECT c.id_cadastro, c.nome_completo
+            FROM cadastro c
+            WHERE c.tipo_cadastro IN ('professor','administrador')
+            ORDER BY c.nome_completo
+        """)
+        professoras = [{"id_cadastro":r[0],"nome_completo":r[1]} for r in cursor.fetchall()]
+ 
+        cursor.execute("""
+            SELECT m.id_modalidade, m.titulo, m.resumo, m.descricao, m.nivel,
+                   m.id_responsavel_cadastro, c.nome_completo, c.tipo_cadastro,
+                   m.slug, m.foto_professora
+            FROM modalidades m
+            LEFT JOIN cadastro c ON c.id_cadastro=m.id_responsavel_cadastro
+            WHERE m.ativo=1 ORDER BY m.titulo
+        """)
+        modalidades = []
+        for r in cursor.fetchall():
+            modalidades.append({
+                "id_modalidade": r[0], "titulo": r[1], "resumo": r[2] or "",
+                "descricao": r[3] or "", "nivel": r[4] or "",
+                "id_responsavel_cadastro": r[5], "responsavel_nome": r[6] or "",
+                "responsavel_tipo": r[7] or "", "slug": r[8] or "",
+                "foto_professora": r[9] or "",
+            })
+        return render_template("admin_modalidades.html",
+            user_name=session.get("user_name","Administrador"),
+            professoras=professoras, modalidades=modalidades)
+    except pyodbc.Error as e:
+        flash(str(e),"erro")
+        return render_template("admin_modalidades.html",
+            user_name=session.get("user_name","Administrador"),
+            professoras=[], modalidades=[])
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+@app.route("/admin/modalidade", methods=["POST"])
+@login_required(tipo="administrador")
+def salvar_modalidade():
+    # Aceita multipart/form-data por causa do upload de arquivos
+    id_modalidade       = request.form.get("id_modalidade") or None
+    titulo              = (request.form.get("titulo") or "").strip()
+    resumo              = (request.form.get("resumo") or "").strip()
+    descricao           = (request.form.get("descricao") or "").strip()
+    id_resp             = request.form.get("id_responsavel_cadastro") or None
+    nivel               = (request.form.get("nivel") or "").strip()
+    slug_val            = slugify(titulo) if titulo else ""
+ 
+    if not titulo:
+        return jsonify(ok=False, mensagem="Informe o título."), 400
+ 
+    # Diretórios de upload
+    pasta_prof  = os.path.join(UPLOAD_ROOT, slug_val, "professora")
+    pasta_gal   = os.path.join(UPLOAD_ROOT, slug_val, "galeria")
+ 
+    foto_prof = salvar_arquivo(request.files.get("foto_professora"), pasta_prof, ALLOWED_IMG)
+    for f in request.files.getlist("galeria"):
+        salvar_arquivo(f, pasta_gal, ALLOWED_IMG | ALLOWED_VID)
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        if id_modalidade:
+            sql = """UPDATE modalidades SET titulo=?,resumo=?,descricao=?,
+                     id_responsavel_cadastro=?,nivel=?,slug=?"""
+            params = [titulo,resumo,descricao,id_resp,nivel,slug_val]
+            if foto_prof:
+                sql += ",foto_professora=?"
+                params.append(foto_prof)
+            sql += " WHERE id_modalidade=?"
+            params.append(id_modalidade)
+            cursor.execute(sql, params)
+        else:
+            cursor.execute("""
+                INSERT INTO modalidades(titulo,resumo,descricao,id_responsavel_cadastro,nivel,slug,foto_professora,ativo)
+                VALUES(?,?,?,?,?,?,?,1)""",
+                (titulo,resumo,descricao,id_resp,nivel,slug_val,foto_prof))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Modalidade salva.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+@app.route("/admin/modalidade/<int:id_modalidade>", methods=["DELETE"])
+@login_required(tipo="administrador")
+def excluir_modalidade(id_modalidade):
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("UPDATE modalidades SET ativo=0 WHERE id_modalidade=?", (id_modalidade,))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Modalidade removida.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+# ================================================================
+# SUB-PÁGINA: HORÁRIOS & TURMAS & SALAS
+# ================================================================
+@app.route("/admin/horarios")
+@login_required(tipo="administrador")
+def admin_horarios():
+    conn = cursor = None
     try:
         conn = get_conn()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT 1 FROM cadastro WHERE email = ?", (email,))
-        if cursor.fetchone():
-            return jsonify(ok=False, mensagem="Já existe um cadastro com este e-mail."), 400
+        cursor.execute("""
+            SELECT id_sala, nome, descricao
+            FROM salas
+            WHERE ativo = 1
+            ORDER BY nome
+        """)
+        salas = [
+            {"id_sala": r[0], "nome": r[1], "descricao": r[2] or ""}
+            for r in cursor.fetchall()
+        ]
 
-        cursor.execute("SELECT 1 FROM cadastro WHERE cpf = ?", (cpf,))
-        if cursor.fetchone():
-            return jsonify(ok=False, mensagem="Já existe um cadastro com este CPF."), 400
+        cursor.execute("""
+            SELECT id_modalidade, titulo
+            FROM modalidades
+            WHERE ativo = 1
+            ORDER BY titulo
+        """)
+        modalidades = [
+            {"id_modalidade": r[0], "titulo": r[1]}
+            for r in cursor.fetchall()
+        ]
 
-        cursor.execute(
-            """
-            INSERT INTO cadastro (
-                nome_completo,
-                email,
-                cpf,
-                senha_hash,
-                termo_imagem,
-                termo_seguranca,
-                tipo_cadastro
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                nome,
-                email,
-                cpf,
-                senha_hash,
-                termo_imagem,
-                termo_seguranca,
-                tipo_cadastro
-            ),
+        cursor.execute("""
+            SELECT c.id_cadastro, c.nome_completo
+            FROM cadastro c
+            WHERE c.tipo_cadastro IN ('professor', 'administrador')
+            ORDER BY c.nome_completo
+        """)
+        professoras = [
+            {"id_professora": r[0], "nome": r[1]}
+            for r in cursor.fetchall()
+        ]
+
+        cursor.execute("""
+            SELECT
+                t.id_turma,
+                t.nome_exibicao,
+                t.id_modalidade,
+                m.titulo,
+                t.id_sala,
+                s.nome,
+                t.id_professora,
+                c.nome_completo,
+                h.hora_inicio,
+                h.hora_fim,
+                h.vezes_semana,
+                h.dias_semana,
+                t.capacidade_maxima,
+                (
+                    SELECT COUNT(*)
+                    FROM matriculas ma
+                    WHERE ma.id_turma = t.id_turma
+                      AND ma.ativo = 1
+                ) AS alunos_mat
+            FROM turmas t
+            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+            JOIN salas s ON s.id_sala = t.id_sala
+            JOIN horarios h ON h.id_horario = t.id_horario
+            LEFT JOIN cadastro c ON c.id_cadastro = t.id_professora
+            WHERE t.ativo = 1
+            ORDER BY m.titulo, h.hora_inicio
+        """)
+
+        turmas = []
+        for r in cursor.fetchall():
+            turmas.append({
+                "id_turma": r[0],
+                "nome_exibicao": r[1] or "",
+                "id_modalidade": r[2],
+                "modalidade": r[3],
+                "id_sala": r[4],
+                "sala": r[5],
+                "id_professora": r[6] or "",
+                "professora": r[7] or "",
+                "hora_inicio": str(r[8])[:5] if r[8] else "",
+                "hora_fim": str(r[9])[:5] if r[9] else "",
+                "vezes_semana": r[10],
+                "dias_semana": r[11] or "",
+                "capacidade_maxima": r[12] or 0,
+                "alunos_matriculados": r[13] or 0,
+            })
+
+        return render_template(
+            "admin_horarios.html",
+            user_name=session.get("user_name", "Administrador"),
+            salas=salas,
+            modalidades=modalidades,
+            professoras=professoras,
+            turmas=turmas
         )
 
-        conn.commit()
-        return jsonify(ok=True, mensagem="Usuário cadastrado com sucesso."), 201
-
     except pyodbc.Error as e:
-        if conn:
-            conn.rollback()
-        return jsonify(ok=False, mensagem=f"Erro ao salvar usuário: {str(e)}"), 500
-
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        return jsonify(ok=False, mensagem=f"Erro interno: {str(e)}"), 500
-
+        flash(str(e), "erro")
+        return render_template(
+            "admin_horarios.html",
+            user_name=session.get("user_name", "Administrador"),
+            salas=[],
+            modalidades=[],
+            professoras=[],
+            turmas=[]
+        )
     finally:
         if cursor:
             cursor.close()
         if conn:
             conn.close()
-                  
-@app.route("/professor")
-@login_required(tipo="professor")
-def professor_page():
-    return render_template(
-        "professor.html",
-        user_name=session.get("user_name", "Professor"),
-        user_tipo=session.get("user_tipo", "professor")
-    )
+ 
+ 
+# ── SALAS ────────────────────────────────────────────────────────
+@app.route("/admin/sala", methods=["POST"])
+@login_required(tipo="administrador")
+def salvar_sala():
+    data = request.get_json(silent=True) or {}
+    id_sala = data.get("id_sala")
+    nome    = (data.get("nome") or "").strip()
+    desc    = (data.get("descricao") or "").strip()
+    if not nome: return jsonify(ok=False, mensagem="Informe o nome da sala."), 400
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        if id_sala:
+            cursor.execute("UPDATE salas SET nome=?,descricao=? WHERE id_sala=?", (nome,desc,id_sala))
+        else:
+            cursor.execute("INSERT INTO salas(nome,descricao,ativo) VALUES(?,?,1)", (nome,desc))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Sala salva.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+@app.route("/admin/sala/<int:id_sala>", methods=["DELETE"])
+@login_required(tipo="administrador")
+def excluir_sala(id_sala):
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("UPDATE salas SET ativo=0 WHERE id_sala=?", (id_sala,))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Sala removida.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+# ── TURMAS ───────────────────────────────────────────────────────
+@app.route("/admin/turma", methods=["POST"])
+@login_required(tipo="administrador")
+def salvar_turma():
+    data = request.get_json(silent=True) or {}
 
+    id_turma    = data.get("id_turma")
+    id_modal    = data.get("id_modalidade")
+    id_sala     = data.get("id_sala")
+    id_prof     = data.get("id_professora") or None
+    hora_inicio = data.get("hora_inicio", "")
+    hora_fim    = data.get("hora_fim", "")
+    dias        = (data.get("dias_semana") or "").strip()
+    nome_exib   = (data.get("nome_exibicao") or "").strip()
+    cap         = data.get("capacidade_maxima")
+
+    if cap in ("", None):
+        cap = None
+
+    vezes = len([d for d in dias.split(",") if d.strip()]) if dias else 0
+
+    if not all([id_modal, id_sala, hora_inicio, hora_fim, dias]):
+        return jsonify(ok=False, mensagem="Preencha modalidade, sala, horário e dias."), 400
+
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        if id_turma:
+            cursor.execute("""
+                UPDATE horarios
+                   SET hora_inicio=?, hora_fim=?, vezes_semana=?, dias_semana=?
+                 WHERE id_horario=(SELECT id_horario FROM turmas WHERE id_turma=?)
+            """, (hora_inicio, hora_fim, vezes, dias, id_turma))
+
+            cursor.execute("""
+                UPDATE turmas
+                   SET id_modalidade=?,
+                       id_sala=?,
+                       id_professora=?,
+                       nome_exibicao=?,
+                       capacidade_maxima=?
+                 WHERE id_turma=?
+            """, (id_modal, id_sala, id_prof, nome_exib or None, cap, id_turma))
+
+        else:
+            cursor.execute("""
+                INSERT INTO horarios(hora_inicio, hora_fim, vezes_semana, dias_semana)
+                OUTPUT INSERTED.id_horario
+                VALUES (?, ?, ?, ?)
+            """, (hora_inicio, hora_fim, vezes, dias))
+
+            row = cursor.fetchone()
+            if not row or row[0] is None:
+                raise Exception("Não foi possível obter o id_horario inserido.")
+
+            id_horario = int(row[0])
+
+            cursor.execute("""
+                INSERT INTO turmas(
+                    id_modalidade,
+                    id_sala,
+                    id_professora,
+                    id_horario,
+                    nome_exibicao,
+                    capacidade_maxima,
+                    ativo
+                )
+                VALUES(?,?,?,?,?,?,1)
+            """, (id_modal, id_sala, id_prof, id_horario, nome_exib or None, cap))
+
+        conn.commit()
+        return jsonify(ok=True, mensagem="Turma salva.")
+    except pyodbc.Error as e:
+        if conn:
+            conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+ 
+@app.route("/admin/turma/<int:id_turma>", methods=["DELETE"])
+@login_required(tipo="administrador")
+def excluir_turma(id_turma):
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("UPDATE turmas SET ativo=0 WHERE id_turma=?", (id_turma,))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Turma removida.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+# ================================================================
+# SUB-PÁGINA: PACOTES
+# ================================================================
+# ================================================================
+# SUB-PÁGINA: PACOTES
+# ================================================================
+@app.route("/admin/pacotes")
+@login_required(tipo="administrador")
+def admin_pacotes_page():
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id_modalidade, titulo
+            FROM modalidades
+            WHERE ativo = 1
+            ORDER BY titulo
+        """)
+        modalidades = [
+            {"id_modalidade": r[0], "titulo": r[1]}
+            for r in cursor.fetchall()
+        ]
+
+        cursor.execute("""
+            SELECT id_pacote, nome, tipo_cobranca, valor,
+                   aulas_por_semana, qt_modalidades, ativo, observacao
+            FROM pacotes
+            ORDER BY nome
+        """)
+        pacotes = []
+
+        for r in cursor.fetchall():
+            pid = r[0]
+
+            cursor2 = conn.cursor()
+            cursor2.execute("""
+                SELECT pm.id_modalidade, m.titulo
+                FROM pacote_modalidades pm
+                JOIN modalidades m ON m.id_modalidade = pm.id_modalidade
+                WHERE pm.id_pacote = ?
+                ORDER BY m.titulo
+            """, (pid,))
+            mods = cursor2.fetchall()
+            cursor2.close()
+
+            pacotes.append({
+                "id_pacote": pid,
+                "nome": r[1],
+                "tipo_cobranca": r[2],
+                "valor": float(r[3] or 0),
+                "aulas_por_semana": r[4] or 1,
+                "qt_modalidades": r[5] or 1,
+                "ativo": bool(r[6]),
+                "observacao": r[7] or "",
+                "modalidades_ids": [str(m[0]) for m in mods],
+                "modalidades_nomes": [m[1] for m in mods],
+            })
+
+        return render_template(
+            "admin_pacotes.html",
+            user_name=session.get("user_name", "Administrador"),
+            modalidades=modalidades,
+            pacotes=pacotes
+        )
+
+    except pyodbc.Error as e:
+        flash(str(e), "erro")
+        return render_template(
+            "admin_pacotes.html",
+            user_name=session.get("user_name", "Administrador"),
+            modalidades=[],
+            pacotes=[]
+        )
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@app.route("/admin/pacote", methods=["POST"])
+@login_required(tipo="administrador")
+def salvar_pacote_api():
+    data = request.get_json(silent=True) or {}
+
+    id_pacote = data.get("id_pacote")
+    nome = (data.get("nome") or "").strip()
+    tipo = (data.get("tipo_cobranca") or "mensal").strip()
+    valor = float(data.get("valor") or 0)
+    aulas = int(data.get("aulas_por_semana") or 1)
+    qt_mod = int(data.get("qt_modalidades") or 1)
+    status = (data.get("status") or "ativo").strip()
+    obs = (data.get("observacao") or "").strip()
+    mod_ids = data.get("modalidades_ids") or []
+
+    ativo = 1 if status == "ativo" else 0
+
+    if not nome:
+        return jsonify(ok=False, mensagem="Informe o nome do pacote."), 400
+
+    if qt_mod < 1:
+        return jsonify(ok=False, mensagem="A quantidade de modalidades deve ser no mínimo 1."), 400
+
+    if not mod_ids:
+        return jsonify(ok=False, mensagem="Selecione pelo menos uma modalidade."), 400
+
+    if len(mod_ids) > qt_mod:
+        return jsonify(ok=False, mensagem=f"Selecione no máximo {qt_mod} modalidade(s)."), 400
+
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        if id_pacote:
+            cursor.execute("""
+                UPDATE pacotes
+                   SET nome = ?,
+                       tipo_cobranca = ?,
+                       valor = ?,
+                       aulas_por_semana = ?,
+                       qt_modalidades = ?,
+                       ativo = ?,
+                       observacao = ?
+                 WHERE id_pacote = ?
+            """, (nome, tipo, valor, aulas, qt_mod, ativo, obs, id_pacote))
+
+            cursor.execute("DELETE FROM pacote_modalidades WHERE id_pacote = ?", (id_pacote,))
+
+        else:
+            cursor.execute("""
+                INSERT INTO pacotes(
+                    nome, tipo_cobranca, valor,
+                    aulas_por_semana, qt_modalidades, ativo, observacao
+                )
+                OUTPUT INSERTED.id_pacote
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (nome, tipo, valor, aulas, qt_mod, ativo, obs))
+
+            row = cursor.fetchone()
+            if not row or row[0] is None:
+                raise Exception("Não foi possível obter o id do pacote.")
+
+            id_pacote = int(row[0])
+
+        for mid in mod_ids:
+            cursor.execute("""
+                INSERT INTO pacote_modalidades(id_pacote, id_modalidade)
+                VALUES (?, ?)
+            """, (id_pacote, int(mid)))
+
+        conn.commit()
+        return jsonify(ok=True, mensagem="Pacote salvo.")
+
+    except pyodbc.Error as e:
+        if conn:
+            conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@app.route("/admin/pacote/<int:id_pacote>", methods=["DELETE"])
+@login_required(tipo="administrador")
+def excluir_pacote_api(id_pacote):
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM pacote_modalidades WHERE id_pacote = ?", (id_pacote,))
+        cursor.execute("DELETE FROM pacotes WHERE id_pacote = ?", (id_pacote,))
+
+        conn.commit()
+        return jsonify(ok=True, mensagem="Pacote excluído.")
+
+    except pyodbc.Error as e:
+        if conn:
+            conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+# ================================================================
+# SUB-PÁGINA: ALOCAÇÃO DE ALUNOS
+# ================================================================
+@app.route("/admin/alocacao")
+@login_required(tipo="administrador")
+def admin_alocacao():
+    return render_template("admin_alocacao.html",
+        user_name=session.get("user_name","Administrador"))
+ 
+ 
+@app.route("/admin/alocacao/turmas")
+@login_required(tipo="administrador")
+def alocacao_turmas():
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            SELECT t.id_turma, t.nome_exibicao, m.id_modalidade, m.titulo,
+                   s.nome, h.hora_inicio, h.hora_fim, h.dias_semana, t.capacidade_maxima
+            FROM turmas t
+            JOIN modalidades m ON m.id_modalidade=t.id_modalidade
+            JOIN salas s ON s.id_sala=t.id_sala
+            JOIN horarios h ON h.id_horario=t.id_horario
+            WHERE t.ativo=1 ORDER BY m.titulo,h.hora_inicio
+        """)
+        turmas = []
+        for r in cursor.fetchall():
+            turmas.append({
+                "id_turma":r[0],"nome_exibicao":r[1] or "","id_modalidade":r[2],
+                "modalidade":r[3],"sala":r[4],
+                "hora_inicio":str(r[5])[:5] if r[5] else "","hora_fim":str(r[6])[:5] if r[6] else "",
+                "dias_semana":r[7] or "","capacidade_maxima":r[8] or 0,
+            })
+ 
+        cursor.execute("""
+            SELECT ma.id_turma, c.id_cadastro, c.nome_completo, c.email,
+                   p.nome AS plano
+            FROM matriculas ma
+            JOIN cadastro c ON c.id_cadastro=ma.id_aluno
+            LEFT JOIN aluno_pacote ap ON ap.id_aluno=c.id_cadastro AND ap.ativo=1
+            LEFT JOIN pacotes p ON p.id_pacote=ap.id_pacote
+            WHERE ma.ativo=1 ORDER BY c.nome_completo
+        """)
+        matriculas = {}
+        for r in cursor.fetchall():
+            t = r[0]
+            if t not in matriculas: matriculas[t] = []
+            matriculas[t].append({"id_cadastro":r[1],"nome_completo":r[2],"email":r[3] or "","plano":r[4] or ""})
+ 
+        return jsonify(ok=True, turmas=turmas, matriculas=matriculas)
+    except pyodbc.Error as e:
+        return jsonify(ok=False, mensagem=str(e), turmas=[], matriculas={}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+@app.route("/admin/alocacao/alunos")
+@login_required(tipo="administrador")
+def alocacao_alunos():
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            SELECT c.id_cadastro, c.nome_completo, c.email,
+                   p.nome AS plano, p.aulas_por_semana,
+                   ap.id_pacote
+            FROM cadastro c
+            LEFT JOIN aluno_pacote ap ON ap.id_aluno=c.id_cadastro AND ap.ativo=1
+            LEFT JOIN pacotes p ON p.id_pacote=ap.id_pacote
+            WHERE c.tipo_cadastro='aluno'
+            ORDER BY c.nome_completo
+        """)
+        alunos = [{"id_cadastro":r[0],"nome_completo":r[1],"email":r[2] or "",
+                   "plano":r[3] or "","aulas_por_semana":r[4] or 0,"id_pacote":r[5]}
+                  for r in cursor.fetchall()]
+        return jsonify(ok=True, alunos=alunos)
+    except pyodbc.Error as e:
+        return jsonify(ok=False, mensagem=str(e), alunos=[]), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+ 
+ 
+@app.route("/admin/alocacao/matricular", methods=["POST"])
+@login_required(tipo="administrador")
+def matricular_aluno():
+    data = request.get_json(silent=True) or {}
+    id_turma = data.get("id_turma")
+    id_aluno = data.get("id_aluno")
+
+    if not id_turma or not id_aluno:
+        return jsonify(ok=False, mensagem="Informe id_turma e id_aluno."), 400
+
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        # 1. Dados da turma (capacidade + modalidade)
+        cursor.execute("""
+            SELECT t.capacidade_maxima,
+                   (SELECT COUNT(*) FROM matriculas ma
+                    WHERE ma.id_turma = t.id_turma AND ma.ativo = 1) AS ocup,
+                   t.id_modalidade
+            FROM turmas t
+            WHERE t.id_turma = ?
+        """, (id_turma,))
+        row = cursor.fetchone()
+        if not row:
+            return jsonify(ok=False, mensagem="Turma não encontrada."), 404
+
+        cap, ocup, id_modal = row[0] or 0, row[1] or 0, row[2]
+
+        # 2. Capacidade
+        if cap > 0 and ocup >= cap:
+            return jsonify(
+                ok=False,
+                codigo="TURMA_CHEIA",
+                mensagem=f"Turma lotada. Capacidade máxima: {cap} alunos."
+            ), 400
+
+        # 3. Plano do aluno: precisa ter pacote ativo
+        cursor.execute("""
+            SELECT ap.id_pacote, p.nome, p.aulas_por_semana
+            FROM aluno_pacote ap
+            JOIN pacotes p ON p.id_pacote = ap.id_pacote
+            WHERE ap.id_aluno = ? AND ap.ativo = 1
+        """, (id_aluno,))
+        pacote_row = cursor.fetchone()
+        if not pacote_row:
+            return jsonify(
+                ok=False,
+                codigo="SEM_PLANO",
+                mensagem="O aluno não possui um pacote de aulas ativo."
+            ), 400
+
+        id_pacote, nome_plano, aulas_semanais = pacote_row[0], pacote_row[1], pacote_row[2] or 0
+
+        # 4. Verificar se o pacote permite a modalidade da turma
+        cursor.execute("""
+            SELECT pm.id_modalidade
+            FROM pacote_modalidades pm
+            WHERE pm.id_pacote = ?
+        """, (id_pacote,))
+        mods_permitidas = {r[0] for r in cursor.fetchall()}
+
+        # Se o pacote tiver modalidades definidas, precisa conter essa
+        if mods_permitidas and int(id_modal) not in mods_permitidas:
+            return jsonify(
+                ok=False,
+                codigo="PLANO_INCOMPATIVEL",
+                mensagem=f"O plano \"{nome_plano}\" do aluno não inclui esta modalidade."
+            ), 400
+
+        # 5. (Opcional) Limitar aulas por semana conforme o plano
+        if aulas_semanais > 0:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM matriculas ma
+                JOIN turmas t ON t.id_turma = ma.id_turma
+                JOIN horarios h ON h.id_horario = t.id_horario
+                WHERE ma.id_aluno = ?
+                  AND ma.ativo = 1
+                  AND h.vezes_semana >= 1
+            """, (id_aluno,))
+            qtd_atual = cursor.fetchone()[0] or 0
+
+            if qtd_atual >= aulas_semanais:
+                return jsonify(
+                    ok=False,
+                    codigo="LIMITE_AULAS",
+                    mensagem=f"O aluno já atingiu o limite de {aulas_semanais} aula(s) por semana do plano \"{nome_plano}\"."
+                ), 400
+
+        # 6. Já matriculado nesta turma?
+        cursor.execute("""
+            SELECT id_matricula, ativo
+            FROM matriculas
+            WHERE id_turma = ? AND id_aluno = ?
+        """, (id_turma, id_aluno))
+        exist = cursor.fetchone()
+
+        if exist:
+            if exist[1]:
+                return jsonify(ok=False, mensagem="Aluno já matriculado nesta turma."), 400
+            cursor.execute("UPDATE matriculas SET ativo = 1 WHERE id_matricula = ?", (exist[0],))
+        else:
+            cursor.execute("""
+                INSERT INTO matriculas(id_turma, id_aluno, ativo)
+                VALUES (?, ?, 1)
+            """, (id_turma, id_aluno))
+
+        conn.commit()
+        return jsonify(ok=True, mensagem="Aluno matriculado."), 201
+
+    except pyodbc.Error as e:
+        if conn:
+            conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+ 
+@app.route("/admin/alocacao/desmatricular", methods=["DELETE"])
+@login_required(tipo="administrador")
+def desmatricular_aluno():
+    data = request.get_json(silent=True) or {}
+    id_turma = data.get("id_turma")
+    id_aluno = data.get("id_aluno")
+    if not id_turma or not id_aluno:
+        return jsonify(ok=False, mensagem="Informe id_turma e id_aluno."), 400
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("UPDATE matriculas SET ativo=0 WHERE id_turma=? AND id_aluno=? AND ativo=1", (id_turma,id_aluno))
+        if cursor.rowcount == 0:
+            return jsonify(ok=False, mensagem="Matrícula não encontrada."), 404
+        conn.commit()
+        return jsonify(ok=True, mensagem="Matrícula removida.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+                          
 
 # ========== CONTATO ==========
 
@@ -626,6 +1246,1706 @@ def logout():
     session.clear()
     return jsonify(ok=True, mensagem="Logout realizado."), 200
 
+WORKSHOP_UPLOAD = os.path.join("static", "workshops")
+ALLOWED_IMG = {"png", "jpg", "jpeg", "webp", "gif"}
+ 
+def _save_img(file, pasta):
+    if not file or file.filename == "":
+        return None
+    ext = file.filename.rsplit(".", 1)[-1].lower()
+    if ext not in ALLOWED_IMG:
+        return None
+    os.makedirs(pasta, exist_ok=True)
+    fname = secure_filename(file.filename)
+    file.save(os.path.join(pasta, fname))
+    return fname
+# ================================================================
+# SUB-PÁGINA: PRIMEIRA AULA
+# ================================================================
+ 
+@app.route("/admin/primeira-aula")
+@login_required(tipo="administrador")
+def admin_primeira_aula():
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
 
+        cursor.execute("""
+            SELECT
+                m.id_modalidade,
+                m.titulo,
+                m.nivel,
+                (
+                    SELECT COUNT(*)
+                    FROM primeira_aula_itens i
+                    WHERE i.id_modalidade = m.id_modalidade
+                      AND i.ativo = 1
+                ) AS total_itens
+            FROM modalidades m
+            WHERE m.ativo = 1
+            ORDER BY m.titulo
+        """)
+
+        modalidades = []
+        for r in cursor.fetchall():
+            modalidades.append({
+                "id_modalidade": r[0],
+                "titulo": r[1],
+                "nivel": r[2] or "",
+                "total_itens": r[3] or 0,
+            })
+
+        return render_template(
+            "admin_primeira_aula.html",
+            user_name=session.get("user_name", "Administrador"),
+            modalidades=modalidades
+        )
+
+    except pyodbc.Error:
+        return render_template(
+            "admin_primeira_aula.html",
+            user_name=session.get("user_name", "Administrador"),
+            modalidades=[]
+        )
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@app.route("/admin/primeira-aula/<int:id_modalidade>/itens")
+@login_required(tipo="administrador")
+def listar_itens_primeira_aula(id_modalidade):
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                id_item,
+                id_modalidade,
+                nome,
+                categoria,
+                funcao,
+                observacao,
+                obrigatorio,
+                ordem
+            FROM primeira_aula_itens
+            WHERE id_modalidade = ?
+              AND ativo = 1
+            ORDER BY
+                CASE WHEN ordem IS NULL THEN 1 ELSE 0 END,
+                ordem,
+                nome
+        """, (id_modalidade,))
+
+        itens = []
+        for r in cursor.fetchall():
+            itens.append({
+                "id_item": r[0],
+                "id_modalidade": r[1],
+                "nome": r[2] or "",
+                "categoria": r[3] or "outros",
+                "funcao": r[4] or "",
+                "observacao": r[5] or "",
+                "obrigatorio": bool(r[6]),
+                "ordem": r[7],
+            })
+
+        return jsonify(ok=True, itens=itens)
+
+    except pyodbc.Error as e:
+        return jsonify(ok=False, mensagem=str(e), itens=[]), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+@app.route("/admin/primeira-aula/item", methods=["POST"])
+@login_required(tipo="administrador")
+def salvar_item_primeira_aula():
+    data = request.get_json(silent=True) or {}
+
+    id_item = data.get("id_item") or None
+    id_modal = data.get("id_modalidade") or None
+    nome = (data.get("nome") or "").strip()
+    categoria = (data.get("categoria") or "outros").strip()
+    funcao = (data.get("funcao") or "").strip()
+    observacao = (data.get("observacao") or "").strip()
+    obrigatorio = 1 if data.get("obrigatorio") else 0
+    ordem = data.get("ordem")
+
+    if ordem in ("", None):
+        ordem = None
+
+    categorias_validas = {"vestuario", "equipamento", "higiene", "alimentacao", "documentos", "outros"}
+    if categoria not in categorias_validas:
+        categoria = "outros"
+
+    if not nome:
+        return jsonify(ok=False, mensagem="Informe o nome do item."), 400
+
+    if not id_modal:
+        return jsonify(ok=False, mensagem="Informe a modalidade."), 400
+
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT 1
+            FROM modalidades
+            WHERE id_modalidade = ? AND ativo = 1
+        """, (id_modal,))
+        if not cursor.fetchone():
+            return jsonify(ok=False, mensagem="Modalidade não encontrada."), 404
+
+        if id_item:
+            cursor.execute("""
+                SELECT 1
+                FROM primeira_aula_itens
+                WHERE id_item = ?
+            """, (id_item,))
+            if not cursor.fetchone():
+                return jsonify(ok=False, mensagem="Item não encontrado."), 404
+
+            cursor.execute("""
+                UPDATE primeira_aula_itens
+                   SET id_modalidade = ?,
+                       nome = ?,
+                       categoria = ?,
+                       funcao = ?,
+                       observacao = ?,
+                       obrigatorio = ?,
+                       ordem = ?
+                 WHERE id_item = ?
+            """, (
+                id_modal,
+                nome,
+                categoria,
+                funcao,
+                observacao,
+                obrigatorio,
+                ordem,
+                id_item
+            ))
+        else:
+            cursor.execute("""
+                INSERT INTO primeira_aula_itens
+                    (id_modalidade, nome, categoria, funcao, observacao, obrigatorio, ordem, ativo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            """, (
+                id_modal,
+                nome,
+                categoria,
+                funcao,
+                observacao,
+                obrigatorio,
+                ordem
+            ))
+
+        conn.commit()
+        return jsonify(ok=True, mensagem="Item salvo.")
+
+    except pyodbc.Error as e:
+        if conn:
+            conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@app.route("/admin/primeira-aula/item/<int:id_item>", methods=["DELETE"])
+@login_required(tipo="administrador")
+def excluir_item_primeira_aula(id_item):
+    conn = cursor = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE primeira_aula_itens
+               SET ativo = 0
+             WHERE id_item = ?
+        """, (id_item,))
+
+        if cursor.rowcount == 0:
+            return jsonify(ok=False, mensagem="Item não encontrado."), 404
+
+        conn.commit()
+        return jsonify(ok=True, mensagem="Item removido.")
+
+    except pyodbc.Error as e:
+        if conn:
+            conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+ 
+ 
+# ================================================================
+# SUB-PÁGINA: WORKSHOPS
+# ================================================================
+ 
+@app.route("/admin/workshops")
+@login_required(tipo="administrador")
+def admin_workshops():
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # Modalidades para o select
+        cursor.execute("SELECT id_modalidade, titulo FROM modalidades WHERE ativo=1 ORDER BY titulo")
+        modalidades = [{"id_modalidade":r[0],"titulo":r[1]} for r in cursor.fetchall()]
+ 
+        # Professoras/instrutores
+        cursor.execute("""
+            SELECT id_cadastro, nome_completo FROM cadastro
+            WHERE tipo_cadastro IN ('professor','administrador')
+            ORDER BY nome_completo
+        """)
+        professoras = [{"id_cadastro":r[0],"nome_completo":r[1]} for r in cursor.fetchall()]
+ 
+        # Salas
+        cursor.execute("SELECT id_sala, nome FROM salas WHERE ativo=1 ORDER BY nome")
+        salas = [{"id_sala":r[0],"nome":r[1]} for r in cursor.fetchall()]
+ 
+        # Todos os usuários para inscrição
+        cursor.execute("SELECT id_cadastro, nome_completo FROM cadastro ORDER BY nome_completo")
+        todos_usuarios = [{"id_cadastro":r[0],"nome_completo":r[1]} for r in cursor.fetchall()]
+ 
+        # Workshops com contagem de inscritos
+        cursor.execute("""
+            SELECT w.id_workshop, w.nome, w.descricao, w.status,
+                   w.data_workshop, w.hora_inicio, w.hora_fim,
+                   w.vagas_totais, w.valor, w.imagem_capa,
+                   c.nome_completo AS instrutor_nome,
+                   m.titulo        AS modalidade_nome,
+                   s.nome          AS sala_nome,
+                   (SELECT COUNT(*) FROM workshop_inscricoes wi
+                    WHERE wi.id_workshop=w.id_workshop AND wi.ativo=1) AS inscritos
+            FROM workshops w
+            LEFT JOIN cadastro c ON c.id_cadastro = w.id_instrutor
+            LEFT JOIN modalidades m ON m.id_modalidade = w.id_modalidade
+            LEFT JOIN salas s ON s.id_sala = w.id_sala
+            ORDER BY w.data_workshop DESC, w.nome
+        """)
+        workshops = []
+        for r in cursor.fetchall():
+            workshops.append({
+                "id_workshop":    r[0],
+                "nome":           r[1],
+                "descricao":      r[2] or "",
+                "status":         r[3] or "rascunho",
+                "data_workshop":  r[4],
+                "hora_inicio":    str(r[5])[:5] if r[5] else "",
+                "hora_fim":       str(r[6])[:5] if r[6] else "",
+                "vagas_totais":   r[7] or 0,
+                "valor":          float(r[8]) if r[8] else 0.0,
+                "imagem_capa":    r[9] or "",
+                "instrutor_nome": r[10] or "",
+                "modalidade_nome":r[11] or "",
+                "sala_nome":      r[12] or "",
+                "inscritos":      r[13] or 0,
+            })
+ 
+        return render_template("admin_workshops.html",
+            user_name=session.get("user_name","Administrador"),
+            modalidades=modalidades,
+            professoras=professoras,
+            salas=salas,
+            todos_usuarios=todos_usuarios,
+            workshops=workshops)
+ 
+    except pyodbc.Error as e:
+        return render_template("admin_workshops.html",
+            user_name=session.get("user_name","Administrador"),
+            modalidades=[], professoras=[], salas=[],
+            todos_usuarios=[], workshops=[])
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/workshop", methods=["POST"])
+@login_required(tipo="administrador")
+def salvar_workshop():
+    id_ws       = request.form.get("id_workshop") or None
+    nome        = (request.form.get("nome") or "").strip()
+    id_modal    = request.form.get("id_modalidade") or None
+    id_instr    = request.form.get("id_instrutor") or None
+    descricao   = (request.form.get("descricao") or "").strip()
+    requisitos  = (request.form.get("requisitos") or "").strip()
+    observacao  = (request.form.get("observacao") or "").strip()
+    data_ws     = request.form.get("data_workshop") or None
+    hora_ini    = request.form.get("hora_inicio") or None
+    hora_fim    = request.form.get("hora_fim") or None
+    id_sala     = request.form.get("id_sala") or None
+    vagas       = request.form.get("vagas_totais") or None
+    valor       = request.form.get("valor") or None
+    status      = (request.form.get("status") or "rascunho").strip()
+ 
+    if not nome:
+        return jsonify(ok=False, mensagem="Informe o nome do workshop."), 400
+ 
+    imagem = _save_img(request.files.get("imagem_capa"), WORKSHOP_UPLOAD)
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        if id_ws:
+            sql = """UPDATE workshops SET nome=?,id_modalidade=?,id_instrutor=?,
+                     descricao=?,requisitos=?,observacao=?,data_workshop=?,
+                     hora_inicio=?,hora_fim=?,id_sala=?,vagas_totais=?,valor=?,status=?"""
+            params = [nome,id_modal,id_instr,descricao,requisitos,observacao,
+                      data_ws,hora_ini,hora_fim,id_sala,vagas,valor,status]
+            if imagem:
+                sql += ",imagem_capa=?"
+                params.append(imagem)
+            sql += " WHERE id_workshop=?"
+            params.append(id_ws)
+            cursor.execute(sql, params)
+        else:
+            cursor.execute("""
+                INSERT INTO workshops
+                    (nome,id_modalidade,id_instrutor,descricao,requisitos,observacao,
+                     data_workshop,hora_inicio,hora_fim,id_sala,vagas_totais,valor,status,imagem_capa)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (nome,id_modal,id_instr,descricao,requisitos,observacao,
+                  data_ws,hora_ini,hora_fim,id_sala,vagas,valor,status,imagem))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Workshop salvo.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/workshop/<int:id_ws>", methods=["GET"])
+@login_required(tipo="administrador")
+def get_workshop(id_ws):
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id_workshop,nome,id_modalidade,id_instrutor,descricao,requisitos,
+                   observacao,data_workshop,hora_inicio,hora_fim,id_sala,
+                   vagas_totais,valor,status,imagem_capa
+            FROM workshops WHERE id_workshop=?
+        """, (id_ws,))
+        r = cursor.fetchone()
+        if not r: return jsonify(ok=False, mensagem="Workshop não encontrado."), 404
+        return jsonify(ok=True, workshop={
+            "id_workshop":  r[0], "nome":r[1], "id_modalidade":r[2],
+            "id_instrutor": r[3], "descricao":r[4] or "", "requisitos":r[5] or "",
+            "observacao":   r[6] or "",
+            "data_workshop":r[7].isoformat() if r[7] else None,
+            "hora_inicio":  str(r[8])[:5] if r[8] else "",
+            "hora_fim":     str(r[9])[:5] if r[9] else "",
+            "id_sala":      r[10], "vagas_totais":r[11], "valor":float(r[12] or 0),
+            "status":       r[13] or "rascunho", "imagem_capa":r[14] or "",
+        })
+    except pyodbc.Error as e:
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/workshop/<int:id_ws>", methods=["DELETE"])
+@login_required(tipo="administrador")
+def excluir_workshop(id_ws):
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("UPDATE workshop_inscricoes SET ativo=0 WHERE id_workshop=?", (id_ws,))
+        cursor.execute("DELETE FROM workshops WHERE id_workshop=?", (id_ws,))
+        conn.commit()
+        return jsonify(ok=True, mensagem="Workshop excluído.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/workshop/<int:id_ws>/inscricoes")
+@login_required(tipo="administrador")
+def listar_inscricoes_workshop(id_ws):
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # Dados do workshop
+        cursor.execute("""
+            SELECT nome, data_workshop, hora_inicio, hora_fim, vagas_totais, status
+            FROM workshops WHERE id_workshop=?
+        """, (id_ws,))
+        r = cursor.fetchone()
+        if not r: return jsonify(ok=False, mensagem="Workshop não encontrado."), 404
+ 
+        workshop = {
+            "id_workshop":  id_ws,
+            "nome":         r[0],
+            "data_workshop":r[1].isoformat() if r[1] else None,
+            "hora_inicio":  str(r[2])[:5] if r[2] else "",
+            "hora_fim":     str(r[3])[:5] if r[3] else "",
+            "vagas_totais": r[4] or 0,
+            "status":       r[5] or "rascunho",
+        }
+ 
+        # Inscritos
+        cursor.execute("""
+            SELECT c.id_cadastro, c.nome_completo, c.email, wi.data_inscricao
+            FROM workshop_inscricoes wi
+            JOIN cadastro c ON c.id_cadastro = wi.id_participante
+            WHERE wi.id_workshop=? AND wi.ativo=1
+            ORDER BY wi.data_inscricao, c.nome_completo
+        """, (id_ws,))
+        inscritos = []
+        for row in cursor.fetchall():
+            inscritos.append({
+                "id_cadastro":    row[0],
+                "nome_completo":  row[1],
+                "email":          row[2] or "",
+                "data_inscricao": row[3].isoformat() if row[3] else None,
+            })
+ 
+        return jsonify(ok=True, workshop=workshop, inscritos=inscritos)
+    except pyodbc.Error as e:
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/workshop/inscrever", methods=["POST"])
+@login_required(tipo="administrador")
+def inscrever_workshop():
+    data = request.get_json(silent=True) or {}
+    id_ws   = data.get("id_workshop")
+    id_part = data.get("id_participante")
+    if not id_ws or not id_part:
+        return jsonify(ok=False, mensagem="Informe id_workshop e id_participante."), 400
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # Verificar vagas
+        cursor.execute("""
+            SELECT vagas_totais, status,
+                   (SELECT COUNT(*) FROM workshop_inscricoes wi
+                    WHERE wi.id_workshop=w.id_workshop AND wi.ativo=1) AS inscritos
+            FROM workshops w WHERE id_workshop=?
+        """, (id_ws,))
+        r = cursor.fetchone()
+        if not r:
+            return jsonify(ok=False, mensagem="Workshop não encontrado."), 404
+ 
+        vagas, status, inscritos = r[0] or 0, r[1], r[2] or 0
+ 
+        if status == "encerrado":
+            return jsonify(ok=False, codigo="WS_ENCERRADO",
+                mensagem="Este workshop está com inscrições encerradas."), 400
+ 
+        if vagas > 0 and inscritos >= vagas:
+            return jsonify(ok=False, codigo="WS_CHEIO",
+                mensagem=f"Workshop lotado. Capacidade máxima: {vagas} participantes."), 400
+ 
+        # Verificar duplicata
+        cursor.execute("""
+            SELECT id_inscricao, ativo FROM workshop_inscricoes
+            WHERE id_workshop=? AND id_participante=?
+        """, (id_ws, id_part))
+        exist = cursor.fetchone()
+        if exist:
+            if exist[1]:
+                return jsonify(ok=False, mensagem="Participante já inscrito."), 400
+            cursor.execute("UPDATE workshop_inscricoes SET ativo=1 WHERE id_inscricao=?", (exist[0],))
+        else:
+            cursor.execute("""
+                INSERT INTO workshop_inscricoes (id_workshop, id_participante, ativo)
+                VALUES (?, ?, 1)
+            """, (id_ws, id_part))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem="Inscrição realizada."), 201
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/workshop/desinscrever", methods=["DELETE"])
+@login_required(tipo="administrador")
+def desinscrever_workshop():
+    data = request.get_json(silent=True) or {}
+    id_ws   = data.get("id_workshop")
+    id_part = data.get("id_participante")
+    if not id_ws or not id_part:
+        return jsonify(ok=False, mensagem="Informe id_workshop e id_participante."), 400
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE workshop_inscricoes SET ativo=0
+            WHERE id_workshop=? AND id_participante=? AND ativo=1
+        """, (id_ws, id_part))
+        if cursor.rowcount == 0:
+            return jsonify(ok=False, mensagem="Inscrição não encontrada."), 404
+        conn.commit()
+        return jsonify(ok=True, mensagem="Inscrição cancelada.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+
+# ── helpers ──────────────────────────────────────────────────────
+def fim_do_mes(d=None):
+    d = d or date.today()
+    if d.month == 12:
+        return d.replace(day=31)
+    return (d.replace(day=1, month=d.month+1) - timedelta(days=1))
+ 
+ 
+# ================================================================
+# PROFESSOR
+# ================================================================
+ 
+@app.route("/professor")
+@login_required(tipo="professor")
+def professor_page():
+    return render_template(
+        "professor.html",
+        user_name=session.get("user_name", "Professora"),
+        user_tipo="professor"
+    )
+ 
+ 
+@app.route("/professor/dados")
+@login_required(tipo="professor")
+def professor_dados():
+    """Carrega todas as informações do professor para o front-end."""
+    id_prof = session["user_id"]
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # ── Turmas do professor (via modalidade.id_responsavel_cadastro) ──
+        cursor.execute("""
+            SELECT
+                t.id_turma, t.nome_exibicao, t.capacidade_maxima,
+                m.titulo AS modalidade,
+                s.nome   AS sala,
+                h.hora_inicio, h.hora_fim, h.dias_semana
+            FROM turmas t
+            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+            JOIN salas      s ON s.id_sala        = t.id_sala
+            JOIN horarios   h ON h.id_horario     = t.id_horario
+            WHERE t.ativo = 1
+              AND m.id_responsavel_cadastro = ?
+            ORDER BY m.titulo, h.hora_inicio
+        """, (id_prof,))
+ 
+        turmas = []
+        for r in cursor.fetchall():
+            turma = {
+                "id_turma":         r[0],
+                "nome_exibicao":    r[1] or "",
+                "capacidade_maxima":r[2] or 0,
+                "modalidade":       r[3],
+                "sala":             r[4],
+                "hora_inicio":      str(r[5])[:5] if r[5] else "",
+                "hora_fim":         str(r[6])[:5] if r[6] else "",
+                "dias_semana":      r[7] or "",
+                "alunos":           [],
+            }
+ 
+            # Alunos da turma com plano
+            cursor.execute("""
+                SELECT
+                    c.id_cadastro, c.nome_completo, c.email, c.termo_imagem,
+                    p.nome AS plano
+                FROM matriculas ma
+                JOIN cadastro c ON c.id_cadastro = ma.id_aluno
+                LEFT JOIN aluno_pacote ap ON ap.id_aluno = c.id_cadastro AND ap.ativo = 1
+                LEFT JOIN pacotes p ON p.id_pacote = ap.id_pacote
+                WHERE ma.id_turma = ? AND ma.ativo = 1
+                ORDER BY c.nome_completo
+            """, (turma["id_turma"],))
+            for a in cursor.fetchall():
+                turma["alunos"].append({
+                    "id_cadastro":  a[0],
+                    "nome_completo":a[1],
+                    "email":        a[2] or "",
+                    "termo_imagem": bool(a[3]),
+                    "plano":        a[4] or "",
+                })
+ 
+            turmas.append(turma)
+ 
+        # ── Reposições geradas por cancelamentos deste professor ──
+        cursor.execute("""
+            SELECT
+                rep.id_reposicao, c.nome_completo AS aluno_nome,
+                rep.tipo, rep.usada,
+                t.nome_exibicao, m.titulo AS modalidade,
+                ac.data_aula, ac.motivo
+            FROM reposicoes rep
+            JOIN cadastro c ON c.id_cadastro = rep.id_aluno
+            JOIN aulas_canceladas ac ON ac.id_cancelamento = rep.id_cancelamento
+            JOIN turmas t ON t.id_turma = ac.id_turma
+            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+            WHERE ac.cancelado_por = ?
+              AND rep.tipo = 'especial'
+            ORDER BY rep.criado_em DESC
+        """, (id_prof,))
+        reposicoes = []
+        for r in cursor.fetchall():
+            reposicoes.append({
+                "id_reposicao": r[0],
+                "aluno_nome":   r[1],
+                "tipo":         r[2],
+                "usada":        bool(r[3]),
+                "turma_nome":   r[4] or r[5],
+                "data_aula":    str(r[6]) if r[6] else "",
+                "motivo":       r[7] or "",
+            })
+ 
+        # ── Histórico de cancelamentos ──
+        cursor.execute("""
+            SELECT
+                ac.id_cancelamento,
+                m.titulo AS modalidade,
+                t.nome_exibicao,
+                ac.data_aula,
+                ac.motivo,
+                ac.cancelado_em,
+                (SELECT COUNT(*) FROM reposicoes rep WHERE rep.id_cancelamento = ac.id_cancelamento) AS afetados
+            FROM aulas_canceladas ac
+            JOIN turmas t ON t.id_turma = ac.id_turma
+            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+            WHERE ac.cancelado_por = ?
+            ORDER BY ac.cancelado_em DESC
+        """, (id_prof,))
+        historico = []
+        for r in cursor.fetchall():
+            historico.append({
+                "id_cancelamento":  r[0],
+                "turma_nome":       r[3] or r[2] or r[1],
+                "data_aula":        str(r[3]) if r[3] else "",
+                "motivo":           r[4] or "",
+                "cancelado_em":     str(r[5])[:10] if r[5] else "",
+                "alunos_afetados":  r[6] or 0,
+            })
+ 
+        return jsonify(ok=True, turmas=turmas, reposicoes=reposicoes, historico=historico)
+ 
+    except pyodbc.Error as e:
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/professor/cancelar-aula", methods=["POST"])
+@login_required(tipo="professor")
+def professor_cancelar_aula():
+    """
+    Cancela uma ocorrência específica de uma turma.
+    Gera reposição especial para cada aluno matriculado.
+    """
+    data_req   = request.get_json(silent=True) or {}
+    id_turma   = data_req.get("id_turma")
+    data_aula  = data_req.get("data_aula")
+    motivo     = (data_req.get("motivo") or "").strip()
+    id_prof    = session["user_id"]
+ 
+    if not id_turma or not data_aula:
+        return jsonify(ok=False, mensagem="Informe a turma e a data da aula."), 400
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # Verificar se já foi cancelada
+        cursor.execute("""
+            SELECT 1 FROM aulas_canceladas
+            WHERE id_turma = ? AND data_aula = ?
+        """, (id_turma, data_aula))
+        if cursor.fetchone():
+            return jsonify(ok=False, mensagem="Esta aula já foi cancelada anteriormente."), 400
+ 
+        # Registrar cancelamento
+        cursor.execute("""
+            INSERT INTO aulas_canceladas (id_turma, data_aula, motivo, cancelado_por)
+            VALUES (?, ?, ?, ?)
+        """, (id_turma, data_aula, motivo, id_prof))
+        cursor.execute("SELECT SCOPE_IDENTITY()")
+        id_cancel = int(cursor.fetchone()[0])
+ 
+        # Buscar alunos da turma
+        cursor.execute("""
+            SELECT id_aluno FROM matriculas
+            WHERE id_turma = ? AND ativo = 1
+        """, (id_turma,))
+        alunos = [r[0] for r in cursor.fetchall()]
+ 
+        # Gerar reposição especial para cada aluno
+        valida_ate = fim_do_mes()
+        for id_aluno in alunos:
+            cursor.execute("""
+                INSERT INTO reposicoes
+                    (id_aluno, id_cancelamento, tipo, usada,
+                     data_aula_orig, id_turma_orig, valida_ate)
+                VALUES (?, ?, 'especial', 0, ?, ?, ?)
+            """, (id_aluno, id_cancel, data_aula, id_turma, valida_ate))
+ 
+        conn.commit()
+        return jsonify(
+            ok=True,
+            mensagem=f"Aula cancelada. {len(alunos)} reposição(ões) especial(is) gerada(s)."
+        )
+ 
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+# ================================================================
+# ALUNO
+# ================================================================
+ 
+@app.route("/aluno")
+@login_required(tipo="aluno")
+def aluno_page():
+    return render_template(
+        "aluno.html",
+        user_name=session.get("user_name", "Aluno"),
+        user_tipo="aluno"
+    )
+ 
+ 
+@app.route("/aluno/dados")
+@login_required(tipo="aluno")
+def aluno_dados():
+    """Carrega todos os dados do aluno para o front-end."""
+    id_aluno = session["user_id"]
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # ── Info do aluno ──
+        cursor.execute("SELECT id_cadastro, nome_completo, email, termo_imagem FROM cadastro WHERE id_cadastro = ?", (id_aluno,))
+        row = cursor.fetchone()
+        aluno = {"id_cadastro": row[0], "nome_completo": row[1], "email": row[2] or "", "termo_imagem": bool(row[3])}
+ 
+        # ── Plano ativo ──
+        cursor.execute("""
+            SELECT p.id_pacote, p.nome, p.tipo_cobranca, p.valor,
+                   p.aulas_por_semana, p.qt_modalidades,
+                   ap.data_inicio, ap.data_fim
+            FROM aluno_pacote ap
+            JOIN pacotes p ON p.id_pacote = ap.id_pacote
+            WHERE ap.id_aluno = ? AND ap.ativo = 1
+        """, (id_aluno,))
+        p = cursor.fetchone()
+        plano = None
+        mods_plano_ids = set()
+        if p:
+            pid = p[0]
+            cursor.execute("""
+                SELECT pm.id_modalidade, m.titulo
+                FROM pacote_modalidades pm
+                JOIN modalidades m ON m.id_modalidade = pm.id_modalidade
+                WHERE pm.id_pacote = ?
+            """, (pid,))
+            mods_rows = cursor.fetchall()
+            mods_plano_ids = {r[0] for r in mods_rows}
+            plano = {
+                "id_pacote": pid, "nome": p[1], "tipo_cobranca": p[2],
+                "valor": float(p[3] or 0), "aulas_por_semana": p[4],
+                "qt_modalidades": p[5], "status": "ativo",
+                "data_inicio": str(p[6]) if p[6] else "",
+                "data_fim":    str(p[7]) if p[7] else "",
+                "modalidades_nomes": [r[1] for r in mods_rows],
+                "modalidades_ids":   list(mods_plano_ids),
+            }
+ 
+        # ── Turmas matriculadas ──
+        cursor.execute("""
+            SELECT
+                t.id_turma, t.nome_exibicao, t.capacidade_maxima,
+                m.titulo AS modalidade,
+                s.nome   AS sala,
+                h.hora_inicio, h.hora_fim, h.dias_semana,
+                c.nome_completo AS professora,
+                ma.tipo_matricula
+            FROM matriculas ma
+            JOIN turmas      t ON t.id_turma      = ma.id_turma
+            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+            JOIN salas       s ON s.id_sala        = t.id_sala
+            JOIN horarios    h ON h.id_horario     = t.id_horario
+            LEFT JOIN cadastro c ON c.id_cadastro  = m.id_responsavel_cadastro
+            WHERE ma.id_aluno = ? AND ma.ativo = 1 AND t.ativo = 1
+            ORDER BY h.hora_inicio
+        """, (id_aluno,))
+        turmas_mat = []
+        ids_mat = set()
+        horarios_mat = []  # para detectar conflito
+        for r in cursor.fetchall():
+            turmas_mat.append({
+                "id_turma": r[0], "nome_exibicao": r[1] or "",
+                "capacidade_maxima": r[2] or 0,
+                "modalidade": r[3], "sala": r[4],
+                "hora_inicio": str(r[5])[:5] if r[5] else "",
+                "hora_fim":    str(r[6])[:5] if r[6] else "",
+                "dias_semana": r[7] or "", "professora": r[8] or "",
+                "tipo_matricula": r[9] or "normal",
+                "inscritos": 0,
+            })
+            ids_mat.add(r[0])
+            horarios_mat.append({"dias": r[7] or "", "ini": str(r[5])[:5] if r[5] else "", "fim": str(r[6])[:5] if r[6] else ""})
+ 
+        # ── Turmas disponíveis (do plano, com vagas) ──
+        cursor.execute("""
+            SELECT
+                t.id_turma, t.nome_exibicao, t.capacidade_maxima,
+                m.id_modalidade, m.titulo AS modalidade,
+                s.nome   AS sala,
+                h.hora_inicio, h.hora_fim, h.dias_semana,
+                c.nome_completo AS professora,
+                (SELECT COUNT(*) FROM matriculas ma WHERE ma.id_turma = t.id_turma AND ma.ativo = 1) AS inscritos
+            FROM turmas t
+            JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+            JOIN salas       s ON s.id_sala        = t.id_sala
+            JOIN horarios    h ON h.id_horario     = t.id_horario
+            LEFT JOIN cadastro c ON c.id_cadastro  = m.id_responsavel_cadastro
+            WHERE t.ativo = 1
+            ORDER BY m.titulo, h.hora_inicio
+        """)
+        turmas_disp = []
+        for r in cursor.fetchall():
+            id_t   = r[0]
+            id_mod = r[3]
+            cap    = r[2] or 0
+            ocp    = r[10] or 0
+            lotada = cap > 0 and ocp >= cap
+ 
+            # Verificar se modalidade está no plano
+            no_plano = id_mod in mods_plano_ids
+ 
+            if not no_plano:
+                continue  # turma fora do plano → só aparece se houver reposição especial
+            if lotada:
+                turmas_disp.append({
+                    "id_turma": id_t, "nome_exibicao": r[1] or "", "capacidade_maxima": cap,
+                    "modalidade": r[4], "sala": r[5],
+                    "hora_inicio": str(r[6])[:5] if r[6] else "",
+                    "hora_fim":    str(r[7])[:5] if r[7] else "",
+                    "dias_semana": r[8] or "", "professora": r[9] or "",
+                    "inscritos": ocp, "lotada": True, "apenas_reposicao_especial": False,
+                })
+                continue
+            turmas_disp.append({
+                "id_turma": id_t, "nome_exibicao": r[1] or "", "capacidade_maxima": cap,
+                "modalidade": r[4], "sala": r[5],
+                "hora_inicio": str(r[6])[:5] if r[6] else "",
+                "hora_fim":    str(r[7])[:5] if r[7] else "",
+                "dias_semana": r[8] or "", "professora": r[9] or "",
+                "inscritos": ocp, "lotada": False, "apenas_reposicao_especial": False,
+            })
+ 
+        # ── Turmas fora do plano (para reposições especiais) ──
+        cursor.execute("""
+            SELECT
+                t.id_turma, m.titulo, s.nome, h.hora_inicio, h.hora_fim, h.dias_semana,
+                c.nome_completo, t.capacidade_maxima,
+                (SELECT COUNT(*) FROM matriculas ma WHERE ma.id_turma=t.id_turma AND ma.ativo=1) AS inscritos
+            FROM turmas t
+            JOIN modalidades m ON m.id_modalidade=t.id_modalidade
+            JOIN salas       s ON s.id_sala=t.id_sala
+            JOIN horarios    h ON h.id_horario=t.id_horario
+            LEFT JOIN cadastro c ON c.id_cadastro=m.id_responsavel_cadastro
+            WHERE t.ativo=1 AND m.id_modalidade NOT IN ({})
+        """.format(",".join(["?"]*len(mods_plano_ids)) if mods_plano_ids else "SELECT 0"),
+            list(mods_plano_ids) if mods_plano_ids else [])
+        for r in cursor.fetchall():
+            cap = r[7] or 0; ocp = r[8] or 0
+            if cap > 0 and ocp >= cap: continue
+            turmas_disp.append({
+                "id_turma": r[0], "modalidade": r[1], "sala": r[2],
+                "hora_inicio": str(r[3])[:5] if r[3] else "",
+                "hora_fim":    str(r[4])[:5] if r[4] else "",
+                "dias_semana": r[5] or "", "professora": r[6] or "",
+                "capacidade_maxima": cap, "inscritos": ocp,
+                "lotada": False, "apenas_reposicao_especial": True,
+            })
+ 
+        # ── Reposições ──
+        cursor.execute("""
+            SELECT
+                rep.id_reposicao, rep.tipo, rep.usada, rep.data_aula_orig, rep.valida_ate,
+                m.titulo AS modalidade_orig,
+                t.nome_exibicao
+            FROM reposicoes rep
+            LEFT JOIN turmas t ON t.id_turma = rep.id_turma_orig
+            LEFT JOIN modalidades m ON m.id_modalidade = t.id_modalidade
+            WHERE rep.id_aluno = ?
+            ORDER BY rep.criado_em DESC
+        """, (id_aluno,))
+        reposicoes = []
+        for r in cursor.fetchall():
+            reposicoes.append({
+                "id_reposicao":    r[0],
+                "tipo":            r[1],
+                "usada":           bool(r[2]),
+                "data_aula":       str(r[3]) if r[3] else "",
+                "valida_ate":      str(r[4]) if r[4] else "",
+                "turma_cancelada": r[6] or r[5] or "—",
+            })
+ 
+        # ── Pacotes disponíveis para mudança ──
+        cursor.execute("""
+            SELECT p.id_pacote, p.nome, p.tipo_cobranca, p.valor,
+                   p.aulas_por_semana, p.qt_modalidades
+            FROM pacotes p
+            WHERE p.ativo = 1
+            ORDER BY p.valor
+        """)
+        pacotes = []
+        for r in cursor.fetchall():
+            pid = r[0]
+            cursor.execute("""
+                SELECT m.titulo FROM pacote_modalidades pm
+                JOIN modalidades m ON m.id_modalidade = pm.id_modalidade
+                WHERE pm.id_pacote = ?
+            """, (pid,))
+            mods_p = [x[0] for x in cursor.fetchall()]
+            pacotes.append({
+                "id_pacote": pid, "nome": r[1], "tipo_cobranca": r[2],
+                "valor": float(r[3] or 0), "aulas_por_semana": r[4],
+                "qt_modalidades": r[5], "status": "ativo",
+                "modalidades_nomes": mods_p,
+            })
+ 
+        return jsonify(
+            ok=True,
+            aluno=aluno,
+            plano=plano,
+            turmas_matriculadas=turmas_mat,
+            turmas_disponiveis=turmas_disp,
+            reposicoes=reposicoes,
+            pacotes=pacotes,
+        )
+ 
+    except pyodbc.Error as e:
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/aluno/inscrever", methods=["POST"])
+@login_required(tipo="aluno")
+def aluno_inscrever():
+    """
+    Inscreve o aluno em uma turma com todas as validações:
+    1. Tem plano ativo
+    2. Modalidade está no plano
+    3. Não está lotada
+    4. Não tem conflito de horário
+    5. Não está duplicado
+    """
+    data_req = request.get_json(silent=True) or {}
+    id_turma = data_req.get("id_turma")
+    id_aluno = session["user_id"]
+    if not id_turma:
+        return jsonify(ok=False, mensagem="Informe a turma."), 400
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # 1. Verificar plano ativo
+        cursor.execute("""
+            SELECT ap.id_pacote FROM aluno_pacote ap WHERE ap.id_aluno = ? AND ap.ativo = 1
+        """, (id_aluno,))
+        p = cursor.fetchone()
+        if not p:
+            return jsonify(ok=False, mensagem="Você não possui um plano ativo. Entre em contato com o estúdio."), 400
+ 
+        # 2. Verificar se modalidade está no plano
+        cursor.execute("""
+            SELECT pm.id_modalidade
+            FROM turmas t
+            JOIN pacote_modalidades pm ON pm.id_pacote = ? AND pm.id_modalidade = t.id_modalidade
+            WHERE t.id_turma = ?
+        """, (p[0], id_turma))
+        if not cursor.fetchone():
+            return jsonify(ok=False, mensagem="Esta modalidade não está incluída no seu plano."), 400
+ 
+        # 3. Verificar vagas
+        cursor.execute("""
+            SELECT t.capacidade_maxima,
+                   (SELECT COUNT(*) FROM matriculas ma WHERE ma.id_turma=t.id_turma AND ma.ativo=1)
+            FROM turmas t WHERE t.id_turma = ?
+        """, (id_turma,))
+        r = cursor.fetchone()
+        if r and r[0] and r[1] >= r[0]:
+            return jsonify(ok=False, mensagem="Esta turma está lotada."), 400
+ 
+        # 4. Verificar conflito de horário
+        cursor.execute("""
+            SELECT h.dias_semana, h.hora_inicio, h.hora_fim
+            FROM turmas t JOIN horarios h ON h.id_horario = t.id_horario
+            WHERE t.id_turma = ?
+        """, (id_turma,))
+        nova = cursor.fetchone()
+        if nova:
+            cursor.execute("""
+                SELECT h.dias_semana, h.hora_inicio, h.hora_fim
+                FROM matriculas ma
+                JOIN turmas t ON t.id_turma = ma.id_turma
+                JOIN horarios h ON h.id_horario = t.id_horario
+                WHERE ma.id_aluno = ? AND ma.ativo = 1
+            """, (id_aluno,))
+            for existente in cursor.fetchall():
+                dias_nova = set((nova[0] or "").lower().split(","))
+                dias_exist = set((existente[0] or "").lower().split(","))
+                if dias_nova & dias_exist:
+                    ini_n = str(nova[1])[:5]; fim_n = str(nova[2])[:5]
+                    ini_e = str(existente[1])[:5]; fim_e = str(existente[2])[:5]
+                    if ini_n < fim_e and fim_n > ini_e:
+                        return jsonify(ok=False, mensagem="Você já tem uma aula neste horário. Não é permitido se inscrever em duas aulas simultâneas."), 400
+ 
+        # 5. Duplicado
+        cursor.execute("SELECT ativo FROM matriculas WHERE id_turma=? AND id_aluno=?", (id_turma, id_aluno))
+        ex = cursor.fetchone()
+        if ex:
+            if ex[0]: return jsonify(ok=False, mensagem="Você já está inscrita nesta turma."), 400
+            cursor.execute("UPDATE matriculas SET ativo=1, tipo_matricula='normal' WHERE id_turma=? AND id_aluno=?", (id_turma, id_aluno))
+        else:
+            cursor.execute("INSERT INTO matriculas (id_turma, id_aluno, tipo_matricula, ativo) VALUES (?, ?, 'normal', 1)", (id_turma, id_aluno))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem="Inscrição realizada com sucesso!"), 201
+ 
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/aluno/cancelar-aula", methods=["POST"])
+@login_required(tipo="aluno")
+def aluno_cancelar_aula():
+    """
+    Aluno cancela presença em uma aula (não remove a matrícula permanente,
+    apenas gera uma reposição para o mês).
+    """
+    data_req = request.get_json(silent=True) or {}
+    id_turma  = data_req.get("id_turma")
+    data_aula = data_req.get("data_aula")
+    id_aluno  = session["user_id"]
+ 
+    if not id_turma or not data_aula:
+        return jsonify(ok=False, mensagem="Informe a turma e a data."), 400
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # Verificar se está matriculado
+        cursor.execute("SELECT 1 FROM matriculas WHERE id_turma=? AND id_aluno=? AND ativo=1", (id_turma, id_aluno))
+        if not cursor.fetchone():
+            return jsonify(ok=False, mensagem="Você não está inscrita nesta turma."), 400
+ 
+        # Verificar se já cancelou esta data
+        cursor.execute("""
+            SELECT 1 FROM reposicoes
+            WHERE id_aluno=? AND id_turma_orig=? AND data_aula_orig=? AND tipo='normal'
+        """, (id_aluno, id_turma, data_aula))
+        if cursor.fetchone():
+            return jsonify(ok=False, mensagem="Você já cancelou esta aula."), 400
+ 
+        # Gerar reposição normal
+        valida_ate = fim_do_mes()
+        cursor.execute("""
+            INSERT INTO reposicoes (id_aluno, tipo, usada, data_aula_orig, id_turma_orig, valida_ate)
+            VALUES (?, 'normal', 0, ?, ?, ?)
+        """, (id_aluno, data_aula, id_turma, valida_ate))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem="Aula cancelada. Uma reposição foi creditada para o mês.")
+ 
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/aluno/usar-reposicao-especial", methods=["POST"])
+@login_required(tipo="aluno")
+def aluno_usar_reposicao_especial():
+    """
+    Aluno usa uma reposição especial para se inscrever em qualquer turma,
+    mesmo fora do seu plano. Valida capacidade e conflito de horário.
+    """
+    data_req    = request.get_json(silent=True) or {}
+    id_turma    = data_req.get("id_turma")
+    id_reposicao= data_req.get("id_reposicao")
+    id_aluno    = session["user_id"]
+ 
+    if not id_turma or not id_reposicao:
+        return jsonify(ok=False, mensagem="Informe a turma e a reposição."), 400
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # Validar reposição
+        cursor.execute("""
+            SELECT usada, valida_ate FROM reposicoes
+            WHERE id_reposicao=? AND id_aluno=? AND tipo='especial'
+        """, (id_reposicao, id_aluno))
+        rep = cursor.fetchone()
+        if not rep:
+            return jsonify(ok=False, mensagem="Reposição não encontrada."), 404
+        if rep[0]:
+            return jsonify(ok=False, mensagem="Esta reposição já foi utilizada."), 400
+        if rep[1] and date.today() > rep[1]:
+            return jsonify(ok=False, mensagem="Esta reposição expirou."), 400
+ 
+        # Verificar vagas
+        cursor.execute("""
+            SELECT t.capacidade_maxima,
+                   (SELECT COUNT(*) FROM matriculas ma WHERE ma.id_turma=t.id_turma AND ma.ativo=1)
+            FROM turmas t WHERE t.id_turma=?
+        """, (id_turma,))
+        r = cursor.fetchone()
+        if r and r[0] and r[1] >= r[0]:
+            return jsonify(ok=False, mensagem="Esta turma está lotada."), 400
+ 
+        # Verificar conflito de horário
+        cursor.execute("""
+            SELECT h.dias_semana, h.hora_inicio, h.hora_fim
+            FROM turmas t JOIN horarios h ON h.id_horario=t.id_horario WHERE t.id_turma=?
+        """, (id_turma,))
+        nova = cursor.fetchone()
+        if nova:
+            cursor.execute("""
+                SELECT h.dias_semana, h.hora_inicio, h.hora_fim
+                FROM matriculas ma
+                JOIN turmas t ON t.id_turma=ma.id_turma
+                JOIN horarios h ON h.id_horario=t.id_horario
+                WHERE ma.id_aluno=? AND ma.ativo=1
+            """, (id_aluno,))
+            for ex in cursor.fetchall():
+                dias_n = set((nova[0] or "").lower().split(","))
+                dias_e = set((ex[0]   or "").lower().split(","))
+                if dias_n & dias_e:
+                    ini_n = str(nova[1])[:5]; fim_n = str(nova[2])[:5]
+                    ini_e = str(ex[1])[:5];   fim_e = str(ex[2])[:5]
+                    if ini_n < fim_e and fim_n > ini_e:
+                        return jsonify(ok=False, mensagem="Conflito de horário com outra aula."), 400
+ 
+        # Matricular (reposição especial)
+        cursor.execute("SELECT ativo FROM matriculas WHERE id_turma=? AND id_aluno=?", (id_turma, id_aluno))
+        ex = cursor.fetchone()
+        cursor.execute("SELECT SCOPE_IDENTITY()")  # reset
+ 
+        if ex and ex[0]:
+            return jsonify(ok=False, mensagem="Você já está inscrita nesta turma."), 400
+ 
+        cursor.execute("""
+            INSERT INTO matriculas (id_turma, id_aluno, tipo_matricula, id_reposicao, ativo)
+            VALUES (?, ?, 'reposicao_especial', ?, 1)
+        """, (id_turma, id_aluno, id_reposicao))
+ 
+        # Marcar reposição como usada
+        cursor.execute("UPDATE reposicoes SET usada=1 WHERE id_reposicao=?", (id_reposicao,))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem="Reposição especial utilizada! Inscrição realizada.")
+ 
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/aluno/solicitar-plano", methods=["POST"])
+@login_required(tipo="aluno")
+def aluno_solicitar_plano():
+    data_req  = request.get_json(silent=True) or {}
+    id_pacote = data_req.get("id_pacote")
+    id_aluno  = session["user_id"]
+ 
+    if not id_pacote:
+        return jsonify(ok=False, mensagem="Informe o pacote."), 400
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # Verificar se já tem solicitação pendente
+        cursor.execute("""
+            SELECT 1 FROM solicitacoes_plano
+            WHERE id_aluno=? AND status='pendente'
+        """, (id_aluno,))
+        if cursor.fetchone():
+            return jsonify(ok=False, mensagem="Você já tem uma solicitação pendente. Aguarde a análise do estúdio."), 400
+ 
+        # Determinar tipo (nova compra ou mudança)
+        cursor.execute("SELECT 1 FROM aluno_pacote WHERE id_aluno=? AND ativo=1", (id_aluno,))
+        tem_plano = bool(cursor.fetchone())
+        tipo = "mudanca" if tem_plano else "nova_compra"
+ 
+        cursor.execute("""
+            INSERT INTO solicitacoes_plano (id_aluno, id_pacote, tipo_solicitacao, status)
+            VALUES (?, ?, ?, 'pendente')
+        """, (id_aluno, id_pacote, tipo))
+        conn.commit()
+ 
+        return jsonify(
+            ok=True,
+            mensagem="Solicitação enviada! Agora envie o comprovante do PIX via WhatsApp para ativar o plano mais rápido."
+        )
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+def proximo_vencimento(data_inicio, tipo_cobranca, ultimo_pagamento=None):
+    """Calcula a data do próximo vencimento baseado no tipo do plano."""
+    base = ultimo_pagamento or data_inicio
+    if isinstance(base, str):
+        base = date.fromisoformat(base)
+    if tipo_cobranca == 'mensal':
+        return base + relativedelta(months=1)
+    else:  # semestral
+        return base + relativedelta(months=6)
+ 
+ 
+def dias_ciclo(tipo_cobranca):
+    return 30 if tipo_cobranca == 'mensal' else 183
+ 
+ 
+# ================================================================
+# ADMIN: PÁGINA DE CONTROLE
+# ================================================================
+ 
+@app.route("/admin/pacotes-controle")
+@login_required(tipo="administrador")
+def admin_pacotes_controle():
+    return render_template("admin_pacotes_controle.html",
+        user_name=session.get("user_name", "Administrador"))
+ 
+ 
+@app.route("/admin/pacotes-controle/dados")
+@login_required(tipo="administrador")
+def pacotes_controle_dados():
+    """Retorna tudo que o painel de controle precisa."""
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        hoje = date.today()
+ 
+        # ── Solicitações ──────────────────────────────────────────
+        cursor.execute("""
+            SELECT
+                sp.id_solicitacao,
+                sp.tipo_solicitacao,
+                sp.status,
+                sp.criado_em,
+                sp.obs_admin,
+                c.nome_completo  AS aluno_nome,
+                c.email          AS aluno_email,
+                p.id_pacote,
+                p.nome           AS pacote_nome,
+                p.tipo_cobranca,
+                p.valor,
+                adm.nome_completo AS admin_nome
+            FROM solicitacoes_plano sp
+            JOIN cadastro c  ON c.id_cadastro  = sp.id_aluno
+            JOIN pacotes p   ON p.id_pacote    = sp.id_pacote
+            LEFT JOIN cadastro adm ON adm.id_cadastro = sp.processado_por
+            ORDER BY
+                CASE sp.status WHEN 'pendente' THEN 0 ELSE 1 END,
+                sp.criado_em DESC
+        """)
+        solicitacoes = []
+        for r in cursor.fetchall():
+            sid = r[0]
+            cursor.execute("""
+                SELECT m.titulo FROM pacote_modalidades pm
+                JOIN modalidades m ON m.id_modalidade=pm.id_modalidade
+                WHERE pm.id_pacote=?
+            """, (r[7],))
+            mods = [x[0] for x in cursor.fetchall()]
+            solicitacoes.append({
+                "id_solicitacao":   sid,
+                "tipo_solicitacao": r[1] or "nova_compra",
+                "status":           r[2],
+                "criado_em":        str(r[3])[:19] if r[3] else "",
+                "obs_admin":        r[4] or "",
+                "aluno_nome":       r[5],
+                "aluno_email":      r[6] or "",
+                "id_pacote":        r[7],
+                "pacote_nome":      r[8],
+                "tipo_cobranca":    r[9],
+                "pacote_valor":     float(r[10] or 0),
+                "admin_nome":       r[11] or "",
+                "modalidades":      mods,
+            })
+ 
+        # ── Planos ativos (aluno_pacote) ──────────────────────────
+        cursor.execute("""
+            SELECT
+                ap.id_aluno_pacote,
+                ap.id_aluno,
+                c.nome_completo  AS aluno_nome,
+                c.email,
+                p.nome           AS pacote_nome,
+                p.tipo_cobranca,
+                p.valor,
+                ap.data_inicio,
+                ap.data_fim,
+                ap.status_acesso,
+                ap.ultimo_pagamento,
+                ap.proximo_vencimento
+            FROM aluno_pacote ap
+            JOIN cadastro c ON c.id_cadastro = ap.id_aluno
+            JOIN pacotes  p ON p.id_pacote   = ap.id_pacote
+            WHERE ap.ativo = 1
+            ORDER BY ap.proximo_vencimento, c.nome_completo
+        """)
+        aluno_pacotes = []
+        for r in cursor.fetchall():
+            prox_venc = r[11]
+            if prox_venc is None and r[7]:
+                prox_venc = proximo_vencimento(r[7], r[5], r[10])
+            aluno_pacotes.append({
+                "id_aluno_pacote":      r[0],
+                "id_aluno":             r[1],
+                "aluno_nome":           r[2],
+                "aluno_email":          r[3] or "",
+                "pacote_nome":          r[4],
+                "tipo_cobranca":        r[5],
+                "valor":                float(r[6] or 0),
+                "data_inicio":          str(r[7]) if r[7] else "",
+                "data_fim":             str(r[8]) if r[8] else "",
+                "status_acesso":        r[9] or "ativo",
+                "ultimo_pagamento":     str(r[10]) if r[10] else "",
+                "proximo_vencimento":   str(prox_venc) if prox_venc else "",
+                "ciclo_dias":           dias_ciclo(r[5]),
+            })
+ 
+        # ── Histórico de ações ────────────────────────────────────
+        cursor.execute("""
+            SELECT
+                hpac.criado_em,
+                c.nome_completo  AS aluno_nome,
+                p.nome           AS pacote_nome,
+                hpac.acao,
+                hpac.observacao,
+                adm.nome_completo AS admin_nome
+            FROM historico_pacotes hpac
+            JOIN cadastro c  ON c.id_cadastro  = hpac.id_aluno
+            JOIN pacotes  p  ON p.id_pacote    = hpac.id_pacote
+            LEFT JOIN cadastro adm ON adm.id_cadastro = hpac.id_admin
+            ORDER BY hpac.criado_em DESC
+        """)
+        historico = [{
+            "criado_em":   str(r[0])[:10] if r[0] else "",
+            "aluno_nome":  r[1],
+            "pacote_nome": r[2],
+            "acao":        r[3],
+            "observacao":  r[4] or "",
+            "admin_nome":  r[5] or "",
+        } for r in cursor.fetchall()]
+ 
+        # ── KPIs ──────────────────────────────────────────────────
+        pend = sum(1 for s in solicitacoes if s["status"] == "pendente")
+        ap_hoje = sum(1 for s in solicitacoes if s["status"] == "aprovada" and str(s["criado_em"])[:10] == str(hoje))
+        neg = sum(1 for s in solicitacoes if s["status"] == "negada")
+        ativos = sum(1 for ap in aluno_pacotes if ap["status_acesso"] == "ativo")
+        susp = sum(1 for ap in aluno_pacotes if ap["status_acesso"] == "suspenso")
+ 
+        return jsonify(
+            ok=True,
+            solicitacoes=solicitacoes,
+            aluno_pacotes=aluno_pacotes,
+            historico=historico,
+            kpis={"pendentes":pend,"aprovadas_hoje":ap_hoje,"negadas":neg,"ativos":ativos,"suspensos":susp}
+        )
+ 
+    except pyodbc.Error as e:
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/pacotes-controle/aprovar", methods=["POST"])
+@login_required(tipo="administrador")
+def pacotes_aprovar():
+    data_req     = request.get_json(silent=True) or {}
+    id_sol       = data_req.get("id_solicitacao")
+    data_pag     = data_req.get("data_pagamento")
+    data_inicio  = data_req.get("data_inicio")
+    obs          = data_req.get("obs", "")
+    id_admin     = session["user_id"]
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+ 
+        # Buscar solicitação
+        cursor.execute("""
+            SELECT sp.id_aluno, sp.id_pacote, sp.tipo_solicitacao, p.tipo_cobranca, p.valor
+            FROM solicitacoes_plano sp
+            JOIN pacotes p ON p.id_pacote=sp.id_pacote
+            WHERE sp.id_solicitacao=? AND sp.status='pendente'
+        """, (id_sol,))
+        sol = cursor.fetchone()
+        if not sol:
+            return jsonify(ok=False, mensagem="Solicitação não encontrada ou já processada."), 404
+ 
+        id_aluno, id_pacote, tipo_sol, tipo_cob, valor = sol
+ 
+        # Calcular próximo vencimento
+        d_ini  = date.fromisoformat(data_inicio)
+        d_pag  = date.fromisoformat(data_pag)
+        prox   = proximo_vencimento(d_ini, tipo_cob, d_pag)
+ 
+        # Inativar plano anterior se existir
+        cursor.execute("UPDATE aluno_pacote SET ativo=0 WHERE id_aluno=? AND ativo=1", (id_aluno,))
+ 
+        # Criar novo aluno_pacote
+        cursor.execute("""
+            INSERT INTO aluno_pacote
+                (id_aluno, id_pacote, data_inicio, status_acesso,
+                 ultimo_pagamento, proximo_vencimento, ativo)
+            VALUES (?, ?, ?, 'ativo', ?, ?, 1)
+        """, (id_aluno, id_pacote, d_ini, d_pag, prox))
+ 
+        # Registrar pagamento inicial no histórico
+        cursor.execute("""
+            INSERT INTO historico_pacotes (id_aluno, id_pacote, acao, observacao, id_admin)
+            VALUES (?, ?, 'aprovacao', ?, ?)
+        """, (id_aluno, id_pacote, f"Aprovado. Pagamento: {data_pag}. {obs}", id_admin))
+ 
+        # Registrar no historico_pagamentos
+        cursor.execute("""
+            INSERT INTO historico_pagamentos (id_aluno, id_pacote, data_pagamento, valor, descricao)
+            VALUES (?, ?, ?, ?, ?)
+        """, (id_aluno, id_pacote, d_pag, valor, obs or "Primeiro pagamento"))
+ 
+        # Atualizar solicitação
+        cursor.execute("""
+            UPDATE solicitacoes_plano
+            SET status='aprovada', processado_por=?, processado_em=GETDATE(), obs_admin=?
+            WHERE id_solicitacao=?
+        """, (id_admin, obs, id_sol))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem="Solicitação aprovada e plano ativado com sucesso!")
+ 
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/pacotes-controle/negar", methods=["POST"])
+@login_required(tipo="administrador")
+def pacotes_negar():
+    data_req = request.get_json(silent=True) or {}
+    id_sol   = data_req.get("id_solicitacao")
+    motivo   = data_req.get("motivo", "")
+    id_admin = session["user_id"]
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("SELECT id_aluno, id_pacote FROM solicitacoes_plano WHERE id_solicitacao=? AND status='pendente'", (id_sol,))
+        sol = cursor.fetchone()
+        if not sol:
+            return jsonify(ok=False, mensagem="Solicitação não encontrada."), 404
+ 
+        cursor.execute("""
+            UPDATE solicitacoes_plano
+            SET status='negada', processado_por=?, processado_em=GETDATE(), obs_admin=?
+            WHERE id_solicitacao=?
+        """, (id_admin, motivo, id_sol))
+ 
+        cursor.execute("""
+            INSERT INTO historico_pacotes (id_aluno, id_pacote, acao, observacao, id_admin)
+            VALUES (?, ?, 'negacao', ?, ?)
+        """, (sol[0], sol[1], motivo or "Sem motivo informado", id_admin))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem="Solicitação negada.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/pacotes-controle/registrar-pagamento", methods=["POST"])
+@login_required(tipo="administrador")
+def registrar_pagamento():
+    data_req       = request.get_json(silent=True) or {}
+    id_aluno_pacote= data_req.get("id_aluno_pacote")
+    data_pag       = data_req.get("data_pagamento")
+    obs            = data_req.get("obs", "")
+    id_admin       = session["user_id"]
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id_aluno, id_pacote, tipo_cobranca, valor
+            FROM aluno_pacote ap
+            JOIN pacotes p ON p.id_pacote=ap.id_pacote
+            WHERE ap.id_aluno_pacote=? AND ap.ativo=1
+        """, (id_aluno_pacote,))
+        ap = cursor.fetchone()
+        if not ap:
+            return jsonify(ok=False, mensagem="Plano não encontrado."), 404
+ 
+        id_aluno, id_pacote, tipo_cob, valor = ap
+        d_pag = date.fromisoformat(data_pag)
+        prox  = proximo_vencimento(d_pag, tipo_cob, d_pag)
+ 
+        # Atualizar aluno_pacote
+        cursor.execute("""
+            UPDATE aluno_pacote
+            SET ultimo_pagamento=?, proximo_vencimento=?, status_acesso='ativo'
+            WHERE id_aluno_pacote=?
+        """, (d_pag, prox, id_aluno_pacote))
+ 
+        # Registrar pagamento
+        cursor.execute("""
+            INSERT INTO historico_pagamentos (id_aluno, id_pacote, data_pagamento, valor, descricao)
+            VALUES (?, ?, ?, ?, ?)
+        """, (id_aluno, id_pacote, d_pag, valor, obs or "Pagamento registrado"))
+ 
+        cursor.execute("""
+            INSERT INTO historico_pacotes (id_aluno, id_pacote, acao, observacao, id_admin)
+            VALUES (?, ?, 'pagamento', ?, ?)
+        """, (id_aluno, id_pacote, f"{obs} | Próx. venc.: {prox}", id_admin))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem=f"Pagamento registrado. Próximo vencimento: {prox.strftime('%d/%m/%Y')}.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/pacotes-controle/suspender", methods=["POST"])
+@login_required(tipo="administrador")
+def suspender_aluno():
+    data_req        = request.get_json(silent=True) or {}
+    id_aluno_pacote = data_req.get("id_aluno_pacote")
+    motivo          = data_req.get("motivo", "")
+    id_admin        = session["user_id"]
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("SELECT id_aluno, id_pacote FROM aluno_pacote WHERE id_aluno_pacote=? AND ativo=1", (id_aluno_pacote,))
+        ap = cursor.fetchone()
+        if not ap:
+            return jsonify(ok=False, mensagem="Plano não encontrado."), 404
+ 
+        cursor.execute("UPDATE aluno_pacote SET status_acesso='suspenso' WHERE id_aluno_pacote=?", (id_aluno_pacote,))
+        cursor.execute("""
+            INSERT INTO historico_pacotes (id_aluno, id_pacote, acao, observacao, id_admin)
+            VALUES (?, ?, 'suspensao', ?, ?)
+        """, (ap[0], ap[1], motivo or "Suspensão por falta de pagamento", id_admin))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem="Acesso suspenso. O aluno não poderá se inscrever em novas aulas.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+@app.route("/admin/pacotes-controle/reativar", methods=["POST"])
+@login_required(tipo="administrador")
+def reativar_aluno():
+    data_req        = request.get_json(silent=True) or {}
+    id_aluno_pacote = data_req.get("id_aluno_pacote")
+    id_admin        = session["user_id"]
+ 
+    conn = cursor = None
+    try:
+        conn = get_conn(); cursor = conn.cursor()
+        cursor.execute("SELECT id_aluno, id_pacote FROM aluno_pacote WHERE id_aluno_pacote=? AND ativo=1", (id_aluno_pacote,))
+        ap = cursor.fetchone()
+        if not ap:
+            return jsonify(ok=False, mensagem="Plano não encontrado."), 404
+ 
+        cursor.execute("UPDATE aluno_pacote SET status_acesso='ativo' WHERE id_aluno_pacote=?", (id_aluno_pacote,))
+        cursor.execute("""
+            INSERT INTO historico_pacotes (id_aluno, id_pacote, acao, observacao, id_admin)
+            VALUES (?, ?, 'reativacao', 'Acesso reativado manualmente', ?)
+        """, (ap[0], ap[1], id_admin))
+ 
+        conn.commit()
+        return jsonify(ok=True, mensagem="Acesso reativado com sucesso.")
+    except pyodbc.Error as e:
+        if conn: conn.rollback()
+        return jsonify(ok=False, mensagem=str(e)), 500
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
+ 
+ 
+
+           
 if __name__ == "__main__":
     app.run(debug=True)

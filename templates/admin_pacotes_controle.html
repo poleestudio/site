@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Pacotes · Clara Lucatti Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bordo:#8B0021;--bordo-light:#A3002A;--bordo-pale:#f5e6ea;
+      --cream:#fdf8f5;--warm-white:#fff9f6;
+      --text-dark:#2a1a1f;--text-mid:#6b4a55;--text-light:#b08090;
+      --shadow:0 18px 45px rgba(139,0,33,0.08);--shadow-md:0 8px 24px rgba(139,0,33,0.10);
+      --green-bg:#eaf3de;--green-text:#3B6D11;
+      --amber-bg:#faeeda;--amber-text:#854F0B;
+      --red-bg:#fdf0f0;--red-text:#c0392b;
+      --blue-bg:#e6f0f5;--blue-text:#005577;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;}
+    a{text-decoration:none;color:inherit;} button{border:none;background:none;cursor:pointer;font:inherit;}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(253,248,245,0.96);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,0,33,0.08);}
+    .nav-left{display:flex;align-items:center;gap:1rem;}
+    .btn-back{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);padding:0.5rem 1rem;border:1.5px solid rgba(139,0,33,0.15);border-radius:50px;transition:all 0.3s;}
+    .btn-back:hover{border-color:var(--bordo);color:var(--bordo);}
+    .nav-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;letter-spacing:0.1em;}
+
+    /* TABS */
+    .tabs{display:flex;border-bottom:1px solid rgba(139,0,33,0.08);background:var(--cream);padding:0 3rem;overflow-x:auto;}
+    .tab-btn{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.95rem 1.4rem;color:var(--text-light);border-bottom:2.5px solid transparent;transition:all 0.3s;background:none;cursor:pointer;white-space:nowrap;}
+    .tab-btn.active{color:var(--bordo);border-bottom-color:var(--bordo);}
+    .badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--bordo);color:#fff;font-size:0.58rem;margin-left:0.4rem;vertical-align:middle;}
+    .tab-panel{display:none;padding:2.5rem 3rem;}
+    .tab-panel.active{display:block;}
+
+    /* KPIs */
+    .kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:2.5rem;}
+    .kpi-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;padding:1.3rem 1.5rem;box-shadow:var(--shadow);}
+    .kpi-num{font-family:'Cormorant Garamond',serif;font-size:2.4rem;color:var(--bordo);line-height:1;}
+    .kpi-label{font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-light);margin-top:0.2rem;}
+    .kpi-sub{font-size:0.76rem;color:var(--text-mid);margin-top:0.3rem;}
+
+    /* SECTION HEADER */
+    .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.8rem;}
+    .sec-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;}
+    .filters{display:flex;gap:0.6rem;flex-wrap:wrap;}
+    .filter-btn{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.45rem 1rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.12);color:var(--text-light);background:none;cursor:pointer;transition:all 0.25s;}
+    .filter-btn.active,.filter-btn:hover{background:var(--bordo);color:#fff;border-color:var(--bordo);}
+    .search-box{background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.45rem 1.1rem;font-family:'Jost',sans-serif;font-size:0.84rem;color:var(--text-dark);outline:none;min-width:200px;}
+    .search-box:focus{border-color:var(--bordo);}
+
+    /* SOLICITAÇÃO CARD */
+    .sol-card{background:var(--cream);border:1px solid rgba(139,0,33,0.09);border-radius:22px;overflow:hidden;margin-bottom:1rem;box-shadow:var(--shadow);transition:all 0.3s;}
+    .sol-card:hover{box-shadow:var(--shadow-md);}
+    .sol-head{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;border-bottom:1px solid rgba(139,0,33,0.07);flex-wrap:wrap;gap:0.8rem;}
+    .sol-aluno-row{display:flex;align-items:center;gap:0.9rem;}
+    .ava{width:40px;height:40px;border-radius:50%;background:var(--bordo-pale);color:var(--bordo);font-size:0.82rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .sol-aluno-nome{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;}
+    .sol-aluno-email{font-size:0.74rem;color:var(--text-light);}
+    .sol-badges{display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;}
+    .badge-status{display:inline-flex;padding:0.25rem 0.75rem;border-radius:50px;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;}
+    .s-pendente{background:var(--amber-bg);color:var(--amber-text);}
+    .s-aprovada{background:var(--green-bg);color:var(--green-text);}
+    .s-negada{background:var(--red-bg);color:var(--red-text);}
+    .s-cancelada{background:#f1efee;color:#5F5E5A;}
+    .sol-body{padding:1.2rem 1.5rem;display:grid;grid-template-columns:1fr auto;gap:1.2rem;align-items:start;}
+    .sol-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;}
+    .sol-info-item{}
+    .sol-info-label{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.25rem;}
+    .sol-info-val{font-size:0.9rem;color:var(--text-dark);}
+    .sol-info-val strong{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo);font-weight:300;}
+    .sol-actions{display:flex;flex-direction:column;gap:0.5rem;min-width:140px;}
+    .btn-aprovar{display:flex;align-items:center;justify-content:center;gap:0.5rem;background:var(--bordo);color:#fff;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.7rem 1.2rem;border-radius:50px;border:none;cursor:pointer;transition:all 0.3s;box-shadow:0 6px 18px rgba(139,0,33,0.2);}
+    .btn-aprovar:hover{background:var(--bordo-light);}
+    .btn-negar{display:flex;align-items:center;justify-content:center;gap:0.5rem;background:none;color:var(--text-mid);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.65rem 1.2rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);cursor:pointer;transition:all 0.3s;}
+    .btn-negar:hover{border-color:#c0392b;color:#c0392b;background:var(--red-bg);}
+    .sol-date{font-size:0.72rem;color:var(--text-light);margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid rgba(139,0,33,0.07);}
+
+    /* PAGAMENTOS CARD */
+    .pag-card{background:var(--cream);border:1px solid rgba(139,0,33,0.09);border-radius:22px;overflow:hidden;margin-bottom:1rem;box-shadow:var(--shadow);transition:all 0.3s;}
+    .pag-card:hover{box-shadow:var(--shadow-md);}
+    .pag-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid rgba(139,0,33,0.07);flex-wrap:wrap;gap:0.8rem;}
+    .pag-aluno-nome{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:300;}
+    .pag-plano-nome{font-size:0.78rem;color:var(--text-light);}
+    .pag-body{padding:1rem 1.4rem;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;}
+    .pag-ciclo-info{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;}
+    .pag-ciclo-label{font-size:0.64rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.2rem;}
+    .pag-ciclo-val{font-size:0.9rem;color:var(--text-dark);}
+
+    /* barra de vencimento */
+    .venc-row{display:flex;align-items:center;gap:0.8rem;margin:0.6rem 0;}
+    .venc-bar{flex:1;height:5px;border-radius:3px;background:rgba(139,0,33,0.1);overflow:hidden;}
+    .venc-fill{height:100%;border-radius:3px;transition:width 0.5s;}
+    .venc-ok{background:var(--green-text);}
+    .venc-warn{background:#e6a820;}
+    .venc-over{background:#c0392b;}
+    .venc-label{font-size:0.7rem;white-space:nowrap;}
+
+    .pag-actions{display:flex;flex-direction:column;gap:0.5rem;min-width:170px;}
+    .btn-pag-ok{background:var(--green-bg);color:var(--green-text);border:1.5px solid rgba(59,109,17,0.2);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.65rem 1rem;border-radius:50px;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:0.4rem;}
+    .btn-pag-ok:hover{background:#d5eec0;}
+    .btn-suspender{background:var(--red-bg);color:var(--red-text);border:1.5px solid rgba(192,57,43,0.2);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.65rem 1rem;border-radius:50px;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:0.4rem;}
+    .btn-suspender:hover{background:#f9d6d2;}
+    .btn-reativar{background:var(--blue-bg);color:var(--blue-text);border:1.5px solid rgba(0,85,119,0.2);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.65rem 1rem;border-radius:50px;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:0.4rem;}
+    .btn-reativar:hover{background:#cce4f0;}
+
+    /* HISTÓRICO TABLE */
+    .table-wrap{background:var(--cream);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);}
+    .table-wrap table{width:100%;border-collapse:collapse;min-width:600px;}
+    .table-wrap th{padding:0.85rem 1.2rem;font-size:0.64rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);background:var(--warm-white);text-align:left;border-bottom:1px solid rgba(139,0,33,0.08);}
+    .table-wrap td{padding:0.85rem 1.2rem;font-size:0.86rem;color:var(--text-mid);border-bottom:1px solid rgba(139,0,33,0.05);}
+    .table-wrap tr:last-child td{border-bottom:none;}
+    .table-wrap tr:hover td{background:rgba(139,0,33,0.02);}
+
+    /* MODAL */
+    .modal-bg{position:fixed;inset:0;background:rgba(42,26,31,0.55);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+    .modal-bg.open{display:flex;}
+    .modal{background:var(--warm-white);border-radius:28px;padding:2.2rem 2.4rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 32px 80px rgba(139,0,33,0.18);}
+    .modal-close{position:absolute;top:1.2rem;right:1.2rem;width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(139,0,33,0.15);display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:0.8rem;cursor:pointer;transition:all 0.2s;background:none;}
+    .modal-close:hover{border-color:var(--bordo);color:var(--bordo);}
+    .modal-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;margin-bottom:0.3rem;}
+    .modal-sub{font-size:0.84rem;color:var(--text-light);line-height:1.7;margin-bottom:1.5rem;}
+    .form-group{margin-bottom:1rem;}
+    .form-group label{display:block;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.4rem;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--cream);border:1.5px solid rgba(139,0,33,0.12);border-radius:14px;padding:0.82rem 1rem;font-family:'Jost',sans-serif;font-size:0.9rem;color:var(--text-dark);transition:border-color 0.3s;outline:none;appearance:none;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--bordo);box-shadow:0 0 0 4px rgba(139,0,33,0.06);}
+    .form-group textarea{min-height:80px;resize:vertical;}
+    .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:0.6rem;background:var(--bordo);color:#fff;font-size:0.74rem;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;padding:0.9rem 1.8rem;border-radius:50px;transition:all 0.3s;box-shadow:0 8px 24px rgba(139,0,33,0.18);cursor:pointer;border:none;}
+    .btn-primary:hover{background:var(--bordo-light);}
+    .btn-secondary{display:inline-flex;align-items:center;justify-content:center;padding:0.9rem 1.4rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);color:var(--bordo);font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.3s;cursor:pointer;background:none;}
+    .btn-secondary:hover{background:var(--bordo-pale);}
+    .btn-row{display:flex;gap:0.7rem;margin-top:1.2rem;flex-wrap:wrap;}
+    .msg{padding:0.7rem 1rem;border-radius:12px;font-size:0.82rem;margin-top:0.8rem;line-height:1.5;}
+    .msg-ok{background:var(--green-bg);color:var(--green-text);border:1px solid rgba(59,109,17,.15);}
+    .msg-err{background:var(--bordo-pale);color:var(--bordo);border:1px solid rgba(139,0,33,.12);}
+    .msg-warn{background:var(--amber-bg);color:var(--amber-text);border:1px solid rgba(133,79,11,.15);}
+
+    /* EMPTY STATE */
+    .empty{text-align:center;padding:4rem 2rem;color:var(--text-light);}
+    .empty svg{opacity:0.25;margin-bottom:1rem;}
+
+    @media(max-width:1000px){nav,.tabs,.tab-panel{padding-left:1.5rem;padding-right:1.5rem;}.kpi-strip{grid-template-columns:repeat(3,1fr);}.sol-info-grid{grid-template-columns:repeat(2,1fr);}.sol-body{grid-template-columns:1fr;}}
+    @media(max-width:600px){.kpi-strip{grid-template-columns:1fr 1fr;}.tab-panel{padding:1.5rem;}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="{{ url_for('admin_page') }}" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Painel
+    </a>
+    <span class="nav-title">Controle de Pacotes</span>
+  </div>
+  <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);">{{ user_name }}</span>
+</nav>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tabSolicitacoes">
+    Solicitações <span class="badge" id="badgePend">0</span>
+  </button>
+  <button class="tab-btn" data-tab="tabPagamentos">Controle de pagamentos</button>
+  <button class="tab-btn" data-tab="tabAtivos">Planos ativos</button>
+  <button class="tab-btn" data-tab="tabHistorico">Histórico</button>
+</div>
+
+<!-- ══ SOLICITAÇÕES ══ -->
+<div class="tab-panel active" id="tabSolicitacoes">
+  <div class="kpi-strip" id="kpiSol">
+    <div class="kpi-card"><div class="kpi-num" id="kPend">—</div><div class="kpi-label">Pendentes</div></div>
+    <div class="kpi-card"><div class="kpi-num" id="kAprov">—</div><div class="kpi-label">Aprovadas hoje</div></div>
+    <div class="kpi-card"><div class="kpi-num" id="kNeg">—</div><div class="kpi-label">Negadas</div></div>
+    <div class="kpi-card"><div class="kpi-num" id="kAtivos">—</div><div class="kpi-label">Planos ativos</div></div>
+    <div class="kpi-card"><div class="kpi-num" id="kSusp">—</div><div class="kpi-label">Suspensos</div></div>
+  </div>
+
+  <div class="sec-head">
+    <div class="sec-title">Solicitações de compra</div>
+    <div class="filters">
+      <button class="filter-btn active" data-f="todas">Todas</button>
+      <button class="filter-btn" data-f="pendente">Pendentes</button>
+      <button class="filter-btn" data-f="aprovada">Aprovadas</button>
+      <button class="filter-btn" data-f="negada">Negadas</button>
+      <input class="search-box" id="buscaSol" type="text" placeholder="Buscar aluno…">
+    </div>
+  </div>
+  <div id="solGrid"></div>
+</div>
+
+<!-- ══ PAGAMENTOS ══ -->
+<div class="tab-panel" id="tabPagamentos">
+  <div class="sec-head">
+    <div class="sec-title">Controle de pagamentos</div>
+    <div class="filters">
+      <button class="filter-btn active" data-p="todos">Todos</button>
+      <button class="filter-btn" data-p="vencendo">Vencendo (7 dias)</button>
+      <button class="filter-btn" data-p="vencido">Vencidos</button>
+      <button class="filter-btn" data-p="suspenso">Suspensos</button>
+    </div>
+  </div>
+  <div id="pagGrid"></div>
+</div>
+
+<!-- ══ PLANOS ATIVOS ══ -->
+<div class="tab-panel" id="tabAtivos">
+  <div class="sec-head">
+    <div class="sec-title">Todos os planos ativos</div>
+    <input class="search-box" id="buscaAtivos" type="text" placeholder="Buscar aluno ou plano…">
+  </div>
+  <div style="overflow-x:auto;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Aluno</th><th>Plano</th><th>Tipo</th><th>Valor</th>
+            <th>Início</th><th>Próx. venc.</th><th>Status</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tbAtivos"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HISTÓRICO ══ -->
+<div class="tab-panel" id="tabHistorico">
+  <div class="sec-head">
+    <div class="sec-title">Histórico completo</div>
+    <input class="search-box" id="buscaHist" type="text" placeholder="Buscar…">
+  </div>
+  <div style="overflow-x:auto;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th><th>Aluno</th><th>Plano</th><th>Ação</th><th>Observação</th><th>Admin</th>
+          </tr>
+        </thead>
+        <tbody id="tbHist"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL APROVAR -->
+<div class="modal-bg" id="modalAprovar">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('modalAprovar')">✕</button>
+    <div class="modal-title">Aprovar solicitação</div>
+    <div class="modal-sub" id="aprovarSub"></div>
+    <input type="hidden" id="aprovarIdSol">
+    <div class="form-group">
+      <label>Data do pagamento (comprovante PIX)</label>
+      <input id="aprovarDataPag" type="date">
+    </div>
+    <div class="form-group">
+      <label>Data de início do plano</label>
+      <input id="aprovarDataIni" type="date">
+    </div>
+    <div class="form-group">
+      <label>Observação <span style="font-size:0.6rem;opacity:0.6;">(opcional)</span></label>
+      <input id="aprovarObs" type="text" placeholder="Ex.: Pix confirmado · R$ 279,00">
+    </div>
+    <div id="aprovarMsg"></div>
+    <div class="btn-row">
+      <button class="btn-primary" id="btnConfAprovar">✓ Confirmar aprovação</button>
+      <button class="btn-secondary" onclick="fecharModal('modalAprovar')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NEGAR -->
+<div class="modal-bg" id="modalNegar">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('modalNegar')">✕</button>
+    <div class="modal-title">Negar solicitação</div>
+    <div class="modal-sub" id="negarSub"></div>
+    <input type="hidden" id="negarIdSol">
+    <div class="form-group">
+      <label>Motivo da negação</label>
+      <textarea id="negarMotivo" placeholder="Explique o motivo para o aluno…"></textarea>
+    </div>
+    <div id="negarMsg"></div>
+    <div class="btn-row">
+      <button class="btn-primary" style="background:#c0392b;box-shadow:0 8px 24px rgba(192,57,43,0.2);" id="btnConfNegar">✕ Confirmar negação</button>
+      <button class="btn-secondary" onclick="fecharModal('modalNegar')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR PAGAMENTO -->
+<div class="modal-bg" id="modalPagamento">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('modalPagamento')">✕</button>
+    <div class="modal-title">Registrar pagamento</div>
+    <div class="modal-sub" id="pagSub"></div>
+    <input type="hidden" id="pagIdAp">
+    <div class="form-group">
+      <label>Data do pagamento</label>
+      <input id="pagData" type="date">
+    </div>
+    <div class="form-group">
+      <label>Observação</label>
+      <input id="pagObs" type="text" placeholder="Ex.: Pix · R$ 279,00">
+    </div>
+    <div id="pagMsg"></div>
+    <div class="btn-row">
+      <button class="btn-primary" id="btnConfPag">✓ Confirmar pagamento</button>
+      <button class="btn-secondary" onclick="fecharModal('modalPagamento')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUSPENDER -->
+<div class="modal-bg" id="modalSuspender">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('modalSuspender')">✕</button>
+    <div class="modal-title">Suspender acesso</div>
+    <div class="modal-sub" id="suspSub"></div>
+    <input type="hidden" id="suspIdAp">
+    <div class="form-group">
+      <label>Motivo</label>
+      <textarea id="suspMotivo" placeholder="Ex.: Pagamento não identificado após 5 dias de vencimento."></textarea>
+    </div>
+    <div id="suspMsg"></div>
+    <div class="btn-row">
+      <button class="btn-primary" style="background:#c0392b;box-shadow:0 8px 24px rgba(192,57,43,0.2);" id="btnConfSusp">Suspender</button>
+      <button class="btn-secondary" onclick="fecharModal('modalSuspender')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let _dados = null;
+let filtroSol = 'todas', filtroPag = 'todos';
+
+// ── CARREGAR ────────────────────────────────────────────────────
+async function carregar() {
+  const r = await fetch('/admin/pacotes-controle/dados');
+  _dados = await r.json();
+  if (!_dados.ok) { alert(_dados.mensagem); return; }
+  renderTudo();
+}
+
+function renderTudo() {
+  const { solicitacoes, aluno_pacotes, historico, kpis } = _dados;
+  // KPIs
+  document.getElementById('kPend').textContent  = kpis.pendentes;
+  document.getElementById('kAprov').textContent = kpis.aprovadas_hoje;
+  document.getElementById('kNeg').textContent   = kpis.negadas;
+  document.getElementById('kAtivos').textContent= kpis.ativos;
+  document.getElementById('kSusp').textContent  = kpis.suspensos;
+  document.getElementById('badgePend').textContent = kpis.pendentes;
+
+  renderSolicitacoes(solicitacoes, filtroSol, document.getElementById('buscaSol').value);
+  renderPagamentos(aluno_pacotes, filtroPag);
+  renderAtivos(aluno_pacotes, '');
+  renderHistorico(historico, '');
+}
+
+// ── SOLICITAÇÕES ────────────────────────────────────────────────
+function renderSolicitacoes(sols, filtro, busca) {
+  const el = document.getElementById('solGrid');
+  const lista = sols.filter(s => {
+    const fOk = filtro === 'todas' || s.status === filtro;
+    const bOk = !busca || s.aluno_nome.toLowerCase().includes(busca.toLowerCase());
+    return fOk && bOk;
+  });
+  if (!lista.length) { el.innerHTML = '<div class="empty"><p>Nenhuma solicitação encontrada.</p></div>'; return; }
+  el.innerHTML = lista.map(s => {
+    const ini = s.aluno_nome.split(' ').slice(0,2).map(p=>p[0].toUpperCase()).join('');
+    const acoes = s.status === 'pendente' ? `
+      <button class="btn-aprovar" onclick="abrirAprovar(${s.id_solicitacao},'${esc(s.aluno_nome)}','${esc(s.pacote_nome)}',${s.pacote_valor})">✓ Aprovar</button>
+      <button class="btn-negar" onclick="abrirNegar(${s.id_solicitacao},'${esc(s.aluno_nome)}')">✕ Negar</button>` :
+      `<span class="badge-status s-${s.status}">${s.status}</span>`;
+    return `<div class="sol-card" data-nome="${s.aluno_nome.toLowerCase()}" data-status="${s.status}">
+      <div class="sol-head">
+        <div class="sol-aluno-row">
+          <div class="ava">${ini}</div>
+          <div>
+            <div class="sol-aluno-nome">${s.aluno_nome}</div>
+            <div class="sol-aluno-email">${s.aluno_email}</div>
+          </div>
+        </div>
+        <div class="sol-badges">
+          <span class="badge-status s-${s.status}">${s.status}</span>
+          ${s.tipo_solicitacao === 'mudanca' ? '<span class="badge-status" style="background:var(--blue-bg);color:var(--blue-text);">Mudança</span>' : '<span class="badge-status" style="background:var(--amber-bg);color:var(--amber-text);">Nova compra</span>'}
+        </div>
+      </div>
+      <div class="sol-body">
+        <div>
+          <div class="sol-info-grid">
+            <div class="sol-info-item">
+              <div class="sol-info-label">Pacote solicitado</div>
+              <div class="sol-info-val">${s.pacote_nome}</div>
+            </div>
+            <div class="sol-info-item">
+              <div class="sol-info-label">Valor</div>
+              <div class="sol-info-val"><strong>R$ ${fmtVal(s.pacote_valor)}</strong> <small style="font-size:0.7rem;color:var(--text-light);">/${s.tipo_cobranca==='mensal'?'mês':'sem.'}</small></div>
+            </div>
+            <div class="sol-info-item">
+              <div class="sol-info-label">Modalidades</div>
+              <div class="sol-info-val">${(s.modalidades||[]).join(' · ') || '—'}</div>
+            </div>
+          </div>
+          <div class="sol-date">Solicitado em ${fmtDate(s.criado_em)}${s.obs_admin ? ' · ' + s.obs_admin : ''}</div>
+        </div>
+        <div class="sol-actions">${acoes}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.querySelectorAll('.filter-btn[data-f]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-f]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); filtroSol = btn.dataset.f;
+    renderSolicitacoes(_dados.solicitacoes, filtroSol, document.getElementById('buscaSol').value);
+  });
+});
+document.getElementById('buscaSol').addEventListener('input', () =>
+  renderSolicitacoes(_dados.solicitacoes, filtroSol, document.getElementById('buscaSol').value));
+
+// ── PAGAMENTOS ──────────────────────────────────────────────────
+function diasAteVenc(dtStr) {
+  if (!dtStr) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const venc = new Date(dtStr); venc.setHours(0,0,0,0);
+  return Math.round((venc - hoje) / 86400000);
+}
+
+function renderPagamentos(aps, filtro) {
+  const el = document.getElementById('pagGrid');
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+  const lista = aps.filter(ap => {
+    if (filtro === 'suspenso') return ap.status_acesso === 'suspenso';
+    if (filtro === 'vencido')  { const d = diasAteVenc(ap.proximo_vencimento); return d !== null && d < 0 && ap.status_acesso !== 'suspenso'; }
+    if (filtro === 'vencendo') { const d = diasAteVenc(ap.proximo_vencimento); return d !== null && d >= 0 && d <= 7; }
+    return true;
+  });
+
+  if (!lista.length) { el.innerHTML = '<div class="empty"><p>Nenhum registro para este filtro.</p></div>'; return; }
+
+  el.innerHTML = lista.map(ap => {
+    const dias = diasAteVenc(ap.proximo_vencimento);
+    const pct  = dias === null ? 0 : ap.ciclo_dias ? Math.max(0, Math.min(100, Math.round((1 - dias/ap.ciclo_dias)*100))) : 0;
+    const fillCls = dias < 0 ? 'venc-over' : dias <= 7 ? 'venc-warn' : 'venc-ok';
+    const vencTxt = dias === null ? '—' : dias < 0 ? `Vencido há ${Math.abs(dias)} dia(s)` : dias === 0 ? 'Vence hoje' : `${dias} dia(s)`;
+    const suspenso = ap.status_acesso === 'suspenso';
+    const ini = ap.aluno_nome.split(' ').slice(0,2).map(p=>p[0].toUpperCase()).join('');
+
+    return `<div class="pag-card">
+      <div class="pag-head">
+        <div style="display:flex;align-items:center;gap:0.9rem;">
+          <div class="ava">${ini}</div>
+          <div>
+            <div class="pag-aluno-nome">${ap.aluno_nome}</div>
+            <div class="pag-plano-nome">${ap.pacote_nome} · ${ap.tipo_cobranca}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.4rem;align-items:center;">
+          ${suspenso ? '<span class="badge-status s-negada">Suspenso</span>' : '<span class="badge-status s-aprovada">Ativo</span>'}
+          <span class="badge-status" style="background:var(--cream);color:var(--text-mid);border:1px solid rgba(139,0,33,0.1);">R$ ${fmtVal(ap.valor)}/${ap.tipo_cobranca==='mensal'?'mês':'sem.'}</span>
+        </div>
+      </div>
+      <div class="pag-body">
+        <div>
+          <div class="pag-ciclo-info">
+            <div><div class="pag-ciclo-label">Início</div><div class="pag-ciclo-val">${fmtDate(ap.data_inicio)}</div></div>
+            <div><div class="pag-ciclo-label">Próx. vencimento</div><div class="pag-ciclo-val">${fmtDate(ap.proximo_vencimento)}</div></div>
+            <div><div class="pag-ciclo-label">Último pagamento</div><div class="pag-ciclo-val">${fmtDate(ap.ultimo_pagamento) || '—'}</div></div>
+          </div>
+          <div class="venc-row">
+            <div class="venc-bar"><div class="venc-fill ${fillCls}" style="width:${pct}%;"></div></div>
+            <span class="venc-label" style="color:${dias<0?'#c0392b':dias<=7?'#e6a820':'var(--green-text)'};">${vencTxt}</span>
+          </div>
+        </div>
+        <div class="pag-actions">
+          ${suspenso
+            ? `<button class="btn-reativar" onclick="reativarAluno(${ap.id_aluno_pacote},'${esc(ap.aluno_nome)}')">↺ Reativar acesso</button>`
+            : `<button class="btn-pag-ok" onclick="abrirPagamento(${ap.id_aluno_pacote},'${esc(ap.aluno_nome)}','${esc(ap.pacote_nome)}')">✓ Confirmar pgto</button>
+               <button class="btn-suspender" onclick="abrirSuspender(${ap.id_aluno_pacote},'${esc(ap.aluno_nome)}')">⊘ Suspender</button>`
+          }
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.querySelectorAll('.filter-btn[data-p]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-p]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); filtroPag = btn.dataset.p;
+    renderPagamentos(_dados.aluno_pacotes, filtroPag);
+  });
+});
+
+// ── ATIVOS ──────────────────────────────────────────────────────
+function renderAtivos(aps, busca) {
+  const tb = document.getElementById('tbAtivos');
+  const lista = aps.filter(ap => !busca || ap.aluno_nome.toLowerCase().includes(busca.toLowerCase()) || ap.pacote_nome.toLowerCase().includes(busca.toLowerCase()));
+  if (!lista.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-light);padding:2rem;">Nenhum plano ativo.</td></tr>'; return; }
+  tb.innerHTML = lista.map(ap => {
+    const statusCls = ap.status_acesso === 'suspenso' ? 's-negada' : 's-aprovada';
+    return `<tr>
+      <td>${ap.aluno_nome}</td>
+      <td>${ap.pacote_nome}</td>
+      <td>${ap.tipo_cobranca}</td>
+      <td>R$ ${fmtVal(ap.valor)}</td>
+      <td>${fmtDate(ap.data_inicio)}</td>
+      <td>${fmtDate(ap.proximo_vencimento)}</td>
+      <td><span class="badge-status ${statusCls}">${ap.status_acesso}</span></td>
+      <td>
+        ${ap.status_acesso === 'suspenso'
+          ? `<button style="font-size:0.66rem;color:var(--blue-text);cursor:pointer;background:none;border:none;" onclick="reativarAluno(${ap.id_aluno_pacote},'${esc(ap.aluno_nome)}')">Reativar</button>`
+          : `<button style="font-size:0.66rem;color:var(--red-text);cursor:pointer;background:none;border:none;" onclick="abrirSuspender(${ap.id_aluno_pacote},'${esc(ap.aluno_nome)}')">Suspender</button>`
+        }
+      </td>
+    </tr>`;
+  }).join('');
+}
+document.getElementById('buscaAtivos').addEventListener('input', e => renderAtivos(_dados.aluno_pacotes, e.target.value));
+
+// ── HISTÓRICO ───────────────────────────────────────────────────
+function renderHistorico(hist, busca) {
+  const tb = document.getElementById('tbHist');
+  const lista = hist.filter(h => !busca || h.aluno_nome.toLowerCase().includes(busca.toLowerCase()));
+  if (!lista.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-light);padding:2rem;">Nenhum registro.</td></tr>'; return; }
+  tb.innerHTML = lista.map(h => {
+    const acaoCls = h.acao === 'aprovacao' ? 's-aprovada' : h.acao === 'negacao' ? 's-negada' : h.acao === 'suspensao' ? 's-negada' : 's-pendente';
+    const acaoTxt = { aprovacao:'Aprovação', negacao:'Negação', suspensao:'Suspensão', reativacao:'Reativação', pagamento:'Pagamento' }[h.acao] || h.acao;
+    return `<tr>
+      <td>${fmtDate(h.criado_em)}</td>
+      <td>${h.aluno_nome}</td>
+      <td>${h.pacote_nome}</td>
+      <td><span class="badge-status ${acaoCls}">${acaoTxt}</span></td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h.observacao || '—'}</td>
+      <td>${h.admin_nome || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+document.getElementById('buscaHist').addEventListener('input', e => renderHistorico(_dados.historico, e.target.value));
+
+// ── MODAL APROVAR ───────────────────────────────────────────────
+function abrirAprovar(id, nome, plano, valor) {
+  document.getElementById('aprovarIdSol').value = id;
+  document.getElementById('aprovarSub').textContent = `${nome} · ${plano} · R$ ${fmtVal(valor)}`;
+  document.getElementById('aprovarDataPag').value = new Date().toISOString().split('T')[0];
+  document.getElementById('aprovarDataIni').value = new Date().toISOString().split('T')[0];
+  document.getElementById('aprovarObs').value = '';
+  document.getElementById('aprovarMsg').innerHTML = '';
+  abrirModal('modalAprovar');
+}
+document.getElementById('btnConfAprovar').addEventListener('click', async () => {
+  const id  = document.getElementById('aprovarIdSol').value;
+  const dataPag = document.getElementById('aprovarDataPag').value;
+  const dataIni = document.getElementById('aprovarDataIni').value;
+  const obs     = document.getElementById('aprovarObs').value;
+  const msgEl   = document.getElementById('aprovarMsg');
+  if (!dataPag || !dataIni) { msgEl.innerHTML = '<div class="msg msg-err">Informe as datas.</div>'; return; }
+  const r = await fetch('/admin/pacotes-controle/aprovar', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id_solicitacao:id, data_pagamento:dataPag, data_inicio:dataIni, obs }) });
+  const d = await r.json();
+  msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
+  if (d.ok) setTimeout(() => { fecharModal('modalAprovar'); carregar(); }, 1000);
+});
+
+// ── MODAL NEGAR ─────────────────────────────────────────────────
+function abrirNegar(id, nome) {
+  document.getElementById('negarIdSol').value = id;
+  document.getElementById('negarSub').textContent = `Negar solicitação de ${nome}`;
+  document.getElementById('negarMotivo').value = '';
+  document.getElementById('negarMsg').innerHTML = '';
+  abrirModal('modalNegar');
+}
+document.getElementById('btnConfNegar').addEventListener('click', async () => {
+  const id     = document.getElementById('negarIdSol').value;
+  const motivo = document.getElementById('negarMotivo').value.trim();
+  const msgEl  = document.getElementById('negarMsg');
+  const r = await fetch('/admin/pacotes-controle/negar', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id_solicitacao:id, motivo }) });
+  const d = await r.json();
+  msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
+  if (d.ok) setTimeout(() => { fecharModal('modalNegar'); carregar(); }, 1000);
+});
+
+// ── MODAL PAGAMENTO ─────────────────────────────────────────────
+function abrirPagamento(idAp, nome, plano) {
+  document.getElementById('pagIdAp').value = idAp;
+  document.getElementById('pagSub').textContent = `${nome} · ${plano}`;
+  document.getElementById('pagData').value = new Date().toISOString().split('T')[0];
+  document.getElementById('pagObs').value = '';
+  document.getElementById('pagMsg').innerHTML = '';
+  abrirModal('modalPagamento');
+}
+document.getElementById('btnConfPag').addEventListener('click', async () => {
+  const id   = document.getElementById('pagIdAp').value;
+  const data = document.getElementById('pagData').value;
+  const obs  = document.getElementById('pagObs').value;
+  const msgEl= document.getElementById('pagMsg');
+  if (!data) { msgEl.innerHTML = '<div class="msg msg-err">Informe a data do pagamento.</div>'; return; }
+  const r = await fetch('/admin/pacotes-controle/registrar-pagamento', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id_aluno_pacote:id, data_pagamento:data, obs }) });
+  const d = await r.json();
+  msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
+  if (d.ok) setTimeout(() => { fecharModal('modalPagamento'); carregar(); }, 1000);
+});
+
+// ── MODAL SUSPENDER ─────────────────────────────────────────────
+function abrirSuspender(idAp, nome) {
+  document.getElementById('suspIdAp').value = idAp;
+  document.getElementById('suspSub').textContent = `Suspender acesso de ${nome}. O aluno não poderá se inscrever em novas aulas.`;
+  document.getElementById('suspMotivo').value = '';
+  document.getElementById('suspMsg').innerHTML = '';
+  abrirModal('modalSuspender');
+}
+document.getElementById('btnConfSusp').addEventListener('click', async () => {
+  const id    = document.getElementById('suspIdAp').value;
+  const motivo= document.getElementById('suspMotivo').value;
+  const msgEl = document.getElementById('suspMsg');
+  const r = await fetch('/admin/pacotes-controle/suspender', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id_aluno_pacote:id, motivo }) });
+  const d = await r.json();
+  msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
+  if (d.ok) setTimeout(() => { fecharModal('modalSuspender'); carregar(); }, 1000);
+});
+
+async function reativarAluno(idAp, nome) {
+  if (!confirm(`Reativar acesso de ${nome}?`)) return;
+  const r = await fetch('/admin/pacotes-controle/reativar', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id_aluno_pacote:idAp }) });
+  const d = await r.json(); alert(d.mensagem); if (d.ok) carregar();
+}
+
+// ── UTILS ───────────────────────────────────────────────────────
+function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); }));
+document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+function fmtVal(v) { return parseFloat(v||0).toFixed(2).replace('.',','); }
+function fmtDate(s) { if(!s) return '—'; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('pt-BR'); }
+function esc(s) { return (s||'').replace(/'/g,"\\'"); }
+
+carregar();
+</script>
+</body>
+</html>

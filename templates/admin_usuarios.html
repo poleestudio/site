@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuários · Clara Lucatti Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bordo:#8B0021;--bordo-light:#A3002A;--bordo-pale:#f5e6ea;--cream:#fdf8f5;--warm-white:#fff9f6;--text-dark:#2a1a1f;--text-mid:#6b4a55;--text-light:#b08090;--shadow:0 18px 45px rgba(139,0,33,0.08);}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;}
+    a{text-decoration:none;color:inherit;}
+    button{border:none;background:none;cursor:pointer;font:inherit;}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(253,248,245,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,0,33,0.08);}
+    .nav-left{display:flex;align-items:center;gap:1rem;}
+    .btn-back{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);padding:0.5rem 1rem;border:1.5px solid rgba(139,0,33,0.15);border-radius:50px;transition:all 0.3s;}
+    .btn-back:hover{border-color:var(--bordo);color:var(--bordo);}
+    .nav-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;letter-spacing:0.1em;color:var(--text-dark);}
+    .page-layout{display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 65px);}
+    .sidebar{background:var(--cream);border-right:1px solid rgba(139,0,33,0.08);padding:2.5rem 2rem;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto;}
+    .sidebar-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--text-dark);margin-bottom:0.4rem;}
+    .sidebar-sub{font-size:0.85rem;color:var(--text-light);line-height:1.7;margin-bottom:2rem;}
+    .form-group{margin-bottom:1.1rem;}
+    .form-group label{display:block;font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.45rem;}
+    .form-group input,.form-group select{width:100%;background:var(--warm-white);border:1.5px solid rgba(139,0,33,0.12);border-radius:14px;padding:0.85rem 1rem;font-family:'Jost',sans-serif;font-size:0.9rem;color:var(--text-dark);transition:border-color 0.3s;outline:none;appearance:none;}
+    .form-group input:focus,.form-group select:focus{border-color:var(--bordo);box-shadow:0 0 0 4px rgba(139,0,33,0.06);}
+    .check-row{display:flex;align-items:center;gap:0.6rem;font-size:0.88rem;color:var(--text-mid);margin-bottom:0.8rem;}
+    .check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--bordo);}
+    .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:0.6rem;background:var(--bordo);color:#fff;font-size:0.76rem;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;padding:0.95rem 2rem;border-radius:50px;transition:all 0.3s;box-shadow:0 8px 28px rgba(139,0,33,0.2);width:100%;margin-top:0.5rem;}
+    .btn-primary:hover{background:var(--bordo-light);transform:translateY(-2px);}
+    .btn-secondary{display:inline-flex;align-items:center;justify-content:center;width:100%;margin-top:0.6rem;padding:0.85rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);color:var(--bordo);font-size:0.74rem;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.3s;}
+    .btn-secondary:hover{background:var(--bordo-pale);}
+    .main{padding:2.5rem 2.5rem;background:var(--warm-white);}
+    .filters{display:flex;gap:0.8rem;margin-bottom:1.8rem;flex-wrap:wrap;}
+    .filter-btn{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.5rem 1.1rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.12);color:var(--text-light);transition:all 0.3s;background:none;cursor:pointer;}
+    .filter-btn.active,.filter-btn:hover{background:var(--bordo);color:#fff;border-color:var(--bordo);}
+    .search-box{flex:1;min-width:200px;max-width:320px;background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.5rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.86rem;color:var(--text-dark);outline:none;}
+    .search-box:focus{border-color:var(--bordo);}
+    .users-grid{display:grid;gap:0.9rem;}
+    .user-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;padding:1.3rem 1.5rem;display:flex;align-items:center;gap:1.2rem;transition:all 0.3s;}
+    .user-card:hover{border-color:rgba(139,0,33,0.2);box-shadow:var(--shadow);}
+    .user-avatar{width:44px;height:44px;border-radius:50%;background:var(--bordo-pale);color:var(--bordo);font-family:'Cormorant Garamond',serif;font-size:1.1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .user-info{flex:1;min-width:0;}
+    .user-name{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:300;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .user-meta{font-size:0.78rem;color:var(--text-light);margin-top:0.15rem;}
+    .user-badge{display:inline-flex;padding:0.28rem 0.75rem;border-radius:50px;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;flex-shrink:0;}
+    .badge-aluno{background:#e8f4fd;color:#185FA5;}
+    .badge-professor{background:#eaf3de;color:#3B6D11;}
+    .badge-administrador{background:var(--bordo-pale);color:var(--bordo);}
+    .btn-remove{width:30px;height:30px;border-radius:50%;border:1.5px solid rgba(139,0,33,0.12);display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:0.75rem;flex-shrink:0;transition:all 0.25s;background:none;cursor:pointer;}
+    .btn-remove:hover{border-color:var(--bordo);color:var(--bordo);background:var(--bordo-pale);}
+    .empty-state{text-align:center;padding:4rem 2rem;color:var(--text-light);}
+    .empty-state svg{opacity:0.3;margin-bottom:1rem;}
+    @media(max-width:900px){.page-layout{grid-template-columns:1fr;}.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid rgba(139,0,33,0.08);}nav{padding:1rem 1.5rem;}.main{padding:1.5rem;}}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a href="{{ url_for('admin_page') }}" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Painel
+    </a>
+    <span class="nav-title">Usuários</span>
+  </div>
+  <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);">{{ user_name }}</span>
+</nav>
+
+<div class="page-layout">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Novo usuário</h2>
+    <p class="sidebar-sub">Cadastre alunos, professores e administradores no mesmo formulário.</p>
+
+    <input type="hidden" id="editId">
+    <div class="form-group">
+      <label>Nome completo</label>
+      <input id="u-nome" type="text" placeholder="Nome completo">
+    </div>
+    <div class="form-group">
+      <label>Tipo de usuário</label>
+      <select id="u-tipo">
+        <option value="aluno">Aluno</option>
+        <option value="professor">Professor</option>
+        <option value="administrador">Administrador</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input id="u-email" type="email" placeholder="email@dominio.com">
+    </div>
+    <div class="form-group">
+      <label>CPF</label>
+      <input id="u-cpf" type="text" placeholder="Somente números" maxlength="11">
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input id="u-senha" type="password" placeholder="Mín. 8 chars, maiúsc., número e símbolo">
+    </div>
+    <label class="check-row"><input id="u-img" type="checkbox"> Autoriza uso de imagem</label>
+    <label class="check-row"><input id="u-seg" type="checkbox"> Aceita o termo de segurança</label>
+
+    <button class="btn-primary" id="btnSalvar">Salvar usuário</button>
+    <button class="btn-secondary" id="btnLimpar">Limpar formulário</button>
+  </aside>
+
+  <main class="main">
+    <div class="filters">
+      <button class="filter-btn active" data-tipo="">Todos</button>
+      <button class="filter-btn" data-tipo="aluno">Alunos</button>
+      <button class="filter-btn" data-tipo="professor">Professores</button>
+      <button class="filter-btn" data-tipo="administrador">Admins</button>
+      <input class="search-box" id="busca" type="text" placeholder="Buscar por nome ou e-mail…">
+    </div>
+
+    <div class="users-grid" id="usersGrid">
+      {% for u in usuarios %}
+      <div class="user-card" data-tipo="{{ u.tipo_cadastro }}" data-nome="{{ u.nome_completo|lower }}" data-email="{{ u.email|lower }}">
+        <div class="user-avatar">{{ u.nome_completo[0]|upper }}{{ u.nome_completo.split(' ')[-1][0]|upper if u.nome_completo.split(' ')|length > 1 else '' }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ u.nome_completo }}</div>
+          <div class="user-meta">{{ u.email }} · CPF {{ u.cpf[:3] }}.***.***-{{ u.cpf[-2:] if u.cpf|length >= 2 else '??' }}</div>
+        </div>
+        <span class="user-badge badge-{{ u.tipo_cadastro }}">{{ u.tipo_cadastro }}</span>
+        <button class="btn-remove" data-id="{{ u.id_cadastro }}" data-nome="{{ u.nome_completo }}" title="Remover">✕</button>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <p>Nenhum usuário cadastrado ainda.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+
+<script>
+  // Filtro + busca
+  const btns = document.querySelectorAll(".filter-btn");
+  const busca = document.getElementById("busca");
+  let tipoAtivo = "";
+
+  function filtrar(){
+    document.querySelectorAll(".user-card").forEach(c=>{
+      const tipoOk = !tipoAtivo || c.dataset.tipo===tipoAtivo;
+      const q = busca.value.toLowerCase();
+      const buscaOk = !q || c.dataset.nome.includes(q) || c.dataset.email.includes(q);
+      c.style.display = (tipoOk && buscaOk) ? "" : "none";
+    });
+  }
+  btns.forEach(b=>b.addEventListener("click",()=>{
+    btns.forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    tipoAtivo = b.dataset.tipo;
+    filtrar();
+  }));
+  busca.addEventListener("input", filtrar);
+
+  // Salvar
+  document.getElementById("btnSalvar").addEventListener("click", async ()=>{
+    const payload={
+      nome_completo: document.getElementById("u-nome").value,
+      email: document.getElementById("u-email").value,
+      cpf: document.getElementById("u-cpf").value,
+      senha: document.getElementById("u-senha").value,
+      tipo_cadastro: document.getElementById("u-tipo").value,
+      termo_imagem: document.getElementById("u-img").checked,
+      termo_seguranca: document.getElementById("u-seg").checked,
+    };
+    const r = await fetch("{{ url_for('cadastrar_usuario_admin') }}",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const d = await r.json();
+    alert(d.mensagem);
+    if(d.ok) location.reload();
+  });
+
+  // Limpar
+  document.getElementById("btnLimpar").addEventListener("click",()=>{
+    ["u-nome","u-email","u-cpf","u-senha"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("u-tipo").value="aluno";
+    document.getElementById("u-img").checked=false;
+    document.getElementById("u-seg").checked=false;
+  });
+
+  // Remover
+  document.querySelectorAll(".btn-remove").forEach(btn=>{
+    btn.addEventListener("click", async()=>{
+      if(!confirm(`Remover ${btn.dataset.nome}? Esta ação não pode ser desfeita.`)) return;
+      const r = await fetch(`/admin/usuario/${btn.dataset.id}`,{method:"DELETE"});
+      const d = await r.json();
+      alert(d.mensagem);
+      if(d.ok) location.reload();
+    });
+  });
+</script>
+</body>
+</html>
