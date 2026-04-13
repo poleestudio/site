@@ -24,15 +24,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      # 🛠️ Local Build Section (Optional)
-      # Helps a pegar problemas de build antes do deploy.
+      # 🛠️ Build local (opcional) para pegar erros cedo
       - name: Create and start virtual environment and install dependencies
         run: |
           python -m venv antenv
           source antenv/bin/activate
           pip install -r requirements.txt
 
-      # Exclui o ambiente virtual do artifact para deixar o pacote menor.
+      # Exclui o venv do artifact para reduzir o tamanho
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
@@ -54,7 +53,7 @@ jobs:
           name: python-app
           path: .
 
-      # Deploy usando Publish Profile (Autenticação básica)
+      # Deploy direto com Publish Profile (Autenticação básica)
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
