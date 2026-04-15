@@ -126,14 +126,12 @@ def home():
             ORDER BY m.titulo
         """)
         modalidades = []
-        galeria_data = {}  # { id_modalidade: [url_estatica, ...] }
+        galeria_data = {}
  
         for r in cursor.fetchall():
             slug = r[5] or ""
             gal  = listar_galeria(slug)
-            # foto de capa = foto_professora ou primeira da galeria
             foto_capa = r[6] or (gal[0] if gal else "")
- 
             modalidades.append({
                 "id_modalidade":    r[0],
                 "titulo":           r[1],
@@ -146,12 +144,11 @@ def home():
                 "responsavel_nome": r[7] or "",
                 "responsavel_tipo": r[8] or "",
             })
-            # URLs para o lightbox (JSON no frontend)
             galeria_data[r[0]] = [
                 f"/static/modalidades/{slug}/galeria/{f}" for f in gal
             ]
  
-        # ── Professoras (professores + admins) ─────────────────
+        # ── Professoras ────────────────────────────────────────
         cursor.execute("""
             SELECT DISTINCT
                 c.id_cadastro, c.nome_completo, c.tipo_cadastro,
@@ -163,37 +160,29 @@ def home():
             ORDER BY c.nome_completo
         """)
         _raw_prof = cursor.fetchall()
- 
-        # Agrupar por professor (pode ser responsável por várias modalidades)
         prof_map = {}
         for r in _raw_prof:
             pid = r[0]
             if pid not in prof_map:
                 prof_map[pid] = {
-                    "id_cadastro":  pid,
-                    "nome_completo":r[1],
-                    "tipo_cadastro":r[2],
-                    "slug":         r[3] or "",
+                    "id_cadastro":     pid,
+                    "nome_completo":   r[1],
+                    "tipo_cadastro":   r[2],
+                    "slug":            r[3] or "",
                     "foto_professora": r[4] or "",
-                    "instagram":    "",
-                    "modalidades":  [],
+                    "instagram":       "",
+                    "modalidades":     [],
                 }
             if r[5] and r[5] not in prof_map[pid]["modalidades"]:
                 prof_map[pid]["modalidades"].append(r[5])
- 
         professoras = list(prof_map.values())
  
         # ── Turmas com horários ────────────────────────────────
         cursor.execute("""
             SELECT
-                t.id_turma,
-                m.titulo AS modalidade,
-                s.nome   AS sala,
-                h.hora_inicio,
-                h.hora_fim,
-                h.dias_semana,
-                c.nome_completo AS professora,
-                t.capacidade_maxima
+                t.id_turma, m.titulo AS modalidade, s.nome AS sala,
+                h.hora_inicio, h.hora_fim, h.dias_semana,
+                c.nome_completo AS professora, t.capacidade_maxima
             FROM turmas t
             JOIN modalidades m ON m.id_modalidade = t.id_modalidade
             JOIN salas       s ON s.id_sala        = t.id_sala
@@ -215,7 +204,6 @@ def home():
                 "professora":       r[6] or "",
                 "capacidade_maxima":r[7] or 0,
             })
-            # contar dias distintos
             for d in (r[5] or "").split(","):
                 d = d.strip().lower()
                 if d:
@@ -225,9 +213,7 @@ def home():
         cursor.execute("""
             SELECT p.id_pacote, p.nome, p.tipo_cobranca, p.valor,
                    p.aulas_por_semana, p.qt_modalidades, p.observacao
-            FROM pacotes p
-            WHERE p.ativo = 1
-            ORDER BY p.valor
+            FROM pacotes p WHERE p.ativo = 1 ORDER BY p.valor
         """)
         pacotes = []
         for r in cursor.fetchall():
@@ -237,25 +223,110 @@ def home():
                 JOIN modalidades m ON m.id_modalidade = pm.id_modalidade
                 WHERE pm.id_pacote = ?
             """, (pid,))
-            mods_nomes = [x[0] for x in cursor.fetchall()]
             pacotes.append({
-                "id_pacote":        pid,
-                "nome":             r[1],
-                "tipo_cobranca":    r[2],
-                "valor":            float(r[3] or 0),
-                "aulas_por_semana": r[4] or 1,
-                "qt_modalidades":   r[5] or 1,
-                "observacao":       r[6] or "",
-                "modalidades_nomes": mods_nomes,
+                "id_pacote":         pid,
+                "nome":              r[1],
+                "tipo_cobranca":     r[2],
+                "valor":             float(r[3] or 0),
+                "aulas_por_semana":  r[4] or 1,
+                "qt_modalidades":    r[5] or 1,
+                "observacao":        r[6] or "",
+                "modalidades_nomes": [x[0] for x in cursor.fetchall()],
             })
  
-        # ── Stats strip ────────────────────────────────────────
+        # ── Stats ──────────────────────────────────────────────
         stats = {
             "total_modalidades": len(modalidades),
             "total_turmas":      len(turmas),
             "total_pacotes":     len(pacotes),
             "dias_ativos":       len(dias_set) or 6,
         }
+ 
+        # ── Workshops publicados (status publicado OU aberto) ──
+        # ATENÇÃO: se seus workshops estão salvos com outro status
+        # (ex: 'ativo'), adicione ele aqui dentro do IN(...)
+        workshops = []
+        try:
+            cursor.execute("""
+                SELECT
+                    w.id_workshop, w.nome, w.descricao,
+                    w.data_workshop, w.hora_inicio, w.hora_fim,
+                    w.vagas_totais, w.valor, w.imagem_capa, w.status,
+                    c.nome_completo AS instrutor_nome,
+                    m.titulo        AS modalidade_nome,
+                    s.nome          AS sala_nome,
+                    (SELECT COUNT(*) FROM workshop_inscricoes wi
+                     WHERE wi.id_workshop = w.id_workshop AND wi.ativo = 1) AS inscritos
+                FROM workshops w
+                LEFT JOIN cadastro c    ON c.id_cadastro   = w.id_instrutor
+                LEFT JOIN modalidades m ON m.id_modalidade = w.id_modalidade
+                LEFT JOIN salas s       ON s.id_sala        = w.id_sala
+                WHERE w.status NOT IN ('rascunho', 'cancelado')
+                ORDER BY w.data_workshop ASC, w.nome
+            """)
+            for r in cursor.fetchall():
+                vagas_totais = r[6] or 0
+                inscritos    = r[13] or 0
+                workshops.append({
+                    "id_workshop":     r[0],
+                    "nome":            r[1],
+                    "descricao":       r[2] or "",
+                    "data_workshop":   r[3].strftime("%d/%m/%Y") if r[3] else "",
+                    "hora_inicio":     str(r[4])[:5] if r[4] else "",
+                    "hora_fim":        str(r[5])[:5] if r[5] else "",
+                    "vagas_totais":    vagas_totais,
+                    "vagas_restantes": max(0, vagas_totais - inscritos) if vagas_totais else None,
+                    "valor":           float(r[7]) if r[7] else 0.0,
+                    "imagem_capa":     r[8] or "",
+                    "status":          r[9] or "",
+                    "instrutor_nome":  r[10] or "",
+                    "modalidade_nome": r[11] or "",
+                    "sala_nome":       r[12] or "",
+                    "inscritos":       inscritos,
+                    "lotado":          vagas_totais > 0 and inscritos >= vagas_totais,
+                })
+        except pyodbc.Error:
+            workshops = []
+ 
+        # ── Itens de primeira aula por modalidade ──────────────
+        primeira_aula_list = []
+        try:
+            cursor.execute("""
+                SELECT
+                    pai.id_modalidade,
+                    m.titulo AS modalidade_titulo,
+                    pai.id_item, pai.nome, pai.categoria,
+                    pai.funcao, pai.observacao, pai.obrigatorio, pai.ordem
+                FROM primeira_aula_itens pai
+                JOIN modalidades m ON m.id_modalidade = pai.id_modalidade
+                WHERE pai.ativo = 1 AND m.ativo = 1
+                ORDER BY
+                    pai.id_modalidade,
+                    CASE WHEN pai.ordem IS NULL THEN 1 ELSE 0 END,
+                    pai.ordem,
+                    pai.nome
+            """)
+            primeira_aula_map = {}
+            for r in cursor.fetchall():
+                mid = r[0]
+                if mid not in primeira_aula_map:
+                    primeira_aula_map[mid] = {
+                        "id_modalidade": mid,
+                        "titulo":        r[1],
+                        "itens":         [],
+                    }
+                primeira_aula_map[mid]["itens"].append({
+                    "id_item":     r[2],
+                    "nome":        r[3] or "",
+                    "categoria":   r[4] or "outros",
+                    "funcao":      r[5] or "",
+                    "observacao":  r[6] or "",
+                    "obrigatorio": bool(r[7]),
+                    "ordem":       r[8],
+                })
+            primeira_aula_list = list(primeira_aula_map.values())
+        except pyodbc.Error:
+            primeira_aula_list = []
  
         return render_template(
             "index.html",
@@ -265,15 +336,18 @@ def home():
             turmas=turmas,
             pacotes=pacotes,
             stats=stats,
+            workshops=workshops,
+            primeira_aula_list=primeira_aula_list,
         )
  
     except pyodbc.Error as e:
-        # Se banco falhar, renderiza página com dados vazios
         return render_template(
             "index.html",
             modalidades=[], galeria_data={},
             professoras=[], turmas=[], pacotes=[],
             stats={"total_modalidades":0,"total_turmas":0,"total_pacotes":0,"dias_ativos":6},
+            workshops=[],
+            primeira_aula_list=[],
         )
     finally:
         if cursor: cursor.close()
@@ -335,6 +409,7 @@ def esqueci_senha():
         email = (data.get("email") or "").strip().lower()
         cpf = only_digits(data.get("cpf") or "")
         nova_senha = data.get("nova_senha") or ""
+        print(cpf)
 
         if not email or not cpf or not nova_senha:
             return jsonify(ok=False, mensagem="Dados obrigatórios não informados."), 400
@@ -352,23 +427,25 @@ def esqueci_senha():
 
             # Ajuste o nome da tabela/colunas se no seu banco forem diferentes
             cursor.execute("""
-                SELECT id
-                FROM alunos
+                SELECT id_cadastro
+                FROM cadastro
                 WHERE LOWER(LTRIM(RTRIM(email))) = ?
                   AND cpf = ?
             """, (email, cpf))
 
             row = cursor.fetchone()
-
+            
             if not row:
                 return jsonify(ok=False, mensagem="Aluno não encontrado para este e-mail e CPF."), 404
 
             aluno_id = row[0]
-
+            print("aluno_id")
+            print(aluno_id)
+            
             cursor.execute("""
-                UPDATE alunos
-                SET senha = ?
-                WHERE id = ?
+                UPDATE cadastro
+                SET senha_hash = ?
+                WHERE id_cadastro = ?
             """, (senha_hash, aluno_id))
 
             conn.commit()
@@ -517,17 +594,107 @@ def cadastrar_usuario_admin():
 def excluir_usuario(id_cadastro):
     conn = cursor = None
     try:
-        conn = get_conn(); cursor = conn.cursor()
-        cursor.execute("DELETE FROM cadastro WHERE id_cadastro=?", (id_cadastro,))
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        # 1) MATRÍCULAS -> TURMAS (pelas modalidades do responsável)
+        cursor.execute("""
+            DELETE mt
+            FROM matriculas mt
+            INNER JOIN turmas t
+                ON t.id_turma = mt.id_turma
+            INNER JOIN modalidades m
+                ON m.id_modalidade = t.id_modalidade
+            WHERE m.id_responsavel_cadastro = ?
+        """, (id_cadastro,))
+
+        cursor.execute("""
+            DELETE t
+            FROM turmas t
+            INNER JOIN modalidades m
+                ON m.id_modalidade = t.id_modalidade
+            WHERE m.id_responsavel_cadastro = ?
+        """, (id_cadastro,))
+
+        # 2) TABELAS QUE APONTAM DIRETO PARA MODALIDADES
+        cursor.execute("""
+            DELETE pm
+            FROM pacote_modalidades pm
+            INNER JOIN modalidades m
+                ON m.id_modalidade = pm.id_modalidade
+            WHERE m.id_responsavel_cadastro = ?
+        """, (id_cadastro,))
+
+        cursor.execute("""
+            DELETE pai
+            FROM primeira_aula_itens pai
+            INNER JOIN modalidades m
+                ON m.id_modalidade = pai.id_modalidade
+            WHERE m.id_responsavel_cadastro = ?
+        """, (id_cadastro,))
+
+        # 3) WORKSHOPS / INSCRIÇÕES por modalidade
+        cursor.execute("""
+            DELETE wi
+            FROM workshop_inscricoes wi
+            INNER JOIN workshops w
+                ON w.id_workshop = wi.id_workshop
+            INNER JOIN modalidades m
+                ON m.id_modalidade = w.id_modalidade
+            WHERE m.id_responsavel_cadastro = ?
+        """, (id_cadastro,))
+
+        cursor.execute("""
+            DELETE w
+            FROM workshops w
+            INNER JOIN modalidades m
+                ON m.id_modalidade = w.id_modalidade
+            WHERE m.id_responsavel_cadastro = ?
+        """, (id_cadastro,))
+
+        # 4) WORKSHOPS / INSCRIÇÕES por instrutor (id_instrutor = usuário)
+        cursor.execute("""
+            DELETE wi
+            FROM workshop_inscricoes wi
+            INNER JOIN workshops w
+                ON w.id_workshop = wi.id_workshop
+            WHERE w.id_instrutor = ?
+        """, (id_cadastro,))
+
+        cursor.execute("""
+            DELETE FROM workshops
+            WHERE id_instrutor = ?
+        """, (id_cadastro,))
+
+        # 5) MODALIDADES
+        cursor.execute("""
+            DELETE FROM modalidades
+            WHERE id_responsavel_cadastro = ?
+        """, (id_cadastro,))
+
+        # 6) USUÁRIO
+        cursor.execute("""
+            DELETE FROM cadastro
+            WHERE id_cadastro = ?
+        """, (id_cadastro,))
+
         conn.commit()
-        return jsonify(ok=True, mensagem="Usuário removido.")
+        return jsonify(
+            ok=True,
+            mensagem=(
+                "Usuário e todos os vínculos (matrículas, turmas, pacotes, "
+                "primeira aula, workshops, inscrições e modalidades) foram removidos."
+            )
+        )
     except pyodbc.Error as e:
-        if conn: conn.rollback()
+        if conn:
+            conn.rollback()
         return jsonify(ok=False, mensagem=str(e)), 500
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
- 
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
  
 # ================================================================
 # SUB-PÁGINA: MODALIDADES
