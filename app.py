@@ -1257,16 +1257,38 @@ def excluir_pacote_api(id_pacote):
         conn = get_conn()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM pacote_modalidades WHERE id_pacote = ?", (id_pacote,))
-        cursor.execute("DELETE FROM pacotes WHERE id_pacote = ?", (id_pacote,))
+        # 1) Apagar solicitações de plano que usam este pacote
+        cursor.execute("""
+            DELETE FROM solicitacoes_plano
+            WHERE id_pacote = ?
+        """, (id_pacote,))
+
+        # 2) Apagar vínculos do pacote com modalidades
+        cursor.execute("""
+            DELETE FROM pacote_modalidades
+            WHERE id_pacote = ?
+        """, (id_pacote,))
+
+        # 3) Apagar o próprio pacote
+        cursor.execute("""
+            DELETE FROM pacotes
+            WHERE id_pacote = ?
+        """, (id_pacote,))
 
         conn.commit()
-        return jsonify(ok=True, mensagem="Pacote excluído.")
-
+        return jsonify(ok=True, mensagem="Pacote e vínculos excluídos.")
     except pyodbc.Error as e:
         if conn:
             conn.rollback()
-        return jsonify(ok=False, mensagem=str(e)), 500
+
+        msg = str(e)
+        if "547" in msg or "REFERENCE constraint" in msg:
+            return jsonify(
+                ok=False,
+                mensagem="Não é possível excluir este pacote porque ele ainda está sendo usado em outros registros."
+            ), 400
+
+        return jsonify(ok=False, mensagem=msg), 500
     finally:
         if cursor:
             cursor.close()
