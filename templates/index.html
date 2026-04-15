@@ -82,6 +82,12 @@
 
     /* ── Horários ── */
     .schedule-empty { font-size: 0.8rem; color: var(--text-light); font-style: italic; margin-top: 0.5rem; }
+    /* ── Horários: aulas simultâneas lado a lado ── */
+    .schedule-row { display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.55rem; }
+    .schedule-row-time { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; color: var(--bordo); min-width: 38px; padding-top: 0.55rem; white-space: nowrap; flex-shrink: 0; }
+    .schedule-row-classes { display: flex; gap: 0.45rem; flex: 1; flex-wrap: nowrap; overflow-x: auto; }
+    .schedule-row-classes .class-item { flex: 1; min-width: 0; }
+    .class-sala { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bordo); background: var(--bordo-pale); border-radius: 50px; padding: 0.12rem 0.5rem; display: inline-block; margin-top: 0.3rem; }
 
     /* ── Forms ── */
     .form-tabs { display: flex; gap: 0; margin-bottom: 1.6rem; border: 1.5px solid rgba(139,0,33,0.12); border-radius: 50px; overflow: hidden; }
@@ -189,7 +195,7 @@
     </a>
     <ul class="nav-links">
       <li><a href="#sobre">Sobre</a></li>
-      {% if professoras %}<li><a href="#professoras">Professores</a></li>{% endif %}
+      {% if professoras %}<li><a href="#professoras">Professoras</a></li>{% endif %}
       <li><a href="#modalidades">Modalidades</a></li>
       <li><a href="#horarios">Horários</a></li>
       <li><a href="#workshops">Workshops</a></li>
@@ -268,7 +274,7 @@
   {% if professoras %}
   <section class="professoras" id="professoras">
     <div class="section-label reveal">Nossa equipe</div>
-    <h2 class="section-title reveal reveal-delay-1">Conheça os <em>professores</em></h2>
+    <h2 class="section-title reveal reveal-delay-1">Conheça as <em>professoras</em></h2>
     <p style="color:var(--text-mid);font-size:0.96rem;line-height:1.85;margin-bottom:2.4rem;max-width:640px;" class="reveal reveal-delay-2">
       Profissionais apaixonadas pelo movimento que conduzem cada turma com técnica, cuidado e presença.
     </p>
@@ -286,7 +292,7 @@
         </div>
         <div class="prof-body">
           <div class="prof-nome">{{ prof.nome_completo }}</div>
-          <div class="prof-tipo">PROFESSOROR(A)</div>
+          <div class="prof-tipo">PROFESSORA</div>
           {% if prof.modalidades %}
           <div class="prof-mods">{% for m in prof.modalidades %}<span class="prof-mod-tag">{{ m }}</span>{% endfor %}</div>
           {% endif %}
@@ -364,10 +370,11 @@
     <div class="section-label reveal">Grade semanal</div>
     <h2 class="section-title reveal reveal-delay-1">Horários das <em>aulas</em></h2>
     <div class="schedule-grid reveal reveal-delay-2">
-      {% set dias_semana = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'] %}
+      {% set dias_semana = ['Segunda','Terça','Quarta','Quinta','Sexta'] %}
       {% for dia in dias_semana %}
       <div class="schedule-day">
         <div class="day-name">{{ dia }}</div>
+
         {% set aulas_do_dia = [] %}
         {% for t in turmas %}
           {% set dias_lower = t.dias_semana | lower %}
@@ -375,13 +382,35 @@
             {% set _ = aulas_do_dia.append(t) %}
           {% endif %}
         {% endfor %}
+
         {% if aulas_do_dia %}
+          {% set horarios_vistos = [] %}
           {% for aula in aulas_do_dia | sort(attribute='hora_inicio') %}
-          <div class="class-item">
-            <div class="class-time">{{ aula.hora_inicio }}</div>
-            <div class="class-name">{{ aula.modalidade }}</div>
-            {% if aula.professora %}<div class="class-level">{{ aula.professora }}</div>{% endif %}
-          </div>
+            {% set chave = aula.hora_inicio ~ '-' ~ aula.hora_fim %}
+            {% if chave not in horarios_vistos %}
+              {% set _ = horarios_vistos.append(chave) %}
+
+              {% set grupo = [] %}
+              {% for a2 in aulas_do_dia %}
+                {% if a2.hora_inicio ~ '-' ~ a2.hora_fim == chave %}
+                  {% set _ = grupo.append(a2) %}
+                {% endif %}
+              {% endfor %}
+
+              <div class="schedule-row">
+                <div class="schedule-row-classes">
+                  {% for a in grupo %}
+                  <div class="class-item">
+                    <div class="class-time">{{ a.hora_inicio }}{% if a.hora_fim %} – {{ a.hora_fim }}{% endif %}</div>
+                    <div class="class-name">{{ a.modalidade }}</div>
+                    {% if a.professora %}<div class="class-level">{{ a.professora }}</div>{% endif %}
+                    <span class="class-sala">{{ a.sala }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+            {% endif %}
           {% endfor %}
         {% else %}
           <p class="schedule-empty">Sem aulas</p>

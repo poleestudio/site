@@ -180,7 +180,7 @@ def home():
         # ── Turmas com horários ────────────────────────────────
         cursor.execute("""
             SELECT
-                t.id_turma, m.titulo AS modalidade, s.nome AS sala,
+                t.id_turma, m.titulo AS modalidade, s.id_sala, s.nome AS sala,
                 h.hora_inicio, h.hora_fim, h.dias_semana,
                 c.nome_completo AS professora, t.capacidade_maxima
             FROM turmas t
@@ -189,7 +189,7 @@ def home():
             JOIN horarios    h ON h.id_horario     = t.id_horario
             LEFT JOIN cadastro c ON c.id_cadastro  = m.id_responsavel_cadastro
             WHERE t.ativo = 1
-            ORDER BY h.hora_inicio, m.titulo
+            ORDER BY h.hora_inicio, h.dias_semana, m.titulo
         """)
         turmas = []
         dias_set = set()
@@ -197,14 +197,15 @@ def home():
             turmas.append({
                 "id_turma":         r[0],
                 "modalidade":       r[1],
-                "sala":             r[2],
-                "hora_inicio":      str(r[3])[:5] if r[3] else "",
-                "hora_fim":         str(r[4])[:5] if r[4] else "",
-                "dias_semana":      r[5] or "",
-                "professora":       r[6] or "",
-                "capacidade_maxima":r[7] or 0,
+                "id_sala":          r[2],
+                "sala":             r[3],
+                "hora_inicio":      str(r[4])[:5] if r[4] else "",
+                "hora_fim":         str(r[5])[:5] if r[5] else "",
+                "dias_semana":      r[6] or "",
+                "professora":       r[7] or "",
+                "capacidade_maxima":r[8] or 0,
             })
-            for d in (r[5] or "").split(","):
+            for d in (r[6] or "").split(","):
                 d = d.strip().lower()
                 if d:
                     dias_set.add(d.split()[0])
