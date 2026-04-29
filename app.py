@@ -1560,59 +1560,48 @@ def excluir_item_primeira_aula(id_item):
 # ================================================================
 # SUB-PÁGINA: WORKSHOPS
 # ================================================================
-@app.route("/admin/workshops")
+@app.route("/admin/workshop/<int:id_ws>", methods=["GET"])
 @login_required(tipo="administrador")
-def admin_workshops():
+def get_workshop(id_ws):
     conn = cursor = None
     try:
         conn = get_conn(); cursor = conn.cursor()
-        cursor.execute("SELECT id_modalidade, titulo FROM modalidades WHERE ativo=1 ORDER BY titulo")
-        modalidades = [{"id_modalidade":r[0],"titulo":r[1]} for r in cursor.fetchall()]
         cursor.execute("""
-            SELECT id_cadastro, nome_completo FROM cadastro
-            WHERE tipo_cadastro IN ('professor','administrador') ORDER BY nome_completo
-        """)
-        professoras = [{"id_cadastro":r[0],"nome_completo":r[1]} for r in cursor.fetchall()]
-        cursor.execute("SELECT id_sala, nome FROM salas WHERE ativo=1 ORDER BY nome")
-        salas = [{"id_sala":r[0],"nome":r[1]} for r in cursor.fetchall()]
-        cursor.execute("SELECT id_cadastro, nome_completo FROM cadastro ORDER BY nome_completo")
-        todos_usuarios = [{"id_cadastro":r[0],"nome_completo":r[1]} for r in cursor.fetchall()]
+            SELECT id_workshop,nome,id_modalidade,id_instrutor,descricao,requisitos,
+                   observacao,data_workshop,hora_inicio,hora_fim,id_sala,
+                   vagas_totais,valor,status,imagem_capa
+            FROM workshops WHERE id_workshop=?
+        """, (id_ws,))
+        r = cursor.fetchone()
+        if not r: return jsonify(ok=False, mensagem="Workshop não encontrado."), 404
 
+        # busca instrutores vinculados
         cursor.execute("""
-            SELECT w.id_workshop, w.nome, w.descricao, w.status,
-                   w.data_workshop, w.hora_inicio, w.hora_fim,
-                   w.vagas_totais, w.valor, w.imagem_capa,
-                   c.nome_completo, m.titulo, s.nome,
-                   (SELECT COUNT(*) FROM workshop_inscricoes wi
-                    WHERE wi.id_workshop=w.id_workshop AND wi.ativo=1) AS inscritos
-            FROM workshops w
-            LEFT JOIN cadastro c ON c.id_cadastro=w.id_instrutor
-            LEFT JOIN modalidades m ON m.id_modalidade=w.id_modalidade
-            LEFT JOIN salas s ON s.id_sala=w.id_sala
-            ORDER BY w.data_workshop DESC, w.nome
-        """)
-        workshops = []
-        for r in cursor.fetchall():
-            workshops.append({
-                "id_workshop":r[0],"nome":r[1],"descricao":r[2] or "",
-                "status":r[3] or "rascunho","data_workshop":r[4],
-                "hora_inicio":str(r[5])[:5] if r[5] else "","hora_fim":str(r[6])[:5] if r[6] else "",
-                "vagas_totais":r[7] or 0,"valor":float(r[8]) if r[8] else 0.0,
-                "imagem_capa":r[9] or "","instrutor_nome":r[10] or "",
-                "modalidade_nome":r[11] or "","sala_nome":r[12] or "","inscritos":r[13] or 0,
-            })
-        return render_template("admin_workshops.html",
-            user_name=session.get("user_name","Administrador"),
-            modalidades=modalidades, professoras=professoras, salas=salas,
-            todos_usuarios=todos_usuarios, workshops=workshops)
+            SELECT wi.id_cadastro, c.nome_completo
+            FROM workshop_instrutores wi
+            JOIN cadastro c ON c.id_cadastro = wi.id_cadastro
+            WHERE wi.id_workshop = ?
+            ORDER BY c.nome_completo
+        """, (id_ws,))
+        instrutores = [{"id_cadastro": x[0], "nome_completo": x[1]} for x in cursor.fetchall()]
+
+        return jsonify(ok=True, workshop={
+            "id_workshop":  r[0], "nome": r[1], "id_modalidade": r[2],
+            "id_instrutor": r[3], "descricao": r[4] or "", "requisitos": r[5] or "",
+            "observacao":   r[6] or "",
+            "data_workshop": r[7].isoformat() if r[7] else None,
+            "hora_inicio":  str(r[8])[:5] if r[8] else "",
+            "hora_fim":     str(r[9])[:5] if r[9] else "",
+            "id_sala":      r[10], "vagas_totais": r[11], "valor": float(r[12] or 0),
+            "status":       r[13] or "rascunho", "imagem_capa": r[14] or "",
+            "ids_instrutores": [x["id_cadastro"] for x in instrutores],
+            "instrutores":     instrutores,
+        })
     except pyodbc.Error as e:
-        return render_template("admin_workshops.html",
-            user_name=session.get("user_name","Administrador"),
-            modalidades=[], professoras=[], salas=[], todos_usuarios=[], workshops=[])
+        return jsonify(ok=False, mensagem=str(e)), 500
     finally:
         if cursor: cursor.close()
         if conn:   conn.close()
- 
  
 @app.route("/admin/workshop", methods=["POST"])
 @login_required(tipo="administrador")
@@ -1620,7 +1609,6 @@ def salvar_workshop():
     id_ws      = request.form.get("id_workshop") or None
     nome       = (request.form.get("nome") or "").strip()
     id_modal   = request.form.get("id_modalidade") or None
-    id_instr   = request.form.get("id_instrutor") or None
     descricao  = (request.form.get("descricao") or "").strip()
     requisitos = (request.form.get("requisitos") or "").strip()
     observacao = (request.form.get("observacao") or "").strip()
@@ -1631,12 +1619,23 @@ def salvar_workshop():
     vagas      = request.form.get("vagas_totais") or None
     valor      = request.form.get("valor") or None
     status     = (request.form.get("status") or "rascunho").strip()
-    if not nome: return jsonify(ok=False, mensagem="Informe o nome do workshop."), 400
+
+    # ids_instrutores: string "3,7,12"
+    ids_instrutores_raw = (request.form.get("ids_instrutores") or "").strip()
+    ids_instrutores = [i.strip() for i in ids_instrutores_raw.split(",") if i.strip().isdigit()]
+
+    # primeiro instrutor para retrocompatibilidade com id_instrutor
+    id_instr = ids_instrutores[0] if ids_instrutores else (request.form.get("id_instrutor") or None)
+
+    if not nome:
+        return jsonify(ok=False, mensagem="Informe o nome do workshop."), 400
 
     imagem = _save_img(request.files.get("imagem_capa"), WORKSHOP_UPLOAD)
+
     conn = cursor = None
     try:
         conn = get_conn(); cursor = conn.cursor()
+
         if id_ws:
             sql = """UPDATE workshops SET nome=?,id_modalidade=?,id_instrutor=?,
                      descricao=?,requisitos=?,observacao=?,data_workshop=?,
@@ -1647,13 +1646,30 @@ def salvar_workshop():
                 sql += ",imagem_capa=?"; params.append(imagem)
             sql += " WHERE id_workshop=?"; params.append(id_ws)
             cursor.execute(sql, params)
+
+            # reescreve vínculos de instrutores
+            cursor.execute("DELETE FROM workshop_instrutores WHERE id_workshop=?", (id_ws,))
+
         else:
             cursor.execute("""
                 INSERT INTO workshops(nome,id_modalidade,id_instrutor,descricao,requisitos,observacao,
                      data_workshop,hora_inicio,hora_fim,id_sala,vagas_totais,valor,status,imagem_capa)
+                OUTPUT INSERTED.id_workshop
                 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (nome,id_modal,id_instr,descricao,requisitos,observacao,
                   data_ws,hora_ini,hora_fim,id_sala,vagas,valor,status,imagem))
+            row = cursor.fetchone()
+            if not row or row[0] is None:
+                raise Exception("Não foi possível obter o id_workshop inserido.")
+            id_ws = int(row[0])
+
+        # insere instrutores na nova tabela
+        for pid in ids_instrutores:
+            cursor.execute("""
+                INSERT INTO workshop_instrutores(id_workshop, id_cadastro)
+                VALUES(?, ?)
+            """, (id_ws, int(pid)))
+
         conn.commit()
         return jsonify(ok=True, mensagem="Workshop salvo.")
     except pyodbc.Error as e:
@@ -1662,7 +1678,6 @@ def salvar_workshop():
     finally:
         if cursor: cursor.close()
         if conn:   conn.close()
- 
  
 @app.route("/admin/workshop/<int:id_ws>", methods=["GET"])
 @login_required(tipo="administrador")
@@ -1699,6 +1714,7 @@ def excluir_workshop(id_ws):
     try:
         conn = get_conn(); cursor = conn.cursor()
         cursor.execute("UPDATE workshop_inscricoes SET ativo=0 WHERE id_workshop=?", (id_ws,))
+        cursor.execute("DELETE FROM workshop_instrutores WHERE id_workshop=?", (id_ws,))
         cursor.execute("DELETE FROM workshops WHERE id_workshop=?", (id_ws,))
         conn.commit()
         return jsonify(ok=True, mensagem="Workshop excluído.")
@@ -1708,7 +1724,6 @@ def excluir_workshop(id_ws):
     finally:
         if cursor: cursor.close()
         if conn:   conn.close()
- 
  
 @app.route("/admin/workshop/<int:id_ws>/inscricoes")
 @login_required(tipo="administrador")
