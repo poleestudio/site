@@ -14,7 +14,7 @@
     .btn-back{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);padding:0.5rem 1rem;border:1.5px solid rgba(139,0,33,0.15);border-radius:50px;transition:all 0.3s;}
     .btn-back:hover{border-color:var(--bordo);color:var(--bordo);}
     .nav-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;letter-spacing:0.1em;}
-    .page-layout{display:grid;grid-template-columns:460px 1fr;min-height:calc(100vh - 65px);}
+    .page-layout{display:grid;grid-template-columns:480px 1fr;min-height:calc(100vh - 65px);}
     .sidebar{background:var(--cream);border-right:1px solid rgba(139,0,33,0.08);padding:2.5rem 2rem;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto;}
     .sidebar-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;margin-bottom:0.4rem;}
     .sidebar-sub{font-size:0.85rem;color:var(--text-light);line-height:1.7;margin-bottom:1.8rem;}
@@ -29,6 +29,25 @@
     .upload-zone input{display:none;}
     .upload-preview{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.7rem;}
     .preview-img{width:60px;height:60px;border-radius:10px;object-fit:cover;border:1px solid rgba(139,0,33,0.1);}
+    .preview-vid{width:60px;height:60px;border-radius:10px;object-fit:cover;border:1px solid rgba(139,0,33,0.1);background:#2a1a1f;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.55rem;text-align:center;padding:4px;}
+
+    /* ── Seletor múltiplo de professoras ── */
+    .prof-selector{border:1.5px solid rgba(139,0,33,0.12);border-radius:14px;overflow:hidden;background:var(--warm-white);}
+    .prof-selector-header{padding:0.7rem 1rem;font-size:0.78rem;color:var(--text-light);border-bottom:1px solid rgba(139,0,33,0.08);}
+    .prof-list{max-height:200px;overflow-y:auto;}
+    .prof-item{display:flex;align-items:center;gap:0.75rem;padding:0.65rem 1rem;border-bottom:1px solid rgba(139,0,33,0.05);cursor:pointer;transition:background 0.2s;}
+    .prof-item:last-child{border-bottom:none;}
+    .prof-item:hover{background:var(--bordo-pale);}
+    .prof-item input[type=checkbox]{accent-color:var(--bordo);width:16px;height:16px;cursor:pointer;flex-shrink:0;}
+    .prof-item-name{font-size:0.88rem;flex:1;}
+    .prof-foto-upload{margin-left:auto;flex-shrink:0;}
+    .btn-foto-mini{font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--bordo);border:1px solid rgba(139,0,33,0.2);border-radius:50px;padding:0.2rem 0.6rem;background:none;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+    .btn-foto-mini:hover{background:var(--bordo-pale);}
+    .prof-foto-preview{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid var(--bordo);display:none;}
+    .prof-selecionadas{display:flex;flex-wrap:wrap;gap:0.4rem;padding:0.6rem 1rem;min-height:36px;border-top:1px solid rgba(139,0,33,0.08);}
+    .tag-prof{display:inline-flex;align-items:center;gap:0.3rem;background:var(--bordo-pale);color:var(--bordo);border-radius:50px;padding:0.2rem 0.65rem;font-size:0.7rem;}
+    .tag-prof span{cursor:pointer;font-size:0.9rem;line-height:1;}
+
     .btn-primary{display:flex;align-items:center;justify-content:center;gap:0.6rem;background:var(--bordo);color:#fff;font-size:0.76rem;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;padding:0.95rem;border-radius:50px;width:100%;margin-top:0.5rem;transition:all 0.3s;box-shadow:0 8px 28px rgba(139,0,33,0.2);}
     .btn-primary:hover{background:var(--bordo-light);transform:translateY(-2px);}
     .btn-secondary{display:flex;align-items:center;justify-content:center;width:100%;margin-top:0.6rem;padding:0.85rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);color:var(--bordo);font-size:0.74rem;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.3s;}
@@ -39,11 +58,11 @@
     .mod-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:22px;overflow:hidden;transition:all 0.3s;}
     .mod-card:hover{box-shadow:var(--shadow);transform:translateY(-4px);border-color:rgba(139,0,33,0.18);}
     .mod-card-img{height:140px;background:var(--bordo-pale);overflow:hidden;position:relative;}
-    .mod-card-img img{width:100%;height:100%;object-fit:cover;}
+    .mod-card-img img,.mod-card-img video{width:100%;height:100%;object-fit:cover;}
     .mod-card-img .no-img{display:flex;align-items:center;justify-content:center;height:100%;opacity:0.3;}
     .mod-card-body{padding:1.2rem;}
     .mod-card-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;margin-bottom:0.3rem;}
-    .mod-card-resp{font-size:0.78rem;color:var(--text-light);margin-bottom:0.7rem;}
+    .mod-card-profs{font-size:0.78rem;color:var(--text-light);margin-bottom:0.7rem;line-height:1.5;}
     .mod-card-pills{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;}
     .pill{display:inline-flex;padding:0.25rem 0.7rem;border-radius:50px;background:var(--bordo-pale);color:var(--bordo);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;}
     .card-actions{display:flex;gap:0.5rem;}
@@ -52,6 +71,9 @@
     .btn-edit:hover{background:var(--bordo-pale);}
     .btn-del{border:1.5px solid rgba(139,0,33,0.12);color:var(--text-light);background:none;}
     .btn-del:hover{border-color:var(--bordo);color:var(--bordo);background:var(--bordo-pale);}
+    .prof-avatars{display:flex;gap:-4px;margin-bottom:0.5rem;}
+    .prof-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid var(--cream);margin-left:-6px;}
+    .prof-avatar:first-child{margin-left:0;}
     @media(max-width:900px){.page-layout{grid-template-columns:1fr;}.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid rgba(139,0,33,0.08);}nav{padding:1rem 1.5rem;}.main{padding:1.5rem;}.cards-grid{grid-template-columns:1fr;}}
   </style>
 </head>
@@ -70,22 +92,49 @@
 <div class="page-layout">
   <aside class="sidebar">
     <h2 class="sidebar-title">Nova modalidade</h2>
-    <p class="sidebar-sub">Preencha os dados da aula. A pasta de fotos é criada automaticamente pelo servidor.</p>
+    <p class="sidebar-sub">Preencha os dados da aula. As pastas de mídia são criadas automaticamente.</p>
 
     <input type="hidden" id="m-id">
+
     <div class="form-group">
       <label>Título da modalidade</label>
       <input id="m-titulo" type="text" placeholder="Ex.: Pole Coreográfico Bases">
     </div>
+
+    <!-- ── MÚLTIPLAS PROFESSORAS ── -->
     <div class="form-group">
-      <label>Professora responsável</label>
-      <select id="m-resp">
-        <option value="">Selecione</option>
-        {% for p in professoras %}
-        <option value="{{ p.id_cadastro }}">{{ p.nome_completo }}</option>
-        {% endfor %}
-      </select>
+      <label>Professoras</label>
+      <div class="prof-selector">
+        <div class="prof-selector-header">Selecione uma ou mais professoras</div>
+        <div class="prof-list" id="profList">
+          {% for p in professoras %}
+          <div class="prof-item" id="profItem_{{ p.id_cadastro }}">
+            <input type="checkbox" id="chk_{{ p.id_cadastro }}" value="{{ p.id_cadastro }}"
+                   onchange="toggleProfTag(this, '{{ p.nome_completo }}')">
+            <label for="chk_{{ p.id_cadastro }}" class="prof-item-name" style="cursor:pointer;">
+              {{ p.nome_completo }}
+            </label>
+            <!-- Mini-upload de foto individual, só aparece quando selecionada -->
+            <div class="prof-foto-upload" id="fotoUpload_{{ p.id_cadastro }}" style="display:none;">
+              <input type="file" accept="image/*" id="fileProf_{{ p.id_cadastro }}"
+                     style="display:none"
+                     onchange="prevProfFoto(this, {{ p.id_cadastro }})">
+              <img class="prof-foto-preview" id="prevProfImg_{{ p.id_cadastro }}">
+              <button type="button" class="btn-foto-mini"
+                      onclick="document.getElementById('fileProf_{{ p.id_cadastro }}').click()">
+                📷 foto
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <!-- Tags das professoras selecionadas -->
+        <div class="prof-selecionadas" id="profSelecionadas">
+          <span style="font-size:0.72rem;color:var(--text-light);align-self:center;" id="profPlaceholder">Nenhuma selecionada</span>
+        </div>
+      </div>
     </div>
+
     <div class="form-group">
       <label>Resumo (cards)</label>
       <input id="m-resumo" type="text" placeholder="Texto curto para exibição em cards">
@@ -105,24 +154,34 @@
       </select>
     </div>
 
-    <!-- FOTO PROFESSORA -->
+    <!-- ── CAPA: IMAGEM OU VÍDEO ── -->
     <div class="form-group">
-      <label>Foto da professora</label>
-      <div class="upload-zone" id="zoneProf" onclick="document.getElementById('fileProf').click()">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <p>Clique para selecionar a foto da professora<br><small>JPG ou PNG · salvo em static/modalidades/[slug]/professora/</small></p>
-        <input id="fileProf" type="file" accept="image/*">
-        <div class="upload-preview" id="prevProf"></div>
+      <label>Imagem de capa</label>
+      <div class="upload-zone" onclick="document.getElementById('fileCapa').click()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <p>Clique para selecionar uma imagem de capa<br><small>JPG, PNG, WEBP</small></p>
+        <input id="fileCapa" type="file" accept="image/*" onchange="prevSingle(this,'prevCapa')">
+        <div class="upload-preview" id="prevCapa"></div>
       </div>
     </div>
 
-    <!-- GALERIA MODALIDADE -->
     <div class="form-group">
-      <label>Fotos / vídeos da modalidade</label>
-      <div class="upload-zone" id="zoneGal" onclick="document.getElementById('fileGal').click()">
+      <label>Vídeo de capa <span style="font-size:0.7rem;color:var(--text-light)">(opcional — substitui a imagem)</span></label>
+      <div class="upload-zone" onclick="document.getElementById('fileVideoCapa').click()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <p>Clique para selecionar um vídeo de capa<br><small>MP4, MOV, WEBM</small></p>
+        <input id="fileVideoCapa" type="file" accept="video/*" onchange="prevVideo(this,'prevVideoCapa')">
+        <div class="upload-preview" id="prevVideoCapa"></div>
+      </div>
+    </div>
+
+    <!-- ── GALERIA: IMAGENS + VÍDEOS ── -->
+    <div class="form-group">
+      <label>Galeria (fotos e vídeos)</label>
+      <div class="upload-zone" onclick="document.getElementById('fileGal').click()">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-        <p>Selecione fotos ou vídeos da aula<br><small>Múltiplos arquivos · salvo em static/modalidades/[slug]/galeria/</small></p>
-        <input id="fileGal" type="file" accept="image/*,video/*" multiple>
+        <p>Selecione fotos <strong>e/ou vídeos</strong> da aula<br><small>Múltiplos arquivos · JPG, PNG, MP4, MOV, WEBM</small></p>
+        <input id="fileGal" type="file" accept="image/*,video/*" multiple onchange="prevGaleria(this)">
         <div class="upload-preview" id="prevGal"></div>
       </div>
     </div>
@@ -132,7 +191,10 @@
   </aside>
 
   <main class="main">
-    <div class="main-title">Modalidades cadastradas <span style="font-size:0.85rem;color:var(--text-light);font-family:'Jost',sans-serif;">· {{ modalidades|length }} ativas</span></div>
+    <div class="main-title">
+      Modalidades cadastradas
+      <span style="font-size:0.85rem;color:var(--text-light);font-family:'Jost',sans-serif;">· {{ modalidades|length }} ativas</span>
+    </div>
     <div class="cards-grid">
       {% for m in modalidades %}
       <div class="mod-card"
@@ -140,11 +202,16 @@
            data-titulo="{{ m.titulo }}"
            data-resumo="{{ m.resumo }}"
            data-nivel="{{ m.nivel }}"
-           data-resp="{{ m.id_responsavel_cadastro }}"
-           data-desc="{{ m.descricao }}">
+           data-desc="{{ m.descricao }}"
+           data-profs='{{ m.professoras | tojson }}'>
         <div class="mod-card-img">
-          {% if m.foto_professora %}
-            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/professora/' ~ m.foto_professora) }}" alt="{{ m.titulo }}">
+          {% set ext = m.foto_capa.rsplit('.',1)[-1].lower() if m.foto_capa else '' %}
+          {% if m.foto_capa and ext in ['mp4','mov','webm'] %}
+            <video src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/' ~ m.foto_capa) }}"
+                   autoplay muted loop playsinline></video>
+          {% elif m.foto_capa %}
+            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/' ~ m.foto_capa) }}"
+                 alt="{{ m.titulo }}">
           {% else %}
             <div class="no-img">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -153,10 +220,31 @@
         </div>
         <div class="mod-card-body">
           <div class="mod-card-title">{{ m.titulo }}</div>
-          <div class="mod-card-resp">{{ m.responsavel_nome or 'Sem professora definida' }}</div>
+
+          <!-- avatares das professoras -->
+          {% if m.professoras %}
+          <div class="prof-avatars">
+            {% for p in m.professoras %}
+              {% if p.foto_professora %}
+              <img class="prof-avatar"
+                   src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/professoras/' ~ p.id_cadastro|string ~ '/' ~ p.foto_professora) }}"
+                   title="{{ p.nome_completo }}"
+                   onerror="this.style.display='none'">
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="mod-card-profs">
+            {{ m.professoras | map(attribute='nome_completo') | join(' · ') }}
+          </div>
+          {% else %}
+          <div class="mod-card-profs">Sem professora definida</div>
+          {% endif %}
+
           <div class="mod-card-pills">
             {% if m.nivel %}<span class="pill">{{ m.nivel }}</span>{% endif %}
-            {% if m.responsavel_tipo %}<span class="pill">{{ m.responsavel_tipo }}</span>{% endif %}
+            {% if m.professoras %}
+              <span class="pill">{{ m.professoras|length }} professora{{ 's' if m.professoras|length > 1 else '' }}</span>
+            {% endif %}
           </div>
           <div class="card-actions">
             <button class="btn-edit">Editar</button>
@@ -174,75 +262,194 @@
 </div>
 
 <script>
-  // Preview de imagens
-  function bindPreview(inputId, previewId){
-    document.getElementById(inputId).addEventListener("change", function(){
-      const prev = document.getElementById(previewId);
-      prev.innerHTML="";
-      Array.from(this.files).forEach(f=>{
-        if(!f.type.startsWith("image/")) return;
-        const img=document.createElement("img");
-        img.className="preview-img";
-        img.src=URL.createObjectURL(f);
-        prev.appendChild(img);
-      });
+  // ── Professoras selecionadas (estado global) ─────────────────
+  const profSelecionadas = {}; // { id: nome }
+
+  function toggleProfTag(chk, nome) {
+    const id = chk.value;
+    const fotoUpload = document.getElementById(`fotoUpload_${id}`);
+    if (chk.checked) {
+      profSelecionadas[id] = nome;
+      if (fotoUpload) fotoUpload.style.display = 'flex';
+    } else {
+      delete profSelecionadas[id];
+      if (fotoUpload) fotoUpload.style.display = 'none';
+    }
+    renderTags();
+  }
+
+  function renderTags() {
+    const container = document.getElementById('profSelecionadas');
+    const placeholder = document.getElementById('profPlaceholder');
+    container.innerHTML = '';
+    const ids = Object.keys(profSelecionadas);
+    if (ids.length === 0) {
+      container.appendChild(
+        Object.assign(document.createElement('span'), {
+          id: 'profPlaceholder',
+          textContent: 'Nenhuma selecionada',
+          style: 'font-size:0.72rem;color:var(--text-light);align-self:center;'
+        })
+      );
+      return;
+    }
+    ids.forEach(id => {
+      const tag = document.createElement('span');
+      tag.className = 'tag-prof';
+      tag.innerHTML = `${profSelecionadas[id]} <span onclick="deselProp('${id}')">×</span>`;
+      container.appendChild(tag);
     });
   }
-  bindPreview("fileProf","prevProf");
-  bindPreview("fileGal","prevGal");
 
-  // Salvar (multipart)
-  document.getElementById("btnSalvar").addEventListener("click", async()=>{
+  function deselProp(id) {
+    const chk = document.getElementById(`chk_${id}`);
+    if (chk) { chk.checked = false; }
+    delete profSelecionadas[id];
+    const fotoUpload = document.getElementById(`fotoUpload_${id}`);
+    if (fotoUpload) fotoUpload.style.display = 'none';
+    renderTags();
+  }
+
+  function prevProfFoto(input, id) {
+    const img = document.getElementById(`prevProfImg_${id}`);
+    if (input.files[0]) {
+      img.src = URL.createObjectURL(input.files[0]);
+      img.style.display = 'block';
+    }
+  }
+
+  // ── Previews ─────────────────────────────────────────────────
+  function prevSingle(input, previewId) {
+    const prev = document.getElementById(previewId);
+    prev.innerHTML = '';
+    if (!input.files[0]) return;
+    const f = input.files[0];
+    if (f.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.className = 'preview-img';
+      img.src = URL.createObjectURL(f);
+      prev.appendChild(img);
+    }
+  }
+
+  function prevVideo(input, previewId) {
+    const prev = document.getElementById(previewId);
+    prev.innerHTML = '';
+    if (!input.files[0]) return;
+    const div = document.createElement('div');
+    div.className = 'preview-vid';
+    div.textContent = '▶ ' + input.files[0].name.slice(0, 12);
+    prev.appendChild(div);
+  }
+
+  function prevGaleria(input) {
+    const prev = document.getElementById('prevGal');
+    prev.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+      if (f.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.className = 'preview-img';
+        img.src = URL.createObjectURL(f);
+        prev.appendChild(img);
+      } else if (f.type.startsWith('video/')) {
+        const div = document.createElement('div');
+        div.className = 'preview-vid';
+        div.textContent = '▶ ' + f.name.slice(0, 10);
+        prev.appendChild(div);
+      }
+    });
+  }
+
+  // ── Salvar ───────────────────────────────────────────────────
+  document.getElementById('btnSalvar').addEventListener('click', async () => {
     const fd = new FormData();
-    const id = document.getElementById("m-id").value;
-    if(id) fd.append("id_modalidade", id);
-    fd.append("titulo", document.getElementById("m-titulo").value);
-    fd.append("resumo", document.getElementById("m-resumo").value);
-    fd.append("descricao", document.getElementById("m-desc").value);
-    fd.append("id_responsavel_cadastro", document.getElementById("m-resp").value);
-    fd.append("nivel", document.getElementById("m-nivel").value);
-    const prof = document.getElementById("fileProf").files[0];
-    if(prof) fd.append("foto_professora", prof);
-    Array.from(document.getElementById("fileGal").files).forEach(f=>fd.append("galeria", f));
+    const id = document.getElementById('m-id').value;
+    if (id) fd.append('id_modalidade', id);
+    fd.append('titulo',    document.getElementById('m-titulo').value);
+    fd.append('resumo',    document.getElementById('m-resumo').value);
+    fd.append('descricao', document.getElementById('m-desc').value);
+    fd.append('nivel',     document.getElementById('m-nivel').value);
 
-    const r = await fetch("{{ url_for('salvar_modalidade') }}", {method:"POST", body:fd});
+    // ids das professoras selecionadas
+    const ids = Object.keys(profSelecionadas);
+    if (ids.length === 0) { alert('Selecione pelo menos uma professora.'); return; }
+    fd.append('ids_professoras', ids.join(','));
+
+    // foto individual de cada professora selecionada
+    ids.forEach(pid => {
+      const fileInput = document.getElementById(`fileProf_${pid}`);
+      if (fileInput && fileInput.files[0]) {
+        fd.append(`foto_prof_${pid}`, fileInput.files[0]);
+      }
+    });
+
+    // capa: imagem ou vídeo
+    const capImg = document.getElementById('fileCapa').files[0];
+    const capVid = document.getElementById('fileVideoCapa').files[0];
+    if (capImg) fd.append('foto_capa', capImg);
+    if (capVid) fd.append('video_capa', capVid);
+
+    // galeria
+    Array.from(document.getElementById('fileGal').files).forEach(f => fd.append('galeria', f));
+
+    const r = await fetch("{{ url_for('salvar_modalidade') }}", { method: 'POST', body: fd });
     const d = await r.json();
     alert(d.mensagem);
-    if(d.ok) location.reload();
+    if (d.ok) location.reload();
   });
 
-  // Limpar
-  document.getElementById("btnLimpar").addEventListener("click",()=>{
-    document.getElementById("m-id").value="";
-    ["m-titulo","m-resumo","m-desc"].forEach(id=>document.getElementById(id).value="");
-    document.getElementById("m-resp").value="";
-    document.getElementById("m-nivel").value="";
-    document.getElementById("prevProf").innerHTML="";
-    document.getElementById("prevGal").innerHTML="";
+  // ── Limpar ───────────────────────────────────────────────────
+  document.getElementById('btnLimpar').addEventListener('click', () => {
+    document.getElementById('m-id').value = '';
+    ['m-titulo','m-resumo','m-desc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('m-nivel').value = '';
+    // desmarca todas as professoras
+    Object.keys(profSelecionadas).forEach(id => deselProp(id));
+    ['prevCapa','prevVideoCapa','prevGal'].forEach(id => document.getElementById(id).innerHTML = '');
+    document.getElementById('fileCapa').value = '';
+    document.getElementById('fileVideoCapa').value = '';
+    document.getElementById('fileGal').value = '';
   });
 
-  // Editar
-  document.querySelectorAll(".btn-edit").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const c = btn.closest(".mod-card");
-      document.getElementById("m-id").value = c.dataset.id;
-      document.getElementById("m-titulo").value = c.dataset.titulo||"";
-      document.getElementById("m-resumo").value = c.dataset.resumo||"";
-      document.getElementById("m-desc").value = c.dataset.desc||"";
-      document.getElementById("m-resp").value = c.dataset.resp||"";
-      document.getElementById("m-nivel").value = c.dataset.nivel||"";
-      window.scrollTo({top:0,behavior:"smooth"});
+  // ── Editar ───────────────────────────────────────────────────
+  document.querySelectorAll('.btn-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = btn.closest('.mod-card');
+      document.getElementById('m-id').value    = c.dataset.id;
+      document.getElementById('m-titulo').value = c.dataset.titulo || '';
+      document.getElementById('m-resumo').value = c.dataset.resumo || '';
+      document.getElementById('m-desc').value   = c.dataset.desc   || '';
+      document.getElementById('m-nivel').value  = c.dataset.nivel  || '';
+
+      // desmarca tudo antes de remarcar
+      Object.keys(profSelecionadas).forEach(id => deselProp(id));
+
+      // marca as professoras da modalidade
+      let profs = [];
+      try { profs = JSON.parse(c.dataset.profs || '[]'); } catch(e){}
+      profs.forEach(p => {
+        const chk = document.getElementById(`chk_${p.id_cadastro}`);
+        if (chk) {
+          chk.checked = true;
+          profSelecionadas[p.id_cadastro] = p.nome_completo;
+          const fu = document.getElementById(`fotoUpload_${p.id_cadastro}`);
+          if (fu) fu.style.display = 'flex';
+        }
+      });
+      renderTags();
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
 
-  // Excluir
-  document.querySelectorAll(".btn-del").forEach(btn=>{
-    btn.addEventListener("click", async()=>{
-      if(!confirm("Excluir esta modalidade?")) return;
-      const r = await fetch(`/admin/modalidade/${btn.dataset.id}`,{method:"DELETE"});
+  // ── Excluir ──────────────────────────────────────────────────
+  document.querySelectorAll('.btn-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Excluir esta modalidade?')) return;
+      const r = await fetch(`/admin/modalidade/${btn.dataset.id}`, { method: 'DELETE' });
       const d = await r.json();
       alert(d.mensagem);
-      if(d.ok) location.reload();
+      if (d.ok) location.reload();
     });
   });
 </script>

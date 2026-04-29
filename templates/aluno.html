@@ -100,7 +100,7 @@
     .aula-row-info{flex:1;}
     .aula-row-nome{font-size:0.9rem;color:var(--text-dark);margin-bottom:0.15rem;}
     .aula-row-meta{font-size:0.76rem;color:var(--text-light);}
-    .aula-row-tag{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.22rem 0.65rem;border-radius:50px;}
+    .aula-row-tag{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.22rem 0.65rem;border-radius:50px;white-space:nowrap;}
     .tag-normal{background:var(--bordo-pale);color:var(--bordo);}
     .tag-repos{background:#eaf3de;color:#3B6D11;}
     .tag-especial{background:#faeeda;color:#854F0B;}
@@ -117,9 +117,17 @@
     .vagas-bar{height:5px;border-radius:3px;background:rgba(139,0,33,0.1);overflow:hidden;margin-bottom:0.8rem;}
     .vagas-fill{height:100%;border-radius:3px;background:var(--bordo);transition:width 0.5s;}
     .vagas-fill.quase{background:#e6a820;} .vagas-fill.cheio{background:#c0392b;}
-    .btn-inscrever{width:100%;padding:0.75rem;border-radius:50px;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--bordo);color:#fff;border:none;cursor:pointer;transition:all 0.3s;}
+    .btn-inscrever{width:100%;padding:0.75rem;border-radius:50px;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--bordo);color:#fff;border:none;cursor:pointer;transition:all 0.3s;font-family:'Jost',sans-serif;}
     .btn-inscrever:hover{background:var(--bordo-light);}
     .btn-inscrever:disabled{opacity:0.4;cursor:not-allowed;}
+
+    /* Dias específicos (MUDANÇA 3) */
+    .dias-check-group{display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.6rem 0 0.8rem;}
+    .dia-check-label{display:inline-flex;align-items:center;gap:0.35rem;padding:0.3rem 0.7rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);font-size:0.72rem;cursor:pointer;transition:all 0.2s;user-select:none;}
+    .dia-check-label:hover{border-color:var(--bordo);background:var(--bordo-pale);}
+    .dia-check-label input{display:none;}
+    .dia-check-label.checked{background:var(--bordo);color:#fff;border-color:var(--bordo);}
+    .dias-hint{font-size:0.72rem;color:var(--text-light);margin-bottom:0.6rem;line-height:1.5;}
 
     /* Reposições */
     .repos-item{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.3rem;background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:18px;margin-bottom:0.6rem;}
@@ -214,11 +222,7 @@
       <div class="kpi-label">Plano atual</div>
     </div>
   </div>
-
-  <!-- Resumo do plano -->
   <div id="resumoPlano"></div>
-
-  <!-- Próximas aulas -->
   <div class="section-title" style="font-size:1.3rem;margin-bottom:0.8rem;">Próximas aulas</div>
   <div id="proximasAulas"></div>
 </div>
@@ -253,14 +257,16 @@
 <!-- ══ MINHAS AULAS ══ -->
 <div class="tab-panel" id="tabMinhasAulas">
   <div class="section-title">Minhas aulas</div>
-  <p class="section-sub">Todas as aulas em que você está alocada. Você pode cancelar com antecedência — a reposição será creditada automaticamente.</p>
+  <!-- MUDANÇA 3: mostra os dias específicos de cada matrícula -->
+  <p class="section-sub">Turmas em que você está alocada. Quando inscrita em dias específicos de uma turma, apenas esses dias aparecem no calendário. Você pode cancelar com antecedência — a reposição será creditada automaticamente.</p>
   <div id="minhasAulasList"></div>
 </div>
 
 <!-- ══ INSCREVER-SE ══ -->
 <div class="tab-panel" id="tabInscrever">
   <div class="section-title">Inscrever-se em aulas</div>
-  <p class="section-sub">Turmas disponíveis para o seu plano. Reposições especiais permitem qualquer modalidade.</p>
+  <!-- MUDANÇA 3: menciona a opção de escolher dias -->
+  <p class="section-sub">Turmas disponíveis para o seu plano. Se uma turma funcionar em mais de um dia na semana, você pode se inscrever em apenas alguns dias. Reposições especiais permitem turmas de qualquer modalidade que você já pratique.</p>
   <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem;flex-wrap:wrap;">
     <select id="filtroModalDisp" style="background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.55rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.84rem;color:var(--text-dark);outline:none;appearance:none;flex:1;min-width:160px;max-width:260px;">
       <option value="">Todas as modalidades</option>
@@ -278,8 +284,18 @@
 <!-- ══ REPOSIÇÕES ══ -->
 <div class="tab-panel" id="tabReposicoes">
   <div class="section-title">Minhas reposições</div>
-  <p class="section-sub">Reposições normais são geradas quando você cancela uma aula com antecedência. Reposições especiais são geradas quando a professora cancela uma aula.</p>
+  <!-- MUDANÇA 2: explica que pode repor em qualquer turma da mesma modalidade -->
+  <p class="section-sub">Reposições normais são geradas quando você cancela uma aula com antecedência. Reposições especiais são geradas quando a professora cancela — e podem ser usadas em <strong>qualquer turma das suas modalidades</strong>, não apenas na turma original.</p>
   <div id="reposicoesList"></div>
+
+  <!-- MUDANÇA 2: seção de turmas disponíveis para reposição especial -->
+  <div id="secaoTurmasReposicao" style="display:none;margin-top:2rem;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;margin-bottom:0.5rem;color:var(--bordo);">
+      Turmas disponíveis para reposição
+    </div>
+    <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">Escolha qualquer turma abaixo para usar uma reposição especial disponível.</p>
+    <div class="turmas-disp-grid" id="turmasReposicaoGrid"></div>
+  </div>
 </div>
 
 <!-- ══ MEU PLANO ══ -->
@@ -287,8 +303,7 @@
   <div class="section-title">Meu plano</div>
   <p class="section-sub">Veja seu plano atual, histórico de pagamentos e solicite um novo pacote.</p>
 
-  <!-- Alerta de suspensão -->
-  <div id="alertaSuspensao" style="display:none;background:#fdf0f0;border:1.5px solid rgba(192,57,43,0.2);border-radius:18px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;">
+  <div id="alertaSuspensao" style="display:none;background:#fdf0f0;border:1.5px solid rgba(192,57,43,0.2);border-radius:18px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;align-items:center;gap:1rem;">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
     <div>
       <div style="font-size:0.9rem;color:#c0392b;font-weight:500;">Acesso suspenso por falta de pagamento</div>
@@ -296,13 +311,10 @@
     </div>
   </div>
 
-  <!-- Solicitação pendente -->
   <div id="solPendente" style="display:none;background:#faeeda;border:1.5px solid rgba(133,79,11,0.2);border-radius:18px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;">
     <div style="font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:#854F0B;margin-bottom:0.4rem;">Solicitação em análise</div>
     <div style="font-size:0.9rem;color:#854F0B;" id="solPendenteTexto">Sua solicitação está sendo analisada pelo estúdio.</div>
-    <div style="font-size:0.78rem;color:#854F0B;margin-top:0.6rem;line-height:1.6;">
-      Enquanto aguarda, entre em contato via WhatsApp e envie o comprovante PIX para agilizar a aprovação.
-    </div>
+    <div style="font-size:0.78rem;color:#854F0B;margin-top:0.6rem;line-height:1.6;">Enquanto aguarda, entre em contato via WhatsApp e envie o comprovante PIX para agilizar a aprovação.</div>
     <a id="linkWhatsAppSol" href="https://wa.me/5534998348127" target="_blank" rel="noopener"
        style="display:inline-flex;align-items:center;gap:0.6rem;margin-top:0.9rem;background:#25D366;color:#fff;font-size:0.74rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.7rem 1.3rem;border-radius:50px;font-family:'Jost',sans-serif;text-decoration:none;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -310,23 +322,18 @@
     </a>
   </div>
 
-  <!-- Plano atual -->
   <div id="planoDetalhes"></div>
 
-  <!-- Histórico de pagamentos do plano -->
   <div id="histPagamentos" style="margin-top:1.5rem;display:none;">
     <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;margin-bottom:0.8rem;">Histórico de pagamentos</div>
     <div id="histPagList"></div>
   </div>
 
-  <!-- Escolher / trocar plano -->
   <div style="margin-top:2rem;">
     <div class="section-title" style="font-size:1.3rem;margin-bottom:0.3rem;" id="tituloPacotes">Escolher um plano</div>
     <p style="font-size:0.84rem;color:var(--text-light);line-height:1.7;margin-bottom:0.8rem;">
       Escolha o pacote ideal e faça o PIX para o estúdio. Após o pagamento, envie o comprovante via WhatsApp para ativação.
     </p>
-
-    <!-- Chave PIX + WhatsApp -->
     <div style="background:var(--cream);border:1px solid rgba(139,0,33,0.1);border-radius:18px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
       <div>
         <div style="font-size:0.64rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.3rem;">Chave PIX · Telefone</div>
@@ -339,19 +346,17 @@
         Falar no WhatsApp
       </a>
     </div>
-
     <div id="pacotesDisp" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;"></div>
   </div>
 </div>
 
-<!-- MODAL CONFIRMAR SOLICITAÇÃO -->
+<!-- ── MODAL: CONFIRMAR SOLICITAÇÃO DE PLANO ── -->
 <div class="modal-bg" id="modalSolicitarPlano">
   <div class="modal">
     <button class="modal-close" onclick="fecharModal('modalSolicitarPlano')">✕</button>
     <div class="modal-title">Solicitar plano</div>
     <div class="modal-sub" id="solPlanoSub"></div>
     <input type="hidden" id="solPacoteId">
-
     <div style="background:var(--bordo-pale);border-radius:16px;padding:1.1rem 1.3rem;margin-bottom:1rem;">
       <div style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--bordo);margin-bottom:0.5rem;">Instruções de pagamento</div>
       <div style="font-size:0.86rem;color:var(--text-mid);line-height:1.7;">
@@ -360,7 +365,6 @@
         3. Envie o comprovante pelo WhatsApp para ativar o plano
       </div>
     </div>
-
     <div id="solPlanoMsg"></div>
     <div class="btn-row">
       <button class="btn-primary" id="btnConfSolicitarPlano">Confirmar solicitação</button>
@@ -376,13 +380,12 @@
   </div>
 </div>
 
-<!-- MODAL: CONFIRMAR CANCELAMENTO DE AULA -->
+<!-- ── MODAL: CANCELAR AULA ── -->
 <div class="modal-bg" id="modalCancelarAula">
   <div class="modal">
     <button class="modal-close" onclick="fecharModal('modalCancelarAula')">✕</button>
     <div class="modal-title">Cancelar aula</div>
     <div class="modal-sub" id="cancelarAulaSub"></div>
-    <input type="hidden" id="cancelarMatriculaId">
     <input type="hidden" id="cancelarTurmaId">
     <input type="hidden" id="cancelarDataAula">
     <div id="cancelarAulaMsg"></div>
@@ -393,33 +396,55 @@
   </div>
 </div>
 
-<!-- MODAL: INSCREVER COM REPOSIÇÃO ESPECIAL -->
-<div class="modal-bg" id="modalInscreverReps">
+<!-- ── MODAL: INSCREVER (com seleção de dias e reposição especial) ── -->
+<!--
+  MUDANÇA 2 + 3: modal unificado para inscrição normal com dias específicos
+  e para inscrição via reposição especial com turmas de qualquer modalidade
+-->
+<div class="modal-bg" id="modalInscrever">
   <div class="modal">
-    <button class="modal-close" onclick="fecharModal('modalInscreverReps')">✕</button>
-    <div class="modal-title">Usar reposição especial</div>
-    <div class="modal-sub" id="repsInscreverSub"></div>
-    <input type="hidden" id="repsIdTurma">
-    <div class="form-group">
-      <label>Reposição especial a usar</label>
-      <select id="selRepsEspecial"></select>
+    <button class="modal-close" onclick="fecharModal('modalInscrever')">✕</button>
+    <div class="modal-title" id="modalInscreverTitulo">Inscrever-se</div>
+    <div class="modal-sub" id="modalInscreverSub"></div>
+    <input type="hidden" id="inscreverIdTurma">
+    <input type="hidden" id="inscreverModo"> <!-- 'normal' ou 'reposicao' -->
+
+    <!-- MUDANÇA 3: seleção de dias específicos (aparece quando a turma tem múltiplos dias) -->
+    <div id="diasEspecificosSection" style="display:none;">
+      <div class="form-group">
+        <label>Dias que deseja frequentar</label>
+        <p class="dias-hint">Esta turma acontece em mais de um dia. Selecione em quais dias quer se inscrever, ou deixe todos marcados para frequentar todos.</p>
+        <div class="dias-check-group" id="diasCheckGroup"></div>
+      </div>
     </div>
-    <div id="repsInscreverMsg"></div>
+
+    <!-- MUDANÇA 2: seleção de reposição (aparece no modo reposição) -->
+    <div id="reposicaoSection" style="display:none;">
+      <div class="form-group">
+        <label>Reposição especial a usar</label>
+        <select id="selRepsEspecial"></select>
+      </div>
+    </div>
+
+    <div id="modalInscreverMsg"></div>
     <div class="btn-row">
-      <button class="btn-primary" id="btnConfRepsInscrever">Confirmar inscrição</button>
-      <button class="btn-secondary" onclick="fecharModal('modalInscreverReps')">Cancelar</button>
+      <button class="btn-primary" id="btnConfInscrever">Confirmar inscrição</button>
+      <button class="btn-secondary" onclick="fecharModal('modalInscrever')">Cancelar</button>
     </div>
   </div>
 </div>
 
 <script>
-const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MESES   = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 const DIAS_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const DIAS_MAPA = {seg:1,segunda:1,ter:2,'terça':2,terca:2,qua:3,quarta:3,qui:4,quinta:4,sex:5,sexta:5,'sáb':6,sab:6,sabado:6};
+// Mapa inverso: número do dia JS → abreviação usada no banco
+const NUM_PARA_ABREV = {1:'seg',2:'ter',3:'qua',4:'qui',5:'sex',6:'sáb'};
+const ABREV_LABEL = {seg:'Segunda',ter:'Terça',qua:'Quarta',qui:'Quinta',sex:'Sexta','sáb':'Sábado'};
 
-let _d = null;            // dados do aluno
-let _semana = new Date(); // início da semana do calendário
-_semana.setDate(_semana.getDate() - _semana.getDay() + 1); // segunda-feira
+let _d = null;
+let _semana = new Date();
+_semana.setDate(_semana.getDate() - _semana.getDay() + 1);
 
 async function carregar() {
   const r = await fetch('/aluno/dados');
@@ -429,48 +454,36 @@ async function carregar() {
 }
 
 function renderTudo() {
-  const { aluno, plano, turmas_matriculadas, turmas_disponiveis, reposicoes, pacotes } = _d;
+  const { aluno, plano, turmas_matriculadas, turmas_disponiveis,
+          reposicoes, pacotes, turmas_reposicao } = _d;  // MUDANÇA 2: turmas_reposicao
 
-  // Cabeçalho
   document.getElementById('nomeAluno').textContent = aluno.nome_completo.split(' ')[0];
 
-  // Reposições pendentes
   const repsDisp = reposicoes.filter(r => !r.usada);
-  document.getElementById('badgeReps').textContent  = repsDisp.length;
-  document.getElementById('kRepsDisp').textContent  = repsDisp.length;
+  document.getElementById('badgeReps').textContent   = repsDisp.length;
+  document.getElementById('kRepsDisp').textContent   = repsDisp.length;
   document.getElementById('kTurmasAtivas').textContent = turmas_matriculadas.length;
   document.getElementById('kPlanoNome').textContent  = plano ? plano.nome.split(' ')[0] : '—';
 
-  // Aulas este mês
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const hoje   = new Date(); hoje.setHours(0,0,0,0);
   const fimMes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0);
-  const aulasMes = contarAulasMes(turmas_matriculadas, hoje, fimMes);
+  const aulasMes = contarAulasMes(turmas_matriculadas, hoje, fimMes);  // MUDANÇA 3: usa dias_efetivos
   const limMes   = plano ? Math.round((plano.aulas_por_semana || 0) * 4.3) : 0;
   document.getElementById('kAulasMes').textContent  = aulasMes;
   document.getElementById('kAulasMesSub').textContent = limMes ? `de ~${limMes} previstas` : '';
 
-  // Plano resumo
   renderPlanoCard('resumoPlano', plano, true);
   renderPlanoCard('planoDetalhes', plano, false);
 
-  // Próximas aulas
   const proximas = gerarProximas(turmas_matriculadas, reposicoes, 5);
   renderProximas(proximas, 'proximasAulas');
 
-  // Minhas aulas
   const minhasAulas30 = gerarProximas(turmas_matriculadas, reposicoes, 30);
   renderMinhasAulas(minhasAulas30);
 
-  // Calendário
   renderCalendario();
-
-  // Turmas disponíveis
   renderTurmasDisp(turmas_disponiveis, repsDisp.length > 0);
-
-  // Reposições
-  renderReposicoes(reposicoes);
-
-  // Pacotes
+  renderReposicoes(reposicoes, turmas_reposicao || []);  // MUDANÇA 2
   renderPacotes(pacotes, plano);
 }
 
@@ -482,7 +495,7 @@ function renderPlanoCard(elId, plano, mini) {
     return;
   }
   const limMes = Math.round((plano.aulas_por_semana || 0) * 4.3);
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const hoje   = new Date(); hoje.setHours(0,0,0,0);
   const fimMes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0);
   const aulasMes = mini ? contarAulasMes(_d.turmas_matriculadas, hoje, fimMes) : null;
   const pct = mini && limMes ? Math.min(Math.round(aulasMes/limMes*100), 100) : null;
@@ -493,7 +506,9 @@ function renderPlanoCard(elId, plano, mini) {
         <div class="plano-nome">${plano.nome}</div>
         <div class="plano-tipo">${plano.tipo_cobranca} · ${plano.status === 'ativo' ? 'Ativo' : 'Inativo'}</div>
       </div>
-      <div><div class="plano-valor">R$ ${parseFloat(plano.valor).toFixed(2).replace('.',',')}<small>/${plano.tipo_cobranca === 'mensal' ? 'mês' : 'sem.'}</small></div></div>
+      <div><div class="plano-valor">R$ ${parseFloat(plano.valor).toFixed(2).replace('.',',')}
+        <small>/${plano.tipo_cobranca === 'mensal' ? 'mês' : 'sem.'}</small>
+      </div></div>
     </div>
     ${mini && pct !== null ? `
       <div class="aulas-progress">
@@ -510,12 +525,18 @@ function renderPlanoCard(elId, plano, mini) {
 }
 
 // ── PRÓXIMAS AULAS ────────────────────────────────────────────
+// MUDANÇA 3: usa dias_efetivos de cada turma (pode ser subconjunto dos dias totais)
+function parseDiasEfetivos(turma) {
+  // dias_efetivos é o campo calculado pelo backend: dias específicos ou todos
+  const fonte = turma.dias_efetivos || turma.dias_semana || '';
+  return parseDias(fonte);
+}
+
 function gerarProximas(turmas, reposicoes, limite) {
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const items = [];
-
   turmas.forEach(t => {
-    const diasNum = parseDias(t.dias_semana);
+    const diasNum = parseDiasEfetivos(t);  // MUDANÇA 3
     for (let off = 0; off < 90 && items.length < limite * 5; off++) {
       const d = new Date(hoje); d.setDate(hoje.getDate() + off);
       if (diasNum.includes(d.getDay())) {
@@ -523,21 +544,19 @@ function gerarProximas(turmas, reposicoes, limite) {
       }
     }
   });
-
-  // Adicionar reposições pendentes
   reposicoes.filter(r => !r.usada && r.turma_data_reposicao).forEach(r => {
     const d = new Date(r.turma_data_reposicao);
     if (d >= hoje) items.push({ data: d, turma: r.turma_reposicao, tipo: r.tipo === 'especial' ? 'especial' : 'reposicao', repos: r });
   });
-
   items.sort((a, b) => a.data - b.data || (a.turma?.hora_inicio||'').localeCompare(b.turma?.hora_inicio||''));
   return items.slice(0, limite);
 }
 
+// MUDANÇA 3: conta aulas usando dias_efetivos
 function contarAulasMes(turmas, inicio, fim) {
   let count = 0;
   turmas.forEach(t => {
-    const diasNum = parseDias(t.dias_semana);
+    const diasNum = parseDiasEfetivos(t);
     for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate()+1)) {
       if (diasNum.includes(new Date(d).getDay())) count++;
     }
@@ -546,7 +565,8 @@ function contarAulasMes(turmas, inicio, fim) {
 }
 
 function parseDias(s) {
-  return (s||'').toLowerCase().split(/[,\s·]+/).filter(Boolean).map(d => DIAS_MAPA[d.trim()]).filter(x => x !== undefined);
+  return (s||'').toLowerCase().split(/[,\s·]+/).filter(Boolean)
+    .map(d => DIAS_MAPA[d.trim()]).filter(x => x !== undefined);
 }
 
 function renderProximas(items, elId) {
@@ -554,13 +574,13 @@ function renderProximas(items, elId) {
   if (!items.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhuma aula próxima.</p>'; return; }
   el.innerHTML = items.map(({ data, turma, tipo }) => {
     if (!turma) return '';
-    const tagCls = tipo === 'especial' ? 'tag-especial' : tipo === 'reposicao' ? 'tag-repos' : 'tag-normal';
-    const tagTxt = tipo === 'especial' ? 'Reposição especial' : tipo === 'reposicao' ? 'Reposição' : 'Regular';
-    return `<div class="aula-row" style="margin-bottom:0.6rem;">
+    const tagCls = tipo==='especial'?'tag-especial':tipo==='reposicao'?'tag-repos':'tag-normal';
+    const tagTxt = tipo==='especial'?'Reposição especial':tipo==='reposicao'?'Reposição':'Regular';
+    return `<div class="aula-row">
       <div class="aula-row-date"><div class="aula-row-dia">${data.getDate()}</div><div class="aula-row-mes">${MESES[data.getMonth()]}</div></div>
       <div class="aula-row-info">
         <div class="aula-row-nome">${turma.modalidade || turma.nome_exibicao || '—'}</div>
-        <div class="aula-row-meta">${turma.hora_inicio || ''} – ${turma.hora_fim || ''} · ${turma.sala || ''}</div>
+        <div class="aula-row-meta">${turma.hora_inicio||''} – ${turma.hora_fim||''} · ${turma.sala||''}</div>
       </div>
       <span class="aula-row-tag ${tagCls}">${tagTxt}</span>
     </div>`;
@@ -568,28 +588,36 @@ function renderProximas(items, elId) {
 }
 
 // ── MINHAS AULAS ──────────────────────────────────────────────
+// MUDANÇA 3: exibe dias_efetivos (específicos ou todos) em vez de dias_semana brutos
 function renderMinhasAulas(items) {
   const el = document.getElementById('minhasAulasList');
   if (!items.length) { el.innerHTML = '<p style="color:var(--text-light);">Nenhuma aula agendada.</p>'; return; }
   el.innerHTML = items.map(({ data, turma, tipo }) => {
     if (!turma) return '';
-    const tagCls = tipo === 'especial' ? 'tag-especial' : tipo === 'reposicao' ? 'tag-repos' : 'tag-normal';
-    const tagTxt = tipo === 'especial' ? 'Reposição especial' : tipo === 'reposicao' ? 'Reposição' : 'Regular';
+    const tagCls = tipo==='especial'?'tag-especial':tipo==='reposicao'?'tag-repos':'tag-normal';
+    const tagTxt = tipo==='especial'?'Reposição especial':tipo==='reposicao'?'Reposição':'Regular';
     const podeCancelar = tipo === 'normal';
     const dataStr = data.toISOString().split('T')[0];
+
+    // MUDANÇA 3: mostra aviso se matrícula é em dias específicos
+    const diasInfo = turma.dias_especificos
+      ? `<span style="font-size:0.68rem;background:#e6f0f5;color:#005577;padding:0.1rem 0.5rem;border-radius:50px;margin-left:0.4rem;">📅 ${turma.dias_especificos}</span>`
+      : '';
+
     return `<div class="aula-row">
       <div class="aula-row-date"><div class="aula-row-dia">${data.getDate()}</div><div class="aula-row-mes">${MESES[data.getMonth()]}</div></div>
       <div class="aula-row-info">
-        <div class="aula-row-nome">${turma.modalidade || turma.nome_exibicao || '—'} · ${turma.sala || ''}</div>
-        <div class="aula-row-meta">${DIAS_PT[data.getDay()]} · ${turma.hora_inicio || ''} – ${turma.hora_fim || ''} · ${turma.professora || ''}</div>
+        <div class="aula-row-nome">${turma.modalidade || turma.nome_exibicao || '—'} · ${turma.sala||''}${diasInfo}</div>
+        <div class="aula-row-meta">${DIAS_PT[data.getDay()]} · ${turma.hora_inicio||''} – ${turma.hora_fim||''} · ${turma.professora||''}</div>
       </div>
       <span class="aula-row-tag ${tagCls}">${tagTxt}</span>
-      ${podeCancelar ? `<button class="btn-cancelar-aula" onclick="abrirCancelarAluno(${turma.id_turma}, '${(turma.modalidade||'').replace(/'/g,"\\'")}', '${dataStr}')">Cancelar</button>` : ''}
+      ${podeCancelar ? `<button class="btn-cancelar-aula" onclick="abrirCancelarAluno(${turma.id_turma},'${(turma.modalidade||'').replace(/'/g,"\\'")}','${dataStr}')">Cancelar</button>` : ''}
     </div>`;
   }).join('');
 }
 
 // ── CALENDÁRIO ────────────────────────────────────────────────
+// MUDANÇA 3: usa dias_efetivos para pintar o calendário
 function renderCalendario() {
   const dias = [];
   for (let i = 0; i < 7; i++) { const d = new Date(_semana); d.setDate(_semana.getDate()+i); dias.push(d); }
@@ -598,13 +626,15 @@ function renderCalendario() {
     `${dias[0].getDate()} ${MESES[dias[0].getMonth()]} – ${fim.getDate()} ${MESES[fim.getMonth()]}`;
 
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const { turmas_matriculadas, turmas_disponiveis, reposicoes } = _d;
+  const { turmas_matriculadas, turmas_disponiveis } = _d;
 
   const grid = document.getElementById('weekGrid');
   grid.innerHTML = dias.map(d => {
     const isHoje = d.toDateString() === hoje.toDateString();
-    const eventosMinha = turmas_matriculadas.filter(t => parseDias(t.dias_semana).includes(d.getDay()));
-    const eventosDisp  = turmas_disponiveis.filter(t => parseDias(t.dias_semana).includes(d.getDay()) && !eventosMinha.find(m=>m.id_turma===t.id_turma));
+    // MUDANÇA 3: filtra usando dias_efetivos (respeita dias específicos)
+    const eventosMinha = turmas_matriculadas.filter(t => parseDiasEfetivos(t).includes(d.getDay()));
+    const eventosDisp  = turmas_disponiveis.filter(t =>
+      parseDias(t.dias_semana).includes(d.getDay()) && !eventosMinha.find(m => m.id_turma===t.id_turma));
 
     const eventosHtml = [
       ...eventosMinha.map(t => `<div class="aula-evento minha"><div class="aula-evento-nome" style="color:var(--bordo);">${t.modalidade}</div><div class="aula-evento-hora" style="color:var(--bordo);">${t.hora_inicio}</div></div>`),
@@ -613,17 +643,13 @@ function renderCalendario() {
 
     return `<div class="day-col${isHoje?' today':''}">
       <div class="day-head"><div class="day-name">${DIAS_PT[d.getDay()]}</div><div class="day-num">${d.getDate()}</div></div>
-      <div class="day-body">${eventosHtml || ''}</div>
+      <div class="day-body">${eventosHtml}</div>
     </div>`;
   }).join('');
 }
 
-document.getElementById('semanaAnterior').addEventListener('click', () => {
-  _semana.setDate(_semana.getDate()-7); renderCalendario();
-});
-document.getElementById('semanaProxima').addEventListener('click', () => {
-  _semana.setDate(_semana.getDate()+7); renderCalendario();
-});
+document.getElementById('semanaAnterior').addEventListener('click', () => { _semana.setDate(_semana.getDate()-7); renderCalendario(); });
+document.getElementById('semanaProxima').addEventListener('click',  () => { _semana.setDate(_semana.getDate()+7); renderCalendario(); });
 
 // ── TURMAS DISPONÍVEIS ────────────────────────────────────────
 function renderTurmasDisp(turmas, temRepsEsp) {
@@ -631,7 +657,6 @@ function renderTurmasDisp(turmas, temRepsEsp) {
   const mods = [...new Set(turmas.map(t => t.modalidade).filter(Boolean))];
   sel.innerHTML = '<option value="">Todas as modalidades</option>' + mods.map(m => `<option value="${m}">${m}</option>`).join('');
   _renderTurmasDisp(turmas, temRepsEsp, '', '');
-
   sel.addEventListener('change', () => _renderTurmasDisp(turmas, temRepsEsp, sel.value, document.getElementById('filtroDiaDisp').value));
   document.getElementById('filtroDiaDisp').addEventListener('change', () => _renderTurmasDisp(turmas, temRepsEsp, sel.value, document.getElementById('filtroDiaDisp').value));
 }
@@ -648,36 +673,135 @@ function _renderTurmasDisp(turmas, temRepsEsp, filtroMod, filtroDia) {
   if (!filtrados.length) { el.innerHTML = '<p style="color:var(--text-light);">Nenhuma turma disponível para os filtros selecionados.</p>'; return; }
 
   el.innerHTML = filtrados.map(t => {
-    const cap = t.capacidade_maxima || 0;
-    const ocp = t.inscritos || 0;
-    const pct = cap > 0 ? Math.min(Math.round(ocp/cap*100),100) : 0;
+    const cap   = t.capacidade_maxima || 0;
+    const ocp   = t.inscritos || 0;
+    const pct   = cap > 0 ? Math.min(Math.round(ocp/cap*100),100) : 0;
     const lotada = cap > 0 && ocp >= cap;
     const jaMat  = jaMatricul.has(t.id_turma);
     const ehEsp  = t.apenas_reposicao_especial;
+    // MUDANÇA 3: turma com múltiplos dias permite escolher dias específicos
+    const diasArr = (t.dias_semana||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const temMultiDias = diasArr.length > 1;
 
     return `<div class="turma-disp-card${ehEsp?' repos-especial-card':''}">
       ${ehEsp ? '<div style="font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#3B6D11;margin-bottom:0.5rem;">✦ Reposição especial</div>' : ''}
       <div class="turma-disp-nome">${t.modalidade || t.nome_exibicao}</div>
-      <div class="turma-disp-meta">${t.dias_semana} · ${t.hora_inicio} – ${t.hora_fim}<br>${t.sala} · ${t.professora || ''}</div>
+      <div class="turma-disp-meta">
+        ${t.dias_semana} · ${t.hora_inicio} – ${t.hora_fim}<br>
+        ${t.sala} · ${t.professora || ''}
+        ${temMultiDias && !jaMat && !lotada && !ehEsp ? '<br><span style="font-size:0.7rem;color:var(--bordo);">📅 Você pode escolher em quais dias frequentar</span>' : ''}
+      </div>
       ${cap > 0 ? `<div style="font-size:0.7rem;color:var(--text-light);margin-bottom:0.4rem;">${ocp}/${cap} vagas</div><div class="vagas-bar"><div class="vagas-fill${pct>=100?' cheio':pct>=75?' quase':''}" style="width:${pct}%;"></div></div>` : ''}
-      ${jaMat ? `<button class="btn-inscrever" disabled>Já inscrita</button>`
-        : lotada ? `<button class="btn-inscrever" disabled>Turma lotada</button>`
-        : ehEsp && temRepsEsp ? `<button class="btn-inscrever" onclick="abrirInscreverReps(${t.id_turma},'${(t.modalidade||'').replace(/'/g,"\\'")}')">Usar reposição especial</button>`
-        : ehEsp ? `<button class="btn-inscrever" disabled>Sem reposições especiais</button>`
-        : `<button class="btn-inscrever" onclick="inscreverTurma(${t.id_turma}, this)">Inscrever-me</button>`}
+      ${jaMat
+        ? `<button class="btn-inscrever" disabled>Já inscrita</button>`
+        : lotada
+        ? `<button class="btn-inscrever" disabled>Turma lotada</button>`
+        : ehEsp && temRepsEsp
+        ? `<button class="btn-inscrever" onclick="abrirInscrever(${t.id_turma},'${esc(t.modalidade)}','${esc(t.dias_semana)}','reposicao')">Usar reposição especial</button>`
+        : ehEsp
+        ? `<button class="btn-inscrever" disabled>Sem reposições especiais</button>`
+        : `<button class="btn-inscrever" onclick="abrirInscrever(${t.id_turma},'${esc(t.modalidade)}','${esc(t.dias_semana)}','normal')">Inscrever-me</button>`}
     </div>`;
   }).join('');
 }
 
-async function inscreverTurma(idTurma, btn) {
-  btn.disabled = true; btn.textContent = 'Aguarde…';
-  const r = await fetch('/aluno/inscrever', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id_turma: idTurma}) });
-  const d = await r.json();
-  alert(d.mensagem);
-  if (d.ok) carregar(); else { btn.disabled=false; btn.textContent='Inscrever-me'; }
+// ── MODAL INSCREVER (normal + dias específicos + reposição) ───
+// MUDANÇA 2 + 3: modal unificado
+function abrirInscrever(idTurma, nome, diasSemana, modo) {
+  document.getElementById('inscreverIdTurma').value = idTurma;
+  document.getElementById('inscreverModo').value    = modo;
+  document.getElementById('modalInscreverMsg').innerHTML = '';
+
+  const diasArr = diasSemana.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  const temMulti = diasArr.length > 1;
+
+  if (modo === 'normal') {
+    document.getElementById('modalInscreverTitulo').textContent = 'Inscrever-se na turma';
+    document.getElementById('modalInscreverSub').textContent    = nome;
+    document.getElementById('reposicaoSection').style.display   = 'none';
+
+    // MUDANÇA 3: mostra checkboxes de dias se a turma tiver mais de 1 dia
+    const secDias = document.getElementById('diasEspecificosSection');
+    if (temMulti) {
+      secDias.style.display = 'block';
+      const grp = document.getElementById('diasCheckGroup');
+      grp.innerHTML = diasArr.map(d => {
+        const label = ABREV_LABEL[d] || d;
+        return `<label class="dia-check-label checked" id="label_${d}">
+          <input type="checkbox" value="${d}" checked onchange="toggleDiaLabel(this)">
+          ${label}
+        </label>`;
+      }).join('');
+    } else {
+      secDias.style.display = 'none';
+    }
+  } else {
+    // modo reposição especial
+    document.getElementById('modalInscreverTitulo').textContent = 'Usar reposição especial';
+    document.getElementById('modalInscreverSub').textContent    = `Inscrever em: ${nome}`;
+    document.getElementById('diasEspecificosSection').style.display = 'none';
+
+    const repsEsp = (_d.reposicoes||[]).filter(r => !r.usada && r.tipo === 'especial');
+    const sel = document.getElementById('selRepsEspecial');
+    sel.innerHTML = repsEsp.length
+      ? repsEsp.map(r => `<option value="${r.id_reposicao}">Reposição de ${r.turma_cancelada} · ${r.data_aula}</option>`).join('')
+      : '<option value="">Nenhuma reposição disponível</option>';
+    document.getElementById('reposicaoSection').style.display = 'block';
+  }
+
+  abrirModal('modalInscrever');
 }
 
-// ── MODAL CANCELAR AULA (aluno) ───────────────────────────────
+function toggleDiaLabel(chk) {
+  const lbl = chk.closest('.dia-check-label');
+  lbl.classList.toggle('checked', chk.checked);
+}
+
+document.getElementById('btnConfInscrever').addEventListener('click', async () => {
+  const idTurma = document.getElementById('inscreverIdTurma').value;
+  const modo    = document.getElementById('inscreverModo').value;
+  const msgEl   = document.getElementById('modalInscreverMsg');
+
+  if (modo === 'normal') {
+    // MUDANÇA 3: coleta dias marcados
+    const secDias = document.getElementById('diasEspecificosSection');
+    let diasEspecificos = null;
+    if (secDias.style.display !== 'none') {
+      const marcados = [...document.querySelectorAll('#diasCheckGroup input:checked')].map(c => c.value);
+      const todos    = [...document.querySelectorAll('#diasCheckGroup input')].map(c => c.value);
+      // só envia dias_especificos se NÃO estiver tudo marcado
+      if (marcados.length > 0 && marcados.length < todos.length) {
+        diasEspecificos = marcados.join(',');
+      }
+    }
+    const body = { id_turma: idTurma };
+    if (diasEspecificos) body.dias_especificos = diasEspecificos;
+
+    const r = await fetch('/aluno/inscrever', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
+    if (d.ok) { setTimeout(() => { fecharModal('modalInscrever'); carregar(); }, 1200); }
+
+  } else {
+    // MUDANÇA 2: reposição especial em qualquer turma da modalidade
+    const idReps = document.getElementById('selRepsEspecial').value;
+    if (!idReps) { msgEl.innerHTML = '<div class="msg msg-err">Selecione uma reposição.</div>'; return; }
+    const r = await fetch('/aluno/usar-reposicao-especial', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id_turma: idTurma, id_reposicao: idReps })
+    });
+    const d = await r.json();
+    msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
+    if (d.ok) { setTimeout(() => { fecharModal('modalInscrever'); carregar(); }, 1200); }
+  }
+});
+
+// ── MODAL CANCELAR AULA ────────────────────────────────────────
 function abrirCancelarAluno(idTurma, nome, dataStr) {
   document.getElementById('cancelarTurmaId').value = idTurma;
   document.getElementById('cancelarDataAula').value = dataStr;
@@ -687,69 +811,77 @@ function abrirCancelarAluno(idTurma, nome, dataStr) {
 }
 
 document.getElementById('btnConfCancelarAluno').addEventListener('click', async () => {
-  const idTurma = document.getElementById('cancelarTurmaId').value;
-  const dataAula= document.getElementById('cancelarDataAula').value;
-  const msgEl   = document.getElementById('cancelarAulaMsg');
-  const r = await fetch('/aluno/cancelar-aula', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id_turma: idTurma, data_aula: dataAula }) });
+  const idTurma  = document.getElementById('cancelarTurmaId').value;
+  const dataAula = document.getElementById('cancelarDataAula').value;
+  const msgEl    = document.getElementById('cancelarAulaMsg');
+  const r = await fetch('/aluno/cancelar-aula', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id_turma: idTurma, data_aula: dataAula })
+  });
   const d = await r.json();
   msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
   if (d.ok) { setTimeout(()=>{ fecharModal('modalCancelarAula'); carregar(); }, 1200); }
 });
 
-// ── MODAL INSCREVER COM REPOSIÇÃO ESPECIAL ─────────────────────
-function abrirInscreverReps(idTurma, nome) {
-  document.getElementById('repsIdTurma').value = idTurma;
-  document.getElementById('repsInscreverSub').textContent = `Inscrever em: ${nome}`;
-  const repsEsp = (_d.reposicoes||[]).filter(r => !r.usada && r.tipo === 'especial');
-  const sel = document.getElementById('selRepsEspecial');
-  sel.innerHTML = repsEsp.map(r => `<option value="${r.id_reposicao}">Reposição de ${r.turma_cancelada} · ${r.data_aula}</option>`).join('');
-  document.getElementById('repsInscreverMsg').innerHTML = '';
-  abrirModal('modalInscreverReps');
-}
-
-document.getElementById('btnConfRepsInscrever').addEventListener('click', async () => {
-  const idTurma  = document.getElementById('repsIdTurma').value;
-  const idReps   = document.getElementById('selRepsEspecial').value;
-  const msgEl    = document.getElementById('repsInscreverMsg');
-  const r = await fetch('/aluno/usar-reposicao-especial', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id_turma: idTurma, id_reposicao: idReps }) });
-  const d = await r.json();
-  msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
-  if (d.ok) { setTimeout(()=>{ fecharModal('modalInscreverReps'); carregar(); }, 1200); }
-});
-
 // ── REPOSIÇÕES ────────────────────────────────────────────────
-function renderReposicoes(repos) {
+// MUDANÇA 2: recebe turmas_reposicao e renderiza seção extra
+function renderReposicoes(repos, turmasReposicao) {
   const el = document.getElementById('reposicoesList');
-  if (!repos.length) { el.innerHTML = '<p style="color:var(--text-light);">Nenhuma reposição encontrada.</p>'; return; }
-  el.innerHTML = repos.map(r => {
-    const icone = r.usada
-      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>`
-      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`;
-    return `<div class="repos-item">
-      <div class="repos-icone ${r.usada?'usada':'pendente'}">${icone}</div>
-      <div class="repos-info">
-        <div class="repos-titulo">${r.tipo === 'especial' ? '✦ Reposição especial' : 'Reposição'} · ${r.turma_cancelada || '—'}</div>
-        <div class="repos-det">Data da aula cancelada: ${r.data_aula || '—'} · Válida até: ${r.valida_ate || 'fim do mês'}</div>
-      </div>
-      <span class="repos-badge ${r.usada?'usada':'pendente'}">${r.usada?'Usada':'Disponível'}</span>
-    </div>`;
-  }).join('');
+  const repsDisp = repos.filter(r => !r.usada);
+
+  if (!repos.length) {
+    el.innerHTML = '<p style="color:var(--text-light);">Nenhuma reposição encontrada.</p>';
+  } else {
+    el.innerHTML = repos.map(r => {
+      const icone = r.usada
+        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`;
+      return `<div class="repos-item">
+        <div class="repos-icone ${r.usada?'usada':'pendente'}">${icone}</div>
+        <div class="repos-info">
+          <div class="repos-titulo">${r.tipo==='especial'?'✦ Reposição especial':'Reposição'} · ${r.turma_cancelada||'—'}</div>
+          <div class="repos-det">Aula cancelada: ${r.data_aula||'—'} · Válida até: ${r.valida_ate||'fim do mês'}</div>
+        </div>
+        <span class="repos-badge ${r.usada?'usada':'pendente'}">${r.usada?'Usada':'Disponível'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // MUDANÇA 2: mostra turmas disponíveis para reposição especial
+  const secao = document.getElementById('secaoTurmasReposicao');
+  const gridEl = document.getElementById('turmasReposicaoGrid');
+
+  if (repsDisp.length > 0 && turmasReposicao.length > 0) {
+    secao.style.display = 'block';
+    gridEl.innerHTML = turmasReposicao.map(t => {
+      const cap   = t.capacidade_maxima || 0;
+      const ocp   = t.inscritos || 0;
+      const pct   = cap > 0 ? Math.min(Math.round(ocp/cap*100),100) : 0;
+      const lotada = cap > 0 && ocp >= cap;
+      return `<div class="turma-disp-card">
+        <div class="turma-disp-nome">${t.modalidade}</div>
+        <div class="turma-disp-meta">${t.dias_semana} · ${t.hora_inicio} – ${t.hora_fim}<br>${t.sala}</div>
+        ${cap > 0 ? `<div style="font-size:0.7rem;color:var(--text-light);margin-bottom:0.4rem;">${ocp}/${cap} vagas</div>
+          <div class="vagas-bar"><div class="vagas-fill${pct>=100?' cheio':pct>=75?' quase':''}" style="width:${pct}%;"></div></div>` : ''}
+        ${lotada
+          ? `<button class="btn-inscrever" disabled>Turma lotada</button>`
+          : `<button class="btn-inscrever" onclick="abrirInscrever(${t.id_turma},'${esc(t.modalidade)}','${esc(t.dias_semana)}','reposicao')">Usar reposição aqui</button>`}
+      </div>`;
+    }).join('');
+  } else {
+    secao.style.display = 'none';
+  }
 }
 
 // ── PACOTES ───────────────────────────────────────────────────
 function renderPacotes(pacotes, planoAtual) {
   const el = document.getElementById('pacotesDisp');
-  const titulo = document.getElementById('tituloPacotes');
-  titulo.textContent = planoAtual ? 'Mudar de plano' : 'Escolher um plano';
+  document.getElementById('tituloPacotes').textContent = planoAtual ? 'Mudar de plano' : 'Escolher um plano';
 
-  // Alertas de suspensão e solicitação pendente
   const alertaEl = document.getElementById('alertaSuspensao');
   const solEl    = document.getElementById('solPendente');
-  if (_d.status_acesso === 'suspenso') {
-    alertaEl.style.display = 'flex';
-  } else {
-    alertaEl.style.display = 'none';
-  }
+  alertaEl.style.display = _d.status_acesso === 'suspenso' ? 'flex' : 'none';
+
   if (_d.solicitacao_pendente) {
     solEl.style.display = 'block';
     document.getElementById('solPendenteTexto').textContent =
@@ -760,7 +892,6 @@ function renderPacotes(pacotes, planoAtual) {
     solEl.style.display = 'none';
   }
 
-  // Histórico de pagamentos
   const histEl = document.getElementById('histPagamentos');
   const histList = document.getElementById('histPagList');
   if (_d.historico_pagamentos && _d.historico_pagamentos.length) {
@@ -768,7 +899,7 @@ function renderPacotes(pacotes, planoAtual) {
     histList.innerHTML = _d.historico_pagamentos.map(h =>
       `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:14px;margin-bottom:0.5rem;">
         <div>
-          <div style="font-size:0.88rem;color:var(--text-dark);">${h.descricao || 'Pagamento'}</div>
+          <div style="font-size:0.88rem;color:var(--text-dark);">${h.descricao||'Pagamento'}</div>
           <div style="font-size:0.74rem;color:var(--text-light);">${fmtDataAluno(h.data_pagamento)}</div>
         </div>
         <span style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--bordo);">R$ ${parseFloat(h.valor||0).toFixed(2).replace('.',',')}</span>
@@ -777,7 +908,7 @@ function renderPacotes(pacotes, planoAtual) {
   }
 
   el.innerHTML = pacotes.filter(p => p.status === 'ativo').map(p => {
-    const atual = planoAtual && p.id_pacote === planoAtual.id_pacote;
+    const atual      = planoAtual && p.id_pacote === planoAtual.id_pacote;
     const temPendente = _d.solicitacao_pendente && _d.solicitacao_pendente.id_pacote === p.id_pacote;
     return `<div style="background:var(--cream);border:${atual?'2px solid var(--bordo)':'1px solid rgba(139,0,33,0.08)'};border-radius:20px;padding:1.4rem;box-shadow:var(--shadow);position:relative;overflow:hidden;">
       ${atual ? '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--bordo);opacity:0.7;"></div>' : ''}
@@ -793,8 +924,8 @@ function renderPacotes(pacotes, planoAtual) {
         ? '<div style="font-size:0.72rem;color:var(--text-light);text-align:center;padding:0.5rem 0;">Plano ativo</div>'
         : temPendente
         ? '<div style="font-size:0.72rem;color:#854F0B;background:#faeeda;padding:0.5rem;border-radius:10px;text-align:center;">Solicitação em análise</div>'
-        : `<button onclick="abrirSolicitarPlano(${p.id_pacote},'${p.nome.replace(/'/g,"\\'")}','${parseFloat(p.valor).toFixed(2)}','${p.tipo_cobranca}')"
-             style="width:100%;padding:0.75rem;border-radius:50px;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--bordo);color:#fff;border:none;cursor:pointer;transition:all 0.3s;font-family:'Jost',sans-serif;">
+        : `<button onclick="abrirSolicitarPlano(${p.id_pacote},'${esc(p.nome)}','${parseFloat(p.valor).toFixed(2)}','${p.tipo_cobranca}')"
+             style="width:100%;padding:0.75rem;border-radius:50px;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--bordo);color:#fff;border:none;cursor:pointer;font-family:'Jost',sans-serif;">
              Solicitar este plano
            </button>`
       }
@@ -815,19 +946,21 @@ function abrirSolicitarPlano(id, nome, valor, tipo) {
 document.getElementById('btnConfSolicitarPlano').addEventListener('click', async () => {
   const idPacote = document.getElementById('solPacoteId').value;
   const msgEl = document.getElementById('solPlanoMsg');
-  const r = await fetch('/aluno/solicitar-plano', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id_pacote: idPacote }) });
+  const r = await fetch('/aluno/solicitar-plano', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id_pacote: idPacote })
+  });
   const d = await r.json();
   msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
-  if (d.ok) {
-    setTimeout(() => { fecharModal('modalSolicitarPlano'); carregar(); }, 1500);
-  }
+  if (d.ok) { setTimeout(() => { fecharModal('modalSolicitarPlano'); carregar(); }, 1500); }
 });
 
+// ── UTILS ────────────────────────────────────────────────────
+function esc(s) { return (s||'').replace(/'/g,"\\'"); }
 function fmtDataAluno(s) { if(!s) return '—'; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('pt-BR'); }
-
-// ── UTILS ─────────────────────────────────────────────────────
 function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
 function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+
 document.querySelectorAll('.modal-bg').forEach(bg => {
   bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
 });

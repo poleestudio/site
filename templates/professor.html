@@ -1,536 +1,865 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Área da Professora · Clara Lucatti</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Clara Lucatti · Estúdio de Dança, Pole e Expressão Corporal. Modalidades, horários e pacotes.">
+  <title>Clara Lucatti · Estúdio de Dança</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
   <style>
     :root {
-      --bordo:#8B0021; --bordo-light:#A3002A; --bordo-pale:#f5e6ea;
-      --cream:#fdf8f5; --warm-white:#fff9f6;
-      --text-dark:#2a1a1f; --text-mid:#6b4a55; --text-light:#b08090;
-      --shadow:0 18px 45px rgba(139,0,33,0.08);
-      --shadow-md:0 8px 24px rgba(139,0,33,0.10);
+      --bordo: #8B0021; --bordo-light: #A3002A; --bordo-pale: #f5e6ea;
+      --cream: #fdf8f5; --warm-white: #fff9f6;
+      --text-dark: #2a1a1f; --text-mid: #6b4a55; --text-light: #b08090;
+      --shadow: 0 18px 45px rgba(139,0,33,0.08);
+      --shadow-strong: 0 24px 60px rgba(139,0,33,0.14);
     }
-    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;}
-    a{text-decoration:none;color:inherit;} button{border:none;background:none;cursor:pointer;font:inherit;}
 
-    /* NAV */
-    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(253,248,245,0.96);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,0,33,0.08);}
-    .nav-logo{display:flex;align-items:center;gap:0.8rem;}
-    .nav-logo img{width:36px;height:36px;border-radius:50%;object-fit:cover;}
-    .nav-brand{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1rem;letter-spacing:0.12em;text-transform:uppercase;line-height:1.1;}
-    .nav-brand span{display:block;font-size:0.58rem;letter-spacing:0.22em;color:var(--bordo);}
-    .nav-right{display:flex;align-items:center;gap:1rem;}
-    .nav-user{font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);}
-    .btn-logout{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.55rem 1.2rem;border:1.5px solid var(--bordo);color:var(--bordo);border-radius:50px;transition:all 0.3s;}
-    .btn-logout:hover{background:var(--bordo);color:#fff;}
-
-    /* TABS */
-    .tabs{display:flex;border-bottom:1px solid rgba(139,0,33,0.08);background:var(--cream);padding:0 3rem;overflow-x:auto;}
-    .tab-btn{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.95rem 1.4rem;color:var(--text-light);border-bottom:2.5px solid transparent;transition:all 0.3s;background:none;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-    .tab-btn.active{color:var(--bordo);border-bottom-color:var(--bordo);}
-    .tab-btn .badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--bordo);color:#fff;font-size:0.58rem;margin-left:0.4rem;}
-    .tab-panel{display:none;padding:2.5rem 3rem;}
-    .tab-panel.active{display:block;}
-
-    /* CARDS / GRIDS */
-    .section-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;margin-bottom:0.3rem;}
-    .section-sub{font-size:0.84rem;color:var(--text-light);line-height:1.7;margin-bottom:1.8rem;}
-
-    /* KPIs */
-    .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
-    .kpi-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;padding:1.4rem 1.6rem;box-shadow:var(--shadow);}
-    .kpi-num{font-family:'Cormorant Garamond',serif;font-size:2.6rem;color:var(--bordo);line-height:1;}
-    .kpi-label{font-size:0.64rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-light);margin-top:0.2rem;}
-    .kpi-sub{font-size:0.78rem;color:var(--text-mid);margin-top:0.4rem;}
-
-    /* Turmas */
-    .turmas-grid{display:grid;gap:1.2rem;}
-    .turma-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);transition:all 0.3s;}
-    .turma-card:hover{box-shadow:var(--shadow-md);border-color:rgba(139,0,33,0.18);}
-    .turma-head{display:flex;align-items:center;justify-content:space-between;padding:1.4rem 1.6rem;border-bottom:1px solid rgba(139,0,33,0.07);flex-wrap:wrap;gap:0.8rem;}
-    .turma-nome{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;}
-    .turma-meta{font-size:0.78rem;color:var(--text-light);margin-top:0.15rem;}
-    .turma-badges{display:flex;gap:0.4rem;flex-wrap:wrap;}
-    .badge{display:inline-flex;padding:0.25rem 0.75rem;border-radius:50px;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;}
-    .badge-green{background:#eaf3de;color:#3B6D11;}
-    .badge-amber{background:#faeeda;color:#854F0B;}
-    .badge-red{background:var(--bordo-pale);color:var(--bordo);}
-    .badge-blue{background:#e6f0f5;color:#005577;}
-    .badge-gray{background:#f1efee;color:#5F5E5A;}
-    .turma-body{padding:1.2rem 1.6rem;}
-    /* barra ocupação */
-    .ocup-row{display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;}
-    .ocup-label{font-size:0.7rem;color:var(--text-light);white-space:nowrap;}
-    .ocup-bar{flex:1;height:5px;border-radius:3px;background:rgba(139,0,33,0.1);overflow:hidden;}
-    .ocup-fill{height:100%;border-radius:3px;background:var(--bordo);transition:width 0.5s;}
-    .ocup-fill.quase{background:#e6a820;}
-    .ocup-fill.cheio{background:#c0392b;}
-    .ocup-val{font-size:0.72rem;color:var(--bordo);white-space:nowrap;}
-    /* lista alunos inline */
-    .alunos-inline{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;}
-    .aluno-chip{display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border-radius:50px;background:var(--warm-white);border:1px solid rgba(139,0,33,0.1);font-size:0.72rem;color:var(--text-mid);}
-    .aluno-chip .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-    .dot-img{background:#3B6D11;} .dot-noimg{background:#e6a820;}
-    .turma-actions{display:flex;gap:0.6rem;padding-top:1rem;border-top:1px solid rgba(139,0,33,0.07);}
-    .btn-sm{padding:0.55rem 1.1rem;border-radius:50px;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;border:1.5px solid rgba(139,0,33,0.15);color:var(--text-mid);background:none;cursor:pointer;transition:all 0.25s;}
-    .btn-sm:hover{border-color:var(--bordo);color:var(--bordo);background:var(--bordo-pale);}
-    .btn-sm.danger:hover{border-color:#c0392b;color:#c0392b;background:#fdf0f0;}
-    .btn-sm.primary{background:var(--bordo);color:#fff;border-color:var(--bordo);}
-    .btn-sm.primary:hover{background:var(--bordo-light);}
-
-    /* Modal overlay */
-    .modal-bg{position:fixed;inset:0;background:rgba(42,26,31,0.55);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem;}
-    .modal-bg.open{display:flex;}
-    .modal{background:var(--warm-white);border-radius:28px;padding:2.2rem 2.4rem;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 32px 80px rgba(139,0,33,0.18);}
-    .modal-close{position:absolute;top:1.2rem;right:1.2rem;width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(139,0,33,0.15);display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:0.8rem;cursor:pointer;transition:all 0.2s;background:none;}
-    .modal-close:hover{border-color:var(--bordo);color:var(--bordo);}
-    .modal-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;margin-bottom:0.3rem;}
-    .modal-sub{font-size:0.84rem;color:var(--text-light);line-height:1.7;margin-bottom:1.5rem;}
-    .form-group{margin-bottom:1rem;}
-    .form-group label{display:block;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.4rem;}
-    .form-group textarea,.form-group select,.form-group input{width:100%;background:var(--cream);border:1.5px solid rgba(139,0,33,0.12);border-radius:14px;padding:0.8rem 1rem;font-family:'Jost',sans-serif;font-size:0.9rem;color:var(--text-dark);transition:border-color 0.3s;outline:none;appearance:none;}
-    .form-group textarea{min-height:90px;resize:vertical;}
-    .form-group textarea:focus,.form-group select:focus,.form-group input:focus{border-color:var(--bordo);box-shadow:0 0 0 4px rgba(139,0,33,0.06);}
-    .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:0.6rem;background:var(--bordo);color:#fff;font-size:0.74rem;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;padding:0.9rem 1.8rem;border-radius:50px;transition:all 0.3s;box-shadow:0 8px 24px rgba(139,0,33,0.18);cursor:pointer;border:none;}
-    .btn-primary:hover{background:var(--bordo-light);}
-    .btn-secondary{display:inline-flex;align-items:center;justify-content:center;padding:0.9rem 1.4rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);color:var(--bordo);font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.3s;cursor:pointer;background:none;}
-    .btn-secondary:hover{background:var(--bordo-pale);}
-    .btn-row{display:flex;gap:0.7rem;margin-top:1.2rem;flex-wrap:wrap;}
-    .msg{padding:0.7rem 1rem;border-radius:12px;font-size:0.82rem;margin-top:0.8rem;line-height:1.5;}
-    .msg-ok{background:#eef8f1;color:#2f6b41;border:1px solid rgba(47,107,65,.15);}
-    .msg-err{background:var(--bordo-pale);color:var(--bordo);border:1px solid rgba(139,0,33,.12);}
-    .msg-warn{background:#faeeda;color:#854F0B;border:1px solid rgba(133,79,11,.15);}
-
-    /* Alunos detalhado */
-    .aluno-row-full{display:flex;align-items:center;gap:0.9rem;padding:0.9rem 0;border-bottom:1px solid rgba(139,0,33,0.06);}
-    .aluno-row-full:last-child{border-bottom:none;}
-    .ava{width:38px;height:38px;border-radius:50%;background:var(--bordo-pale);color:var(--bordo);font-size:0.8rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .aluno-info{flex:1;min-width:0;}
-    .aluno-nome{font-size:0.9rem;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .aluno-det{font-size:0.74rem;color:var(--text-light);margin-top:0.1rem;}
-    .img-tag{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.2rem 0.6rem;border-radius:50px;}
-
-    /* Histórico cancelamentos */
-    .hist-list{display:grid;gap:0.7rem;}
-    .hist-item{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:16px;padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:0.9rem;}
-    .hist-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .hist-icon.cancel{background:#fdf0f0;} .hist-icon.repos{background:#eef8f1;}
-    .hist-body{flex:1;}
-    .hist-title{font-size:0.88rem;color:var(--text-dark);margin-bottom:0.15rem;}
-    .hist-meta{font-size:0.74rem;color:var(--text-light);}
-
-    /* Próximas aulas */
-    .agenda-grid{display:grid;gap:0.7rem;}
-    .agenda-item{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:18px;padding:1.1rem 1.4rem;display:flex;align-items:center;gap:1.2rem;transition:all 0.25s;}
-    .agenda-item:hover{border-color:rgba(139,0,33,0.2);box-shadow:var(--shadow-md);}
-    .agenda-date{text-align:center;min-width:48px;}
-    .agenda-dia{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--bordo);line-height:1;}
-    .agenda-mes{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);}
-    .agenda-info{flex:1;}
-    .agenda-nome{font-size:0.92rem;color:var(--text-dark);margin-bottom:0.15rem;}
-    .agenda-hora{font-size:0.76rem;color:var(--text-light);}
-    .agenda-ocup{font-size:0.72rem;color:var(--bordo);white-space:nowrap;}
-
-    /* Reposições geradas */
-    .repos-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:18px;padding:1.2rem 1.4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
-    .repos-info{}
-    .repos-aluno{font-size:0.9rem;color:var(--text-dark);margin-bottom:0.15rem;}
-    .repos-det{font-size:0.76rem;color:var(--text-light);}
-    .repos-status{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.25rem 0.7rem;border-radius:50px;}
-    .repos-pendente{background:#faeeda;color:#854F0B;}
-    .repos-usada{background:#eaf3de;color:#3B6D11;}
-
-    @media(max-width:900px){
-      nav,.tabs,.tab-panel{padding-left:1.5rem;padding-right:1.5rem;}
-      .kpi-strip{grid-template-columns:repeat(2,1fr);}
-      .turma-head{flex-direction:column;align-items:flex-start;}
+    /* ── Nav ── */
+    .nav-actions {
+      display: flex !important; align-items: center !important;
+      gap: 0.5rem !important; flex-shrink: 0;
     }
-    @media(max-width:600px){
-      .kpi-strip{grid-template-columns:1fr 1fr;}
-      .tab-panel{padding:1.5rem;}
+    .nav-actions .nav-cta { white-space: nowrap; padding: 0.5rem 1rem !important; font-size: 0.68rem !important; }
+    .nav-actions .nav-cta-outline {
+      background: transparent !important; border: 1.5px solid rgba(139,0,33,0.4) !important;
+      color: var(--bordo) !important; box-shadow: none !important;
     }
+    .nav-actions .nav-cta-outline:hover { background: var(--bordo) !important; color: #fff !important; }
+
+    /* ── Professoras ── */
+    .professoras { padding: 6rem; background: var(--warm-white); }
+    .prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 1.5rem; }
+    .prof-card { background: var(--cream); border: 1px solid rgba(139,0,33,0.08); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); transition: all 0.35s; }
+    .prof-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-strong); border-color: rgba(139,0,33,0.18); }
+    .prof-img-wrap { height: 200px; background: var(--bordo-pale); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .prof-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .prof-card:hover .prof-img-wrap img { transform: scale(1.05); }
+    .prof-img-wrap .no-photo { opacity: 0.25; }
+    .prof-body { padding: 1.2rem 1.4rem; }
+    .prof-nome { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 300; margin-bottom: 0.2rem; }
+    .prof-tipo { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light); margin-bottom: 0.6rem; }
+    .prof-mods { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.7rem; }
+    .prof-mod-tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.65rem; border-radius: 50px; background: var(--bordo-pale); color: var(--bordo); }
+    .prof-insta { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--bordo); }
+
+    /* ── Modal galeria ── */
+    .modal-gallery { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.4rem; margin-top: 0.9rem; }
+    .modal-gallery img,.modal-gallery video { width: 100%; height: 72px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; }
+    .modal-gallery img:hover,.modal-gallery video:hover { opacity: 0.82; }
+    .modal-card-img-wrap { height: 160px; background: var(--bordo-pale); overflow: hidden; cursor: pointer; position: relative; }
+    .modal-card-img-wrap img,.modal-card-img-wrap video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .modal-card:hover .modal-card-img-wrap img,
+    .modal-card:hover .modal-card-img-wrap video { transform: scale(1.05); }
+    .modal-card-img-wrap .no-img { display: flex; align-items: center; justify-content: center; height: 100%; opacity: 0.22; }
+    .modal-card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(42,26,31,0.4), transparent); display: flex; align-items: flex-end; padding: 0.7rem 0.9rem; pointer-events: none; }
+    .modal-card-img-overlay span { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.8); }
+
+    /* MUDANÇA 1: múltiplas professoras na tag da modalidade */
+    .modal-profs-row { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
+    .modal-prof-tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.65rem; border-radius: 50px; background: #e6f0f5; color: #005577; }
+
+    /* ── Lightbox ── */
+    .lightbox { position: fixed; inset: 0; background: rgba(42,26,31,0.93); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+    .lightbox.open { display: flex; }
+    .lightbox-img { max-width: 90vw; max-height: 88vh; border-radius: 14px; object-fit: contain; }
+    .lightbox-close { position: absolute; top: 1.2rem; right: 1.4rem; font-size: 1.7rem; color: rgba(255,255,255,0.65); cursor: pointer; line-height: 1; transition: color 0.2s; background: none; border: none; }
+    .lightbox-close:hover { color: #fff; }
+    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; transition: background 0.2s; }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+    .lightbox-prev { left: 1rem; } .lightbox-next { right: 1rem; }
+
+    /* ── Horários ── */
+    .schedule-empty { font-size: 0.8rem; color: var(--text-light); font-style: italic; margin-top: 0.5rem; }
+    .schedule-row { display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.55rem; }
+    .schedule-row-time { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; color: var(--bordo); min-width: 38px; padding-top: 0.55rem; white-space: nowrap; flex-shrink: 0; }
+    .schedule-row-classes { display: flex; gap: 0.45rem; flex: 1; flex-wrap: nowrap; overflow-x: auto; }
+    .schedule-row-classes .class-item { flex: 1; min-width: 0; }
+    .class-sala { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bordo); background: var(--bordo-pale); border-radius: 50px; padding: 0.12rem 0.5rem; display: inline-block; margin-top: 0.3rem; }
+
+    /* ── Forms ── */
+    .form-tabs { display: flex; gap: 0; margin-bottom: 1.6rem; border: 1.5px solid rgba(139,0,33,0.12); border-radius: 50px; overflow: hidden; }
+    .form-tab { flex: 1; padding: 0.65rem; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; cursor: pointer; color: var(--text-light); background: none; border: none; transition: all 0.3s; font-family: 'Jost', sans-serif; }
+    .form-tab.active { background: var(--bordo); color: #fff; }
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+    .form-hint { font-size: 0.76rem; color: var(--text-light); line-height: 1.6; margin-top: 0.8rem; padding: 0.7rem 1rem; background: var(--warm-white); border-radius: 10px; border-left: 2px solid rgba(139,0,33,0.2); }
+    .form-success { display: none; background: #eef8f1; border: 1px solid rgba(47,107,65,.15); border-radius: 16px; padding: 1rem 1.2rem; color: #2f6b41; font-size: 0.88rem; line-height: 1.65; margin-bottom: 1rem; }
+    .wpp-cta { display: inline-flex; align-items: center; gap: 0.5rem; background: #25D366; color: #fff; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.65rem 1.2rem; border-radius: 50px; margin-top: 0.9rem; font-family: 'Jost', sans-serif; }
+    .wpp-cta:hover { background: #1eba59; }
+
+    /* ── Pacotes ── */
+    .pacote-mods { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.8rem; }
+    .pacote-mod-tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.65rem; border-radius: 50px; background: var(--bordo-pale); color: var(--bordo); }
+
+    /* ── Workshops ── */
+    .workshops { padding: 6rem; background: var(--cream); }
+    .ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 1.5rem; margin-top: 2.4rem; }
+    .ws-card { background: var(--warm-white); border: 1px solid rgba(139,0,33,0.08); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); transition: all 0.35s; display: flex; flex-direction: column; }
+    .ws-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-strong); border-color: rgba(139,0,33,0.18); }
+    .ws-img-wrap { height: 190px; background: var(--bordo-pale); overflow: hidden; position: relative; flex-shrink: 0; }
+    .ws-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .ws-card:hover .ws-img-wrap img { transform: scale(1.05); }
+    .ws-img-wrap .no-img { display: flex; align-items: center; justify-content: center; height: 100%; opacity: 0.22; }
+    .ws-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(42,26,31,0.5), transparent 55%); display: flex; align-items: flex-end; padding: 0.9rem 1rem; pointer-events: none; }
+    .ws-vagas-pill { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; background: rgba(139,0,33,0.7); padding: 0.25rem 0.75rem; border-radius: 50px; }
+    .ws-vagas-pill.esgotado { background: rgba(42,26,31,0.75); }
+    .ws-body { padding: 1.2rem 1.4rem; flex: 1; display: flex; flex-direction: column; }
+    .ws-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.6rem; }
+    .ws-tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.65rem; border-radius: 50px; background: var(--bordo-pale); color: var(--bordo); }
+    .ws-tag-instr { background: #e6f0f5; color: #005577; }
+    .ws-nome { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; line-height: 1.25; margin-bottom: 0.4rem; color: var(--text-dark); }
+    .ws-desc { font-size: 0.82rem; color: var(--text-mid); line-height: 1.65; flex: 1; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .ws-footer { border-top: 1px solid rgba(139,0,33,0.08); padding-top: 0.9rem; margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
+    .ws-datetime { font-size: 0.78rem; color: var(--text-dark); font-weight: 500; line-height: 1.5; }
+    .ws-local { font-size: 0.7rem; color: var(--text-light); margin-top: 0.1rem; }
+    .ws-preco { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--bordo); white-space: nowrap; text-align: right; line-height: 1; }
+    .ws-preco small { display: block; font-family: 'Jost', sans-serif; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-light); margin-top: 0.2rem; }
+    .ws-preco.gratuito { font-size: 1rem; color: #2f6b41; font-family: 'Jost', sans-serif; letter-spacing: 0.06em; }
+    .ws-btn { display: block; margin-top: 1rem; width: 100%; text-align: center; }
+    .ws-btn-disabled { display: block; margin-top: 1rem; padding: 0.85rem; border-radius: 50px; background: rgba(139,0,33,0.06); color: var(--text-light); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; text-align: center; font-family: 'Jost', sans-serif; }
+    .ws-empty-state { text-align: center; padding: 4rem 1rem; }
+    .ws-empty-state svg { opacity: 0.3; margin: 0 auto 1.2rem; display: block; }
+    .ws-empty-state p { color: var(--text-light); font-size: 0.9rem; line-height: 1.7; }
+    .ws-empty-state a { color: var(--bordo); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1rem; display: inline-block; }
+
+    /* ── Primeira aula ── */
+    .primeira-aula { padding: 6rem; background: var(--warm-white); }
+    .pa-tabs { display: flex; gap: 0; margin-bottom: 2rem; border: 1.5px solid rgba(139,0,33,0.12); border-radius: 50px; overflow: hidden; width: fit-content; max-width: 100%; flex-wrap: wrap; }
+    .pa-tab { padding: 0.65rem 1.4rem; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; color: var(--text-light); background: none; border: none; border-right: 1.5px solid rgba(139,0,33,0.12); transition: all 0.3s; font-family: 'Jost', sans-serif; white-space: nowrap; }
+    .pa-tab:last-child { border-right: none; }
+    .pa-tab.active { background: var(--bordo); color: #fff; }
+    .pa-tab:not(.active):hover { background: var(--bordo-pale); color: var(--bordo); }
+    .pa-panel { display: none; }
+    .pa-panel.active { display: block; }
+    .pa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 1rem; }
+    .pa-item { background: var(--cream); border: 1px solid rgba(139,0,33,0.08); border-radius: 16px; padding: 1.1rem 1.2rem; display: flex; gap: 0.9rem; align-items: flex-start; transition: all 0.3s; border-left: 3px solid rgba(139,0,33,0.12); }
+    .pa-item.obrigatorio { border-left-color: var(--bordo); }
+    .pa-item:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+    .pa-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .pa-icon-vestuario{background:#f9e8e4;} .pa-icon-equipamento{background:#e4f0e8;}
+    .pa-icon-higiene{background:#e4eaf5;} .pa-icon-alimentacao{background:#f5f0e0;}
+    .pa-icon-documentos{background:#ede4f5;} .pa-icon-outros{background:var(--bordo-pale);}
+    .pa-body { flex: 1; min-width: 0; }
+    .pa-nome { font-size: 0.9rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.15rem; }
+    .pa-func { font-size: 0.76rem; color: var(--text-mid); line-height: 1.5; }
+    .pa-obs  { font-size: 0.7rem; color: var(--text-light); font-style: italic; margin-top: 0.3rem; }
+    .pa-badge { font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bordo); font-weight: 600; margin-top: 0.4rem; }
+    .pa-legenda { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid rgba(139,0,33,0.08); }
+    .pa-legenda-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; color: var(--text-light); }
+    .pa-legenda-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .pa-empty-state { text-align: center; padding: 3rem 1rem; }
+    .pa-empty-state svg { opacity: 0.3; margin: 0 auto 1rem; display: block; }
+    .pa-empty-state p { color: var(--text-light); font-size: 0.88rem; font-style: italic; line-height: 1.7; }
+
+    @media (max-width: 900px) {
+      .professoras, .workshops, .primeira-aula { padding: 4rem 1.5rem; }
+      .prof-grid { grid-template-columns: 1fr 1fr; }
+      .ws-grid { grid-template-columns: 1fr; }
+      .pa-tabs { border-radius: 16px; flex-direction: column; width: 100%; }
+      .pa-tab { border-right: none; border-bottom: 1.5px solid rgba(139,0,33,0.12); }
+      .pa-tab:last-child { border-bottom: none; }
+    }
+    @media (max-width: 600px) { .prof-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
-<nav>
-  <a href="{{ url_for('home') }}" class="nav-logo">
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
-    <div class="nav-brand">Clara Lucatti <span>Área da Professora</span></div>
-  </a>
-  <div class="nav-right">
-    <span class="nav-user">{{ user_name }}</span>
-    <button class="btn-logout" id="btnLogout">Sair</button>
-  </div>
-</nav>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
 
-<div class="tabs">
-  <button class="tab-btn active" data-tab="tabVisao">Visão geral</button>
-  <button class="tab-btn" data-tab="tabTurmas">Minhas turmas</button>
-  <button class="tab-btn" data-tab="tabAlunos">Alunos</button>
-  <button class="tab-btn" data-tab="tabAgenda">Agenda</button>
-  <button class="tab-btn" data-tab="tabReposicoes">Reposições <span class="badge" id="badgeReps">0</span></button>
-  <button class="tab-btn" data-tab="tabHistorico">Histórico</button>
-</div>
-
-<!-- ══ VISÃO GERAL ══ -->
-<div class="tab-panel active" id="tabVisao">
-  <div class="section-title">Olá, <em style="font-style:italic;color:var(--bordo);">{{ user_name.split()[0] }}</em></div>
-  <p class="section-sub">Aqui está um resumo da sua semana e das suas turmas ativas.</p>
-  <div class="kpi-strip" id="kpiStrip">
-    <div class="kpi-card"><div class="kpi-num" id="kTurmas">—</div><div class="kpi-label">Turmas ativas</div></div>
-    <div class="kpi-card"><div class="kpi-num" id="kAlunos">—</div><div class="kpi-label">Alunos no total</div><div class="kpi-sub" id="kAlunosSub"></div></div>
-    <div class="kpi-card"><div class="kpi-num" id="kImg">—</div><div class="kpi-label">Autorizam imagem</div></div>
-    <div class="kpi-card"><div class="kpi-num" id="kReps">—</div><div class="kpi-label">Reposições pendentes</div></div>
-  </div>
-  <div class="section-title" style="font-size:1.3rem;margin-bottom:1rem;">Próximas aulas desta semana</div>
-  <div class="agenda-grid" id="agendaVisao"></div>
-</div>
-
-<!-- ══ MINHAS TURMAS ══ -->
-<div class="tab-panel" id="tabTurmas">
-  <div class="section-title">Minhas turmas</div>
-  <p class="section-sub">Visualize a ocupação, veja os alunos e cancele aulas quando necessário. Cada cancelamento gera automaticamente uma reposição especial para cada aluno da turma.</p>
-  <div class="turmas-grid" id="turmasGrid"></div>
-</div>
-
-<!-- ══ ALUNOS ══ -->
-<div class="tab-panel" id="tabAlunos">
-  <div class="section-title">Todos os alunos</div>
-  <p class="section-sub">Alunos com ao menos uma turma sua. A bolinha verde indica autorização de uso de imagem.</p>
-  <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem;flex-wrap:wrap;">
-    <input id="buscaAluno" type="text" placeholder="Buscar por nome ou e-mail…" style="flex:1;min-width:200px;background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.55rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.86rem;color:var(--text-dark);outline:none;">
-    <select id="filtroImg" style="background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.55rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.84rem;color:var(--text-dark);outline:none;appearance:none;">
-      <option value="">Todos</option>
-      <option value="1">Autoriza imagem</option>
-      <option value="0">Não autoriza</option>
-    </select>
-  </div>
-  <div id="alunosGrid"></div>
-</div>
-
-<!-- ══ AGENDA ══ -->
-<div class="tab-panel" id="tabAgenda">
-  <div class="section-title">Agenda completa</div>
-  <p class="section-sub">Todas as suas aulas dos próximos 30 dias.</p>
-  <div class="agenda-grid" id="agendaFull"></div>
-</div>
-
-<!-- ══ REPOSIÇÕES ══ -->
-<div class="tab-panel" id="tabReposicoes">
-  <div class="section-title">Reposições geradas</div>
-  <p class="section-sub">Cada aula cancelada gera uma reposição especial para cada aluno. O aluno pode usar a reposição para se inscrever em qualquer aula disponível, inclusive fora do seu pacote.</p>
-  <div id="reposGrid" style="display:grid;gap:0.8rem;"></div>
-</div>
-
-<!-- ══ HISTÓRICO ══ -->
-<div class="tab-panel" id="tabHistorico">
-  <div class="section-title">Histórico de cancelamentos</div>
-  <p class="section-sub">Registro de todas as aulas que foram canceladas por você.</p>
-  <div class="hist-list" id="histGrid"></div>
-</div>
-
-<!-- MODAL: CANCELAR AULA -->
-<div class="modal-bg" id="modalCancelar">
-  <div class="modal">
-    <button class="modal-close" onclick="fecharModal('modalCancelar')">✕</button>
-    <div class="modal-title">Cancelar aula</div>
-    <div class="modal-sub" id="cancelarSub">Esta ação irá gerar uma reposição especial para cada aluno matriculado.</div>
-    <input type="hidden" id="cancelarIdTurma">
-    <input type="hidden" id="cancelarDataAula">
-    <div class="form-group">
-      <label>Data da aula a cancelar</label>
-      <input id="cancelarData" type="date">
+  <!-- ══ NAVBAR ══════════════════════════════════════════════ -->
+  <nav id="navbar">
+    <a href="#home" class="nav-logo" aria-label="Ir para o início">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Clara Lucatti" class="nav-logo-mark">
+      <div class="nav-brand">Clara Lucatti <span>Estúdio de Dança</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#sobre">Sobre</a></li>
+      {% if professoras %}<li><a href="#professoras">Professoras</a></li>{% endif %}
+      <li><a href="#modalidades">Modalidades</a></li>
+      <li><a href="#horarios">Horários</a></li>
+      <li><a href="#workshops">Workshops</a></li>
+      <li><a href="#primeira-aula">Primeira Aula</a></li>
+      <li><a href="#pacotes">Pacotes</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#contato" class="nav-cta">Aula experimental</a>
+      <a href="{{ url_for('login_page') }}" class="nav-cta nav-cta-outline">Entrar</a>
     </div>
-    <div class="form-group">
-      <label>Motivo do cancelamento</label>
-      <textarea id="cancelarMotivo" placeholder="Informe o motivo para registrar no histórico e notificar os alunos…"></textarea>
-    </div>
-    <div id="cancelarMsg"></div>
-    <div class="btn-row">
-      <button class="btn-primary" id="btnConfirmarCancelar">Confirmar cancelamento</button>
-      <button class="btn-secondary" onclick="fecharModal('modalCancelar')">Voltar</button>
-    </div>
-  </div>
-</div>
+  </nav>
 
-<!-- MODAL: LISTA COMPLETA ALUNOS DA TURMA -->
-<div class="modal-bg" id="modalAlunos">
-  <div class="modal">
-    <button class="modal-close" onclick="fecharModal('modalAlunos')">✕</button>
-    <div class="modal-title" id="modalAlunosTitle">Alunos da turma</div>
-    <div class="modal-sub" id="modalAlunosSub"></div>
-    <div id="modalAlunosList"></div>
-  </div>
-</div>
-
-<script>
-// ── estado ─────────────────────────────────────────────────────
-let _data = null;
-
-async function carregarDados() {
-  const r = await fetch('/professor/dados');
-  _data = await r.json();
-  renderTudo();
-}
-
-function renderTudo() {
-  if (!_data || !_data.ok) return;
-  const { turmas, reposicoes, historico } = _data;
-
-  // KPIs
-  const totalAlunos = [...new Set(turmas.flatMap(t => t.alunos.map(a => a.id_cadastro)))].length;
-  const totalImg    = turmas.flatMap(t => t.alunos).filter(a => a.termo_imagem).length;
-  const repsP       = reposicoes.filter(r => !r.usada).length;
-  document.getElementById('kTurmas').textContent  = turmas.length;
-  document.getElementById('kAlunos').textContent  = totalAlunos;
-  document.getElementById('kImg').textContent     = totalImg;
-  document.getElementById('kReps').textContent    = repsP;
-  document.getElementById('badgeReps').textContent = repsP;
-  if (!totalImg && totalAlunos)
-    document.getElementById('kAlunosSub').textContent = `${totalAlunos - totalImg} sem autorização`;
-
-  // Agenda visão geral (próximas 7 aulas)
-  const agendaItens = gerarAgenda(turmas, 7);
-  renderAgenda(agendaItens, 'agendaVisao');
-  renderAgenda(gerarAgenda(turmas, 30), 'agendaFull');
-
-  // Turmas
-  renderTurmas(turmas);
-
-  // Alunos
-  renderAlunos(turmas);
-
-  // Reposições
-  renderReposicoes(reposicoes);
-
-  // Histórico
-  renderHistorico(historico);
-}
-
-// ── AGENDA ─────────────────────────────────────────────────────
-function gerarAgenda(turmas, limite) {
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const DIAS = { 'seg':1,'segunda':1,'ter':2,'terça':2,'terca':2,'qua':3,'quarta':3,'qui':4,'quinta':4,'sex':5,'sexta':5,'sáb':6,'sab':6,'sabado':6 };
-  const itens = [];
-  turmas.forEach(t => {
-    const diasStr = (t.dias_semana || '').toLowerCase().split(/[,\s·]+/).filter(Boolean);
-    const diasNum = diasStr.map(d => DIAS[d.trim()]).filter(x => x !== undefined);
-    for (let offset = 0; offset < 60 && itens.length < limite * turmas.length; offset++) {
-      const d = new Date(hoje); d.setDate(hoje.getDate() + offset);
-      if (diasNum.includes(d.getDay())) {
-        itens.push({ data: new Date(d), turma: t });
-      }
-    }
-  });
-  itens.sort((a, b) => a.data - b.data || a.turma.hora_inicio.localeCompare(b.turma.hora_inicio));
-  return itens.slice(0, limite);
-}
-
-function renderAgenda(itens, elId) {
-  const el = document.getElementById(elId);
-  if (!itens.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhuma aula encontrada.</p>'; return; }
-  const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  el.innerHTML = itens.map(({ data, turma }) => {
-    const cap = turma.capacidade_maxima || 0;
-    const ocp = turma.alunos.length;
-    const pct = cap > 0 ? Math.min(Math.round(ocp/cap*100), 100) : 0;
-    return `<div class="agenda-item">
-      <div class="agenda-date">
-        <div class="agenda-dia">${data.getDate()}</div>
-        <div class="agenda-mes">${MESES[data.getMonth()]}</div>
+  <!-- ══ HERO ════════════════════════════════════════════════ -->
+  <section class="hero" id="home">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Estúdio de Dança & Pole</div>
+      <h1 class="hero-title">Mova-se com<br><em>força e expressão</em></h1>
+      <p class="hero-subtitle">
+        Um espaço para desenvolver técnica, presença, consciência corporal e confiança através da dança, do pole e da arte do movimento.
+      </p>
+      <div class="hero-actions">
+        <a href="#contato" class="btn-primary">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+          Agendar aula experimental
+        </a>
+        <a href="#pacotes" class="btn-secondary">Ver pacotes <span class="arrow">→</span></a>
       </div>
-      <div class="agenda-info">
-        <div class="agenda-nome">${turma.modalidade} · ${turma.sala}</div>
-        <div class="agenda-hora">${turma.hora_inicio} – ${turma.hora_fim}</div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-bg-shape"></div>
+      <svg class="hero-ornament" width="500" height="500" viewBox="0 0 500 500" aria-hidden="true">
+        <circle cx="250" cy="250" r="220" fill="none" stroke="#8B0021" stroke-width="1" stroke-dasharray="6 14"/>
+        <circle cx="250" cy="250" r="170" fill="none" stroke="#8B0021" stroke-width="0.5" stroke-dasharray="3 8"/>
+      </svg>
+      <div class="hero-logo-display">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logotipo do Estúdio de Dança Clara Lucatti">
       </div>
-      <div class="agenda-ocup">${ocp}${cap ? '/'+cap : ''} alunos${cap && pct >= 100 ? ' · lotada' : ''}</div>
-    </div>`;
-  }).join('');
-}
+      <div class="hero-quote">"Movimento, técnica e expressão em um só espaço"</div>
+    </div>
+    <div class="hero-scroll"><div class="scroll-line"></div><span>scroll</span></div>
+  </section>
 
-// ── TURMAS ─────────────────────────────────────────────────────
-function renderTurmas(turmas) {
-  const el = document.getElementById('turmasGrid');
-  if (!turmas.length) { el.innerHTML = '<p style="color:var(--text-light);">Nenhuma turma encontrada.</p>'; return; }
-  el.innerHTML = turmas.map(t => {
-    const cap = t.capacidade_maxima || 0;
-    const ocp = t.alunos.length;
-    const pct = cap > 0 ? Math.min(Math.round(ocp/cap*100), 100) : 0;
-    const fillClass = pct >= 100 ? 'cheio' : pct >= 75 ? 'quase' : '';
-    const chips = t.alunos.slice(0, 8).map(a =>
-      `<span class="aluno-chip"><span class="dot ${a.termo_imagem ? 'dot-img':'dot-noimg'}"></span>${a.nome_completo.split(' ')[0]}</span>`
-    ).join('') + (t.alunos.length > 8 ? `<span class="aluno-chip">+${t.alunos.length-8}</span>` : '');
-    return `<div class="turma-card">
-      <div class="turma-head">
+  <!-- ══ STRIP ═══════════════════════════════════════════════ -->
+  <div class="about-strip">
+    <div class="strip-item"><div class="strip-num">{{ stats.total_modalidades }}</div><div>Modalidades<br>na grade</div></div>
+    <div class="strip-dot"></div>
+    <div class="strip-item"><div class="strip-num">{{ stats.dias_ativos }}</div><div>Dias com<br>atividades</div></div>
+    <div class="strip-dot"></div>
+    <div class="strip-item"><div class="strip-num">{{ stats.total_turmas }}</div><div>Turmas<br>ativas</div></div>
+    <div class="strip-dot"></div>
+    <div class="strip-item"><div class="strip-num">{{ stats.total_pacotes }}</div><div>Planos<br>disponíveis</div></div>
+  </div>
+
+  <!-- ══ SOBRE ═══════════════════════════════════════════════ -->
+  <section class="sobre" id="sobre">
+    <div class="sobre-image-wrap reveal">
+      <div class="sobre-image-bg">
+        <div class="sobre-image-inner">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Clara Lucatti" style="width:55%; opacity:0.6;">
+        </div>
+      </div>
+      <div class="sobre-badge"><div class="num">+</div><div class="label">Movimento<br>com propósito</div></div>
+    </div>
+    <div class="sobre-text reveal reveal-delay-1">
+      <div class="section-label">Nossa proposta</div>
+      <h2 class="section-title">Mais que aula —<br><em>uma jornada corporal</em></h2>
+      <p>O estúdio é um espaço dedicado ao desenvolvimento técnico e expressivo de cada aluna. Aqui, o aprendizado acontece com acolhimento, progressão e respeito ao ritmo individual.</p>
+      <p>A proposta une pole, dança, musicalidade, presença e consciência corporal em uma rotina que fortalece o corpo e amplia a confiança em cena e na vida.</p>
+      <div class="sobre-signature">Clara Lucatti</div>
+    </div>
+  </section>
+
+  <!-- ══ PROFESSORAS ══════════════════════════════════════════ -->
+  {# MUDANÇA 1: professoras agora vêm via modalidade_professoras (múltiplas por modalidade)
+     A variável `professoras` continua existindo — o app.py já a monta via JOIN na nova tabela. #}
+  {% if professoras %}
+  <section class="professoras" id="professoras">
+    <div class="section-label reveal">Nossa equipe</div>
+    <h2 class="section-title reveal reveal-delay-1">Conheça as <em>professoras</em></h2>
+    <p style="color:var(--text-mid);font-size:0.96rem;line-height:1.85;margin-bottom:2.4rem;max-width:640px;" class="reveal reveal-delay-2">
+      Profissionais apaixonadas pelo movimento que conduzem cada turma com técnica, cuidado e presença.
+    </p>
+    <div class="prof-grid">
+      {% for prof in professoras %}
+      <article class="prof-card reveal">
+        <div class="prof-img-wrap">
+          {# MUDANÇA 1: foto vem de modalidade_professoras.foto_professora
+             (campo `foto_professora` no objeto prof, com `slug` da primeira modalidade) #}
+          {% if prof.foto_professora and prof.slug %}
+            <img src="{{ url_for('static', filename='modalidades/' ~ prof.slug ~ '/professoras/' ~ prof.id_cadastro|string ~ '/' ~ prof.foto_professora) }}"
+                 alt="{{ prof.nome_completo }}"
+                 onerror="this.parentElement.innerHTML='<div class=\'no-photo\'><svg width=\'52\' height=\'52\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#8B0021\' stroke-width=\'1\'><circle cx=\'12\' cy=\'7\' r=\'4\'/><path d=\'M4 21c0-4 3.6-7 8-7s8 3 8 7\'/></svg></div>'">
+          {% else %}
+            <div class="no-photo">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            </div>
+          {% endif %}
+        </div>
+        <div class="prof-body">
+          <div class="prof-nome">{{ prof.nome_completo }}</div>
+          <div class="prof-tipo">PROFESSORA</div>
+          {% if prof.modalidades %}
+          <div class="prof-mods">{% for m in prof.modalidades %}<span class="prof-mod-tag">{{ m }}</span>{% endfor %}</div>
+          {% endif %}
+          {% if prof.instagram %}
+          <a class="prof-insta" href="https://instagram.com/{{ prof.instagram | replace('@','') }}" target="_blank" rel="noopener">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+            {{ prof.instagram }}
+          </a>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ══ MODALIDADES ══════════════════════════════════════════ -->
+  <section class="modalidades" id="modalidades">
+    <div class="section-label reveal">O que ensinamos</div>
+    <h2 class="section-title reveal reveal-delay-1">Modalidades que<br><em>desenvolvem técnica e expressão</em></h2>
+    <div class="modal-grid">
+      {% for m in modalidades %}
+      <article class="modal-card reveal">
+
+        {# MUDANÇA 1: capa pode ser imagem OU vídeo (foto_capa vem da tabela modalidades) #}
+        <div class="modal-card-img-wrap" onclick="abrirGaleria({{ m.id_modalidade }})">
+          {% set ext = m.foto_capa.rsplit('.',1)[-1].lower() if m.foto_capa else '' %}
+          {% if m.foto_capa and ext in ['mp4','mov','webm'] and m.slug %}
+            {# vídeo de capa #}
+            <video src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/' ~ m.foto_capa) }}"
+                   autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+            {% if m.galeria %}<div class="modal-card-img-overlay"><span>Ver galeria →</span></div>{% endif %}
+          {% elif m.foto_capa and m.slug %}
+            {# imagem de capa #}
+            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/' ~ m.foto_capa) }}" alt="{{ m.titulo }}">
+            {% if m.galeria %}<div class="modal-card-img-overlay"><span>Ver fotos →</span></div>{% endif %}
+          {% elif m.galeria and m.slug %}
+            {# fallback: primeira imagem da galeria #}
+            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ m.galeria[0]) }}" alt="{{ m.titulo }}">
+            <div class="modal-card-img-overlay"><span>Ver fotos →</span></div>
+          {% else %}
+            <div class="no-img">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="modal-icon" style="display:none;"></div>
+        <div class="modal-name">{{ m.titulo }}</div>
+        <p class="modal-desc">{{ m.resumo or (m.descricao[:110] ~ '…' if m.descricao and m.descricao|length > 110 else m.descricao) or 'Modalidade disponível no estúdio.' }}</p>
+        {% if m.nivel %}<span class="modal-tag">{{ m.nivel }}</span>{% endif %}
+
+        {# MUDANÇA 1: exibe todas as professoras da modalidade, não só a responsável #}
+        {% if m.professoras %}
+        <div class="modal-profs-row">
+          {% for p in m.professoras %}
+          <span class="modal-prof-tag">{{ p.nome_completo.split()[0] }}</span>
+          {% endfor %}
+        </div>
+        {% elif m.responsavel_nome %}
+        <span class="modal-tag" style="background:#e6f0f5;color:#005577;margin-left:0.3rem;">{{ m.responsavel_nome.split()[0] }}</span>
+        {% endif %}
+
+        <button class="modal-more-btn" type="button" aria-expanded="false" data-id="{{ m.id_modalidade }}">Saber mais</button>
+        <div class="modal-more-content" id="more-{{ m.id_modalidade }}" hidden>
+          {% if m.descricao and m.descricao != m.resumo %}<p>{{ m.descricao }}</p>{% endif %}
+
+          {# MUDANÇA 1: galeria suporta vídeos (mp4/mov/webm) além de imagens #}
+          {% if m.galeria and m.slug %}
+          <div class="modal-gallery" style="margin-top:0.8rem;">
+            {% for arquivo in m.galeria[:6] %}
+              {% set ext_gal = arquivo.rsplit('.',1)[-1].lower() %}
+              {% if ext_gal in ['mp4','mov','webm'] %}
+              <video src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ arquivo) }}"
+                     muted loop playsinline
+                     style="width:100%;height:72px;object-fit:cover;border-radius:8px;cursor:pointer;"
+                     onclick="abrirLightboxVideo('{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ arquivo) }}')">
+              </video>
+              {% else %}
+              <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ arquivo) }}"
+                   alt="{{ m.titulo }}"
+                   onclick="abrirLightbox('{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ arquivo) }}', {{ loop.index0 }}, {{ m.id_modalidade }})">
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+      {% if not modalidades %}
+      <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-light);">
+        <p>Modalidades em breve. Cadastre no painel administrativo.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ══ LIGHTBOX ════════════════════════════════════════════ -->
+  <div class="lightbox" id="lightbox" onclick="fecharLightbox()">
+    <button class="lightbox-close" onclick="fecharLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation();navLightbox(-1)">‹</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+    <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation();navLightbox(1)">›</button>
+  </div>
+
+  <!-- ══ HORÁRIOS ════════════════════════════════════════════ -->
+  {# CORREÇÃO: adicionado 'Sábado' na lista de dias #}
+  <section class="horarios" id="horarios">
+    <div class="section-label reveal">Grade semanal</div>
+    <h2 class="section-title reveal reveal-delay-1">Horários das <em>aulas</em></h2>
+    <div class="schedule-grid reveal reveal-delay-2">
+      {% set dias_semana = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'] %}
+      {% for dia in dias_semana %}
+      <div class="schedule-day">
+        <div class="day-name">{{ dia }}</div>
+
+        {% set aulas_do_dia = [] %}
+        {% for t in turmas %}
+          {# Normaliza tanto "Sábado" quanto "Sab"/"sáb" etc. #}
+          {% set dias_lower = t.dias_semana | lower %}
+          {% set dia3 = dia[:3].lower() %}
+          {# "Sábado" vira "sáb" nos 3 chars — normaliza acentos manualmente #}
+          {% set dia3_norm = dia3.replace('á','a').replace('é','e').replace('ê','e') %}
+          {% set dias_norm = dias_lower.replace('á','a').replace('é','e').replace('ê','e') %}
+          {% if dia3_norm in dias_norm or dia.lower() in dias_lower %}
+            {% set _ = aulas_do_dia.append(t) %}
+          {% endif %}
+        {% endfor %}
+
+        {% if aulas_do_dia %}
+          {% set horarios_vistos = [] %}
+          {% for aula in aulas_do_dia | sort(attribute='hora_inicio') %}
+            {% set chave = aula.hora_inicio ~ '-' ~ aula.hora_fim %}
+            {% if chave not in horarios_vistos %}
+              {% set _ = horarios_vistos.append(chave) %}
+
+              {% set grupo = [] %}
+              {% for a2 in aulas_do_dia %}
+                {% if a2.hora_inicio ~ '-' ~ a2.hora_fim == chave %}
+                  {% set _ = grupo.append(a2) %}
+                {% endif %}
+              {% endfor %}
+
+              <div class="schedule-row">
+                <div class="schedule-row-classes">
+                  {% for a in grupo %}
+                  <div class="class-item">
+                    <div class="class-time">{{ a.hora_inicio }}{% if a.hora_fim %} – {{ a.hora_fim }}{% endif %}</div>
+                    <div class="class-name">{{ a.modalidade }}</div>
+                    {# MUDANÇA 1: professora vem de turmas.id_professora (já resolvido no app.py) #}
+                    {% if a.professora %}<div class="class-level">{{ a.professora }}</div>{% endif %}
+                    <span class="class-sala">{{ a.sala }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p class="schedule-empty">Sem aulas</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ══ WORKSHOPS ═══════════════════════════════════════════ -->
+  <section class="workshops" id="workshops">
+    <div class="section-label reveal">Eventos especiais</div>
+    <h2 class="section-title reveal reveal-delay-1">Workshops e <em>imersões</em></h2>
+    <p style="color:var(--text-mid);font-size:0.96rem;line-height:1.85;max-width:620px;" class="reveal reveal-delay-2">
+      Experiências intensivas com foco em técnica, expressão e novos repertórios. Vagas limitadas — inscreva-se com antecedência.
+    </p>
+
+    {% if workshops %}
+    <div class="ws-grid">
+      {% for w in workshops %}
+      <article class="ws-card reveal">
+        <div class="ws-img-wrap">
+          {% if w.imagem_capa %}
+            <img src="{{ url_for('static', filename='workshops/' ~ w.imagem_capa) }}"
+                 alt="{{ w.nome }}"
+                 onerror="this.parentElement.querySelector('.no-img').style.display='flex';this.style.display='none'">
+          {% endif %}
+          <div class="no-img" {% if w.imagem_capa %}style="display:none"{% endif %}>
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1">
+              <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+          </div>
+          <div class="ws-img-overlay">
+            {% if w.lotado %}<span class="ws-vagas-pill esgotado">Esgotado</span>
+            {% elif w.vagas_restantes is not none %}<span class="ws-vagas-pill">{{ w.vagas_restantes }} vaga{{ 's' if w.vagas_restantes != 1 else '' }}</span>
+            {% else %}<span class="ws-vagas-pill">Vagas disponíveis</span>{% endif %}
+          </div>
+        </div>
+        <div class="ws-body">
+          <div class="ws-meta">
+            {% if w.modalidade_nome %}<span class="ws-tag">{{ w.modalidade_nome }}</span>{% endif %}
+            {% if w.instrutor_nome %}<span class="ws-tag ws-tag-instr">{{ w.instrutor_nome.split()[0] }}</span>{% endif %}
+          </div>
+          <div class="ws-nome">{{ w.nome }}</div>
+          {% if w.descricao %}<p class="ws-desc">{{ w.descricao }}</p>{% endif %}
+          <div class="ws-footer">
+            <div>
+              {% if w.data_workshop %}<div class="ws-datetime">📅 {{ w.data_workshop }}{% if w.hora_inicio %} · {{ w.hora_inicio }}{% if w.hora_fim %} – {{ w.hora_fim }}{% endif %}{% endif %}</div>{% endif %}
+              {% if w.sala_nome %}<div class="ws-local">📍 {{ w.sala_nome }}</div>{% endif %}
+            </div>
+            <div>
+              {% if w.valor > 0 %}<div class="ws-preco">R$ {{ '%.0f'|format(w.valor) }}<small>por pessoa</small></div>
+              {% else %}<div class="ws-preco gratuito">Gratuito</div>{% endif %}
+            </div>
+          </div>
+          {% if w.lotado %}<span class="ws-btn-disabled">Esgotado</span>
+          {% else %}<a href="#contato" class="btn-primary ws-btn" onclick="escolherWorkshop('{{ w.nome }}')">Quero participar →</a>{% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="ws-empty-state reveal">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <p>Nenhum workshop agendado no momento.<br>Em breve novas datas serão divulgadas.</p>
+      <a href="#contato">Avise-me quando houver →</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ══ PRIMEIRA AULA ════════════════════════════════════════ -->
+  <section class="primeira-aula" id="primeira-aula">
+    <div class="section-label reveal">Prepare-se</div>
+    <h2 class="section-title reveal reveal-delay-1">O que levar na <em>primeira aula</em></h2>
+    <p style="color:var(--text-mid);font-size:0.96rem;line-height:1.85;margin-bottom:2rem;max-width:620px;" class="reveal reveal-delay-2">
+      Tudo que você precisa saber antes de chegar ao estúdio. Selecione a modalidade para ver a lista completa.
+    </p>
+
+    {% if primeira_aula_list %}
+    <div class="pa-tabs reveal">
+      {% for pa in primeira_aula_list %}
+      <button class="pa-tab {% if loop.first %}active{% endif %}"
+              data-target="pa-{{ pa.id_modalidade }}" type="button">{{ pa.titulo }}</button>
+      {% endfor %}
+    </div>
+    {% for pa in primeira_aula_list %}
+    <div class="pa-panel {% if loop.first %}active{% endif %}" id="pa-{{ pa.id_modalidade }}">
+      <div class="pa-grid">
+        {% for item in pa.itens %}
+        <div class="pa-item {% if item.obrigatorio %}obrigatorio{% endif %} reveal">
+          <div class="pa-icon pa-icon-{{ item.categoria }}">
+            {%- if item.categoria=='vestuario' -%}👗{%- elif item.categoria=='equipamento' -%}🎽{%- elif item.categoria=='higiene' -%}🧴{%- elif item.categoria=='alimentacao' -%}🍎{%- elif item.categoria=='documentos' -%}📄{%- else -%}📦{%- endif -%}
+          </div>
+          <div class="pa-body">
+            <div class="pa-nome">{{ item.nome }}</div>
+            {% if item.funcao %}<div class="pa-func">{{ item.funcao }}</div>{% endif %}
+            {% if item.observacao %}<div class="pa-obs">{{ item.observacao }}</div>{% endif %}
+            {% if item.obrigatorio %}<div class="pa-badge">✦ Obrigatório</div>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="pa-legenda">
+        <div class="pa-legenda-item"><div class="pa-legenda-dot" style="background:var(--bordo);"></div>Item obrigatório</div>
+        <div class="pa-legenda-item"><div class="pa-legenda-dot" style="background:rgba(139,0,33,0.18);border:1px solid rgba(139,0,33,0.25);"></div>Item recomendado</div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="pa-empty-state reveal">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <p>As listas de itens por modalidade serão exibidas aqui.<br>Cadastre os itens no painel administrativo.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ══ PACOTES ══════════════════════════════════════════════ -->
+  <section class="pacotes" id="pacotes">
+    <div class="section-label reveal">Planos e valores</div>
+    <h2 class="section-title reveal reveal-delay-1">Pacotes para sua<br><em>rotina de movimento</em></h2>
+    <p class="pacotes-intro reveal reveal-delay-2">
+      Escolha o plano que combina com seu ritmo e objetivo. Pagamento via PIX — envie o comprovante pelo WhatsApp para ativar sua matrícula.
+    </p>
+    <div class="pacotes-grid">
+      {% for p in pacotes %}
+      <article class="pacote-card reveal {% if loop.index == 2 %}destaque{% endif %}">
+        <div class="pacote-badge">
+          {% if loop.index == 1 %}Entrada{% elif loop.index == 2 %}Mais escolhido{% elif p.tipo_cobranca == 'semestral' %}Semestral{% else %}{{ p.aulas_por_semana }}x/semana{% endif %}
+        </div>
+        <h3 class="pacote-nome">{{ p.nome }}</h3>
+        <div class="pacote-preco">R$ {{ '%.0f'|format(p.valor) }}<span>/{{ 'mês' if p.tipo_cobranca == 'mensal' else 'semestre' }}</span></div>
+        {% if p.observacao %}<p class="pacote-desc">{{ p.observacao }}</p>{% endif %}
+        <ul class="pacote-lista">
+          <li>{{ p.aulas_por_semana }} aula{{ 's' if p.aulas_por_semana != 1 else '' }} por semana</li>
+          <li>{{ p.qt_modalidades }} modalidade{{ 's' if p.qt_modalidades != 1 else '' }}</li>
+          <li>Pagamento mensal via PIX</li>
+          <li>Turmas fixas semanais</li>
+        </ul>
+        {% if p.modalidades_nomes %}
+        <div class="pacote-mods">{% for mn in p.modalidades_nomes %}<span class="pacote-mod-tag">{{ mn }}</span>{% endfor %}</div>
+        {% endif %}
+        <a href="#contato" class="btn-primary pacote-btn" onclick="escolherPacote('{{ p.nome }}')">Quero esse</a>
+      </article>
+      {% endfor %}
+      {% if not pacotes %}
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-light);">
+        <p>Pacotes em breve. Cadastre no painel administrativo.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ══ CONTATO ══════════════════════════════════════════════ -->
+  <section class="contato" id="contato">
+    <div class="reveal">
+      <div class="section-label">Venha experimentar</div>
+      <h2 class="section-title">Agende sua aula<br><em>e conheça o estúdio</em></h2>
+      <p style="color:var(--text-mid);line-height:1.8;margin-bottom:2rem;font-size:0.95rem;max-width:380px">
+        Escolha a modalidade, agende sua aula experimental e entre em contato pelo WhatsApp. Após o pagamento simbólico, sua vaga fica garantida.
+      </p>
+      <div class="contact-item">
+        <div class="contact-icon">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498A1 1 0 0121 15.72V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+        </div>
         <div>
-          <div class="turma-nome">${t.nome_exibicao || (t.modalidade + ' · ' + t.sala)}</div>
-          <div class="turma-meta">${t.dias_semana} · ${t.hora_inicio} às ${t.hora_fim} · ${t.sala}</div>
-        </div>
-        <div class="turma-badges">
-          <span class="badge badge-blue">${t.modalidade}</span>
-          ${cap > 0 ? `<span class="badge ${pct>=100?'badge-red':pct>=75?'badge-amber':'badge-green'}">${ocp}/${cap}</span>` : `<span class="badge badge-gray">${ocp} alunos</span>`}
+          <div class="contact-label">WhatsApp · PIX</div>
+          <div class="contact-value">(34) 99834-8127</div>
         </div>
       </div>
-      <div class="turma-body">
-        ${cap > 0 ? `<div class="ocup-row"><span class="ocup-label">Ocupação</span><div class="ocup-bar"><div class="ocup-fill ${fillClass}" style="width:${pct}%;"></div></div><span class="ocup-val">${pct}%</span></div>` : ''}
-        <div class="alunos-inline">${chips || '<span style="font-size:0.8rem;color:var(--text-light);">Nenhum aluno alocado</span>'}</div>
-        <div class="turma-actions">
-          <button class="btn-sm primary" onclick="abrirModalAlunos(${t.id_turma})">Ver todos os alunos</button>
-          <button class="btn-sm danger" onclick="abrirCancelar(${t.id_turma}, '${(t.nome_exibicao || t.modalidade).replace(/'/g,"\\'")}')">Cancelar aula</button>
+      <div class="contact-item">
+        <div class="contact-icon">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <div class="contact-label">E-mail</div>
+          <div class="contact-value">contato@claralucatti.com.br</div>
         </div>
       </div>
-    </div>`;
-  }).join('');
-}
+      <a class="wpp-cta" href="https://wa.me/5534998348127?text=Olá!%20Tenho%20interesse%20em%20uma%20aula%20experimental." target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Falar no WhatsApp
+      </a>
+      <div class="social-links" style="margin-top:1.5rem;">
+        <a href="#" class="social-link" title="Instagram" aria-label="Instagram">IG</a>
+        <a href="#" class="social-link" title="Facebook" aria-label="Facebook">FB</a>
+        <a href="#" class="social-link" title="YouTube" aria-label="YouTube">YT</a>
+      </div>
+    </div>
 
-// ── ALUNOS ─────────────────────────────────────────────────────
-function renderAlunos(turmas, busca = '', filtroImg = '') {
-  const el = document.getElementById('alunosGrid');
-  const seen = new Set();
-  const alunos = [];
-  turmas.forEach(t => t.alunos.forEach(a => {
-    if (!seen.has(a.id_cadastro)) {
-      seen.add(a.id_cadastro);
-      alunos.push({ ...a, turmas: [t.modalidade] });
-    } else {
-      const ex = alunos.find(x => x.id_cadastro === a.id_cadastro);
-      if (ex && !ex.turmas.includes(t.modalidade)) ex.turmas.push(t.modalidade);
+    <form class="contato-form reveal reveal-delay-1" id="mainForm">
+      <div class="form-tabs">
+        <button type="button" class="form-tab active" data-panel="panelExp">🎯 Aula experimental</button>
+        <button type="button" class="form-tab" data-panel="panelMsg">💬 Mensagem</button>
+      </div>
+
+      <!-- AULA EXPERIMENTAL -->
+      <div class="form-panel active" id="panelExp">
+        <div class="form-success" id="successExp">
+          ✓ Solicitação enviada! Entraremos em contato pelo WhatsApp em breve.
+          <br><a class="wpp-cta" style="margin-top:0.7rem;display:inline-flex;" id="wppAutoLink" href="https://wa.me/5534998348127" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Enviar comprovante pelo WhatsApp
+          </a>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="exp-nome">Nome</label><input id="exp-nome" name="nome" type="text" placeholder="Seu nome completo" required></div>
+          <div class="form-group"><label for="exp-tel">WhatsApp</label><input id="exp-tel" name="telefone" type="tel" placeholder="(34) 99999-0000" required></div>
+        </div>
+        <div class="form-group"><label for="exp-email">E-mail</label><input id="exp-email" name="email" type="email" placeholder="seu@email.com" required></div>
+        <div class="form-group">
+          <label for="exp-modal">Modalidade de interesse</label>
+          <select id="exp-modal" name="modalidade" required>
+            <option value="" disabled selected>Escolha uma modalidade</option>
+            {% for m in modalidades %}<option value="{{ m.titulo }}">{{ m.titulo }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label for="exp-horario">Melhor horário</label><input id="exp-horario" name="horario_preferido" type="text" placeholder="Ex.: Noites de segunda ou terça manhã"></div>
+        <div class="form-group"><label for="exp-msg">Mensagem</label><textarea id="exp-msg" name="mensagem" placeholder="Conte sobre você, sua experiência ou qualquer dúvida…"></textarea></div>
+        <div class="form-hint">
+          Após enviar, entraremos em contato pelo WhatsApp para confirmar o horário e o valor da aula experimental. Chave PIX: <strong>(34) 99834-8127</strong>
+        </div>
+        <button type="button" id="btnEnviarExp" class="btn-primary" style="width:100%;justify-content:center;margin-top:1rem;">
+          Solicitar aula experimental →
+        </button>
+      </div>
+
+      <!-- MENSAGEM GERAL -->
+      <div class="form-panel" id="panelMsg">
+        <div class="form-success" id="successMsg">✓ Mensagem enviada! Retornaremos em breve.</div>
+        <div class="form-row">
+          <div class="form-group"><label for="msg-nome">Nome</label><input id="msg-nome" name="nome" type="text" placeholder="Seu nome" required></div>
+          <div class="form-group"><label for="msg-tel">Telefone</label><input id="msg-tel" name="telefone" type="tel" placeholder="(34) 99999-0000" required></div>
+        </div>
+        <div class="form-group"><label for="msg-email">E-mail</label><input id="msg-email" name="email" type="email" placeholder="seu@email.com" required></div>
+        <div class="form-group">
+          <label for="msg-assunto">Assunto</label>
+          <select id="msg-assunto" name="modalidade">
+            <option value="">Selecione</option>
+            <option>Pacotes e valores</option><option>Horários</option>
+            {% for m in modalidades %}<option value="{{ m.titulo }}">{{ m.titulo }}</option>{% endfor %}
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="msg-texto">Mensagem</label><textarea id="msg-texto" name="mensagem" placeholder="Como podemos ajudar?" required></textarea></div>
+        <button type="button" id="btnEnviarMsg" class="btn-primary" style="width:100%;justify-content:center;border:none;font-size:0.82rem;padding:1.1rem">
+          Enviar mensagem →
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <footer>
+    <div>
+      <div class="footer-brand">Clara Lucatti · Estúdio de Dança</div>
+      <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:0.3rem;letter-spacing:0.08em">Pole, dança, técnica e expressão</div>
+    </div>
+    <div class="footer-copy">© 2026 Clara Lucatti. Todos os direitos reservados.</div>
+  </footer>
+
+  <script>const GALERIA_DATA = {{ galeria_data | tojson }};</script>
+
+  <script>
+    // ── Cursor ────────────────────────────────────────────────
+    if (window.matchMedia('(pointer: fine)').matches) {
+      const cur = document.getElementById('cursor');
+      const ring = document.getElementById('cursorRing');
+      document.addEventListener('mousemove', e => {
+        cur.style.left = e.clientX+'px'; cur.style.top = e.clientY+'px';
+        setTimeout(() => { ring.style.left = e.clientX+'px'; ring.style.top = e.clientY+'px'; }, 80);
+      });
+      document.querySelectorAll('a, button, input, select, textarea').forEach(el => {
+        el.addEventListener('mouseenter', () => { cur.style.transform='translate(-50%,-50%) scale(2.5)'; ring.style.transform='translate(-50%,-50%) scale(1.5)'; });
+        el.addEventListener('mouseleave', () => { cur.style.transform='translate(-50%,-50%) scale(1)';   ring.style.transform='translate(-50%,-50%) scale(1)'; });
+      });
     }
-  }));
 
-  const filtrados = alunos.filter(a => {
-    const b = busca.toLowerCase();
-    const nOk = !b || a.nome_completo.toLowerCase().includes(b) || (a.email||'').toLowerCase().includes(b);
-    const iOk = filtroImg === '' || String(a.termo_imagem ? 1 : 0) === filtroImg;
-    return nOk && iOk;
-  });
+    // ── Navbar scroll ─────────────────────────────────────────
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+    });
 
-  if (!filtrados.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhum aluno encontrado.</p>'; return; }
+    // ── Reveal ───────────────────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  el.innerHTML = `<div style="background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);">` +
-    filtrados.map((a, i) => {
-      const ini = a.nome_completo.split(' ').slice(0,2).map(p=>p[0].toUpperCase()).join('');
-      return `<div class="aluno-row-full" style="padding:0.9rem 1.4rem;${i===0?'border-top:none;':''}">
-        <div class="ava">${ini}</div>
-        <div class="aluno-info">
-          <div class="aluno-nome">${a.nome_completo}</div>
-          <div class="aluno-det">${a.email || ''} · ${a.turmas.join(', ')}</div>
-        </div>
-        <span class="img-tag ${a.termo_imagem ? 'badge-green':'badge-amber'}">${a.termo_imagem ? '✓ Imagem' : '✗ S/ imagem'}</span>
-      </div>`;
-    }).join('') + `</div>`;
-}
+    // ── Saber mais (modalidades) ──────────────────────────────
+    document.querySelectorAll('.modal-more-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const content = document.getElementById('more-' + id);
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!expanded));
+        content.hidden = expanded;
+        btn.textContent = expanded ? 'Saber mais' : 'Mostrar menos';
+      });
+    });
 
-document.getElementById('buscaAluno').addEventListener('input', () =>
-  renderAlunos(_data?.turmas || [], document.getElementById('buscaAluno').value, document.getElementById('filtroImg').value));
-document.getElementById('filtroImg').addEventListener('change', () =>
-  renderAlunos(_data?.turmas || [], document.getElementById('buscaAluno').value, document.getElementById('filtroImg').value));
+    // ── Lightbox (imagens) ────────────────────────────────────
+    let _lbImgs = [], _lbIdx = 0;
+    function abrirGaleria(idMod) {
+      const imgs = (GALERIA_DATA[idMod] || []).filter(s => !/\.(mp4|mov|webm)$/i.test(s));
+      if (!imgs.length) return;
+      _lbImgs = imgs; _lbIdx = 0;
+      document.getElementById('lightboxImg').src = imgs[0];
+      document.getElementById('lightbox').classList.add('open');
+    }
+    function abrirLightbox(src, idx, idMod) {
+      const imgs = (GALERIA_DATA[idMod] || [src]).filter(s => !/\.(mp4|mov|webm)$/i.test(s));
+      _lbImgs = imgs.length ? imgs : [src];
+      _lbIdx  = Math.min(idx, _lbImgs.length - 1);
+      document.getElementById('lightboxImg').src = _lbImgs[_lbIdx];
+      document.getElementById('lightbox').classList.add('open');
+    }
+    // MUDANÇA 1: abre vídeos inline (não no lightbox de imagens)
+    function abrirLightboxVideo(src) {
+      // abre o vídeo em nova aba para não conflitar com o lightbox de imagens
+      window.open(src, '_blank');
+    }
+    function fecharLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+    function navLightbox(dir) {
+      if (!_lbImgs.length) return;
+      _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+      document.getElementById('lightboxImg').src = _lbImgs[_lbIdx];
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape')     fecharLightbox();
+      if (e.key === 'ArrowRight') navLightbox(1);
+      if (e.key === 'ArrowLeft')  navLightbox(-1);
+    });
 
-// ── REPOSIÇÕES ────────────────────────────────────────────────
-function renderReposicoes(repos) {
-  const el = document.getElementById('reposGrid');
-  if (!repos.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhuma reposição gerada ainda.</p>'; return; }
-  el.innerHTML = repos.map(r => `
-    <div class="repos-card">
-      <div class="repos-info">
-        <div class="repos-aluno">${r.aluno_nome}</div>
-        <div class="repos-det">Turma cancelada: ${r.turma_nome} · ${r.data_aula} · ${r.motivo || 'sem motivo informado'}</div>
-      </div>
-      <span class="repos-status ${r.usada ? 'repos-usada':'repos-pendente'}">${r.usada ? 'Usada':'Pendente'}</span>
-    </div>`).join('');
-}
+    // ── Tabs do formulário de contato ─────────────────────────
+    document.querySelectorAll('.form-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.form-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.panel).classList.add('active');
+      });
+    });
 
-// ── HISTÓRICO ─────────────────────────────────────────────────
-function renderHistorico(hist) {
-  const el = document.getElementById('histGrid');
-  if (!hist.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:0.86rem;">Nenhum cancelamento registrado.</p>'; return; }
-  el.innerHTML = hist.map(h => `
-    <div class="hist-item">
-      <div class="hist-icon cancel">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 15l6-6M15 15l-6-6"/></svg>
-      </div>
-      <div class="hist-body">
-        <div class="hist-title">${h.turma_nome} · ${h.data_aula}</div>
-        <div class="hist-meta">${h.motivo || 'Motivo não informado'} · ${h.alunos_afetados} aluno(s) afetados · ${h.cancelado_em}</div>
-      </div>
-    </div>`).join('');
-}
+    // ── Tabs da primeira aula ─────────────────────────────────
+    document.querySelectorAll('.pa-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pa-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.pa-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const target = document.getElementById(btn.dataset.target);
+        if (target) target.classList.add('active');
+      });
+    });
 
-// ── MODAL CANCELAR ────────────────────────────────────────────
-function abrirCancelar(idTurma, nome) {
-  document.getElementById('cancelarIdTurma').value = idTurma;
-  document.getElementById('cancelarSub').textContent = `${nome} — cada aluno matriculado receberá uma reposição especial.`;
-  document.getElementById('cancelarData').value = new Date().toISOString().split('T')[0];
-  document.getElementById('cancelarMotivo').value = '';
-  document.getElementById('cancelarMsg').innerHTML = '';
-  abrirModal('modalCancelar');
-}
+    // ── Escolher pacote / workshop ────────────────────────────
+    function escolherPacote(nome) {
+      document.querySelector('[data-panel="panelExp"]').click();
+      document.getElementById('contato').scrollIntoView({ behavior: 'smooth' });
+    }
+    function escolherWorkshop(nomeWs) {
+      document.querySelector('[data-panel="panelExp"]').click();
+      const sel = document.getElementById('exp-modal');
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value && nomeWs.toLowerCase().includes(sel.options[i].value.toLowerCase())) { sel.selectedIndex = i; break; }
+      }
+      const msgEl = document.getElementById('exp-msg');
+      if (msgEl && !msgEl.value) msgEl.value = 'Tenho interesse no workshop: ' + nomeWs;
+      document.getElementById('contato').scrollIntoView({ behavior: 'smooth' });
+    }
 
-document.getElementById('btnConfirmarCancelar').addEventListener('click', async () => {
-  const id    = document.getElementById('cancelarIdTurma').value;
-  const data  = document.getElementById('cancelarData').value;
-  const motivo= document.getElementById('cancelarMotivo').value.trim();
-  const msgEl = document.getElementById('cancelarMsg');
-  if (!data)   { msgEl.innerHTML = '<div class="msg msg-err">Informe a data da aula.</div>'; return; }
-  if (!motivo) { msgEl.innerHTML = '<div class="msg msg-warn">Recomendamos informar o motivo.</div>'; }
-  const r = await fetch('/professor/cancelar-aula', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ id_turma: id, data_aula: data, motivo })
-  });
-  const d = await r.json();
-  msgEl.innerHTML = `<div class="msg ${d.ok?'msg-ok':'msg-err'}">${d.mensagem}</div>`;
-  if (d.ok) { setTimeout(() => { fecharModal('modalCancelar'); carregarDados(); }, 1200); }
-});
+    // ── Enviar aula experimental ──────────────────────────────
+    document.getElementById('btnEnviarExp').addEventListener('click', async () => {
+      const nome  = document.getElementById('exp-nome').value.trim();
+      const tel   = document.getElementById('exp-tel').value.trim();
+      const email = document.getElementById('exp-email').value.trim();
+      const modal = document.getElementById('exp-modal').value;
+      if (!nome || !tel || !email || !modal) { alert('Preencha nome, WhatsApp, e-mail e modalidade.'); return; }
+      const btn = document.getElementById('btnEnviarExp');
+      btn.textContent = 'Enviando…'; btn.disabled = true;
+      const fd = new FormData();
+      fd.append('nome', nome); fd.append('telefone', tel); fd.append('email', email);
+      fd.append('modalidade', modal);
+      fd.append('horario_preferido', document.getElementById('exp-horario').value);
+      fd.append('mensagem', document.getElementById('exp-msg').value);
+      try {
+        const r = await fetch('/solicitar-aula-experimental', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          document.getElementById('successExp').style.display = 'block';
+          const txt = encodeURIComponent(`Olá! Sou ${nome} e solicitei uma aula experimental de ${modal} pelo site. Gostaria de confirmar o horário e enviar o comprovante.`);
+          document.getElementById('wppAutoLink').href = `https://wa.me/5534998348127?text=${txt}`;
+          btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false;
+          setTimeout(() => window.open(`https://wa.me/5534998348127?text=${txt}`, '_blank'), 800);
+        } else {
+          alert(d.mensagem || 'Erro ao enviar. Tente novamente.');
+          btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false;
+        }
+      } catch { alert('Erro de conexão. Tente novamente.'); btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false; }
+    });
 
-// ── MODAL ALUNOS DA TURMA ─────────────────────────────────────
-function abrirModalAlunos(idTurma) {
-  const t = _data?.turmas?.find(x => x.id_turma === idTurma);
-  if (!t) return;
-  document.getElementById('modalAlunosTitle').textContent = t.nome_exibicao || t.modalidade;
-  document.getElementById('modalAlunosSub').textContent   = `${t.alunos.length} aluno(s) · ${t.dias_semana} · ${t.hora_inicio}`;
-  const list = document.getElementById('modalAlunosList');
-  if (!t.alunos.length) { list.innerHTML = '<p style="color:var(--text-light);">Nenhum aluno nesta turma.</p>'; }
-  else {
-    list.innerHTML = t.alunos.map(a => {
-      const ini = a.nome_completo.split(' ').slice(0,2).map(p=>p[0].toUpperCase()).join('');
-      return `<div class="aluno-row-full">
-        <div class="ava">${ini}</div>
-        <div class="aluno-info">
-          <div class="aluno-nome">${a.nome_completo}</div>
-          <div class="aluno-det">${a.email || ''} · Plano: ${a.plano || '—'}</div>
-        </div>
-        <span class="img-tag ${a.termo_imagem ? 'badge-green':'badge-amber'}">${a.termo_imagem ? '✓':'✗'}</span>
-      </div>`;
-    }).join('');
-  }
-  abrirModal('modalAlunos');
-}
-
-// ── UTILS ─────────────────────────────────────────────────────
-function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
-function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-bg').forEach(bg => {
-  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
-});
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
-  });
-});
-document.getElementById('btnLogout').addEventListener('click', async () => {
-  try { await fetch("{{ url_for('logout') }}", { method:'POST' }); } catch(e){}
-  window.location.href = "{{ url_for('home') }}";
-});
-
-carregarDados();
-</script>
+    // ── Enviar mensagem geral ─────────────────────────────────
+    document.getElementById('btnEnviarMsg').addEventListener('click', async () => {
+      const nome  = document.getElementById('msg-nome').value.trim();
+      const tel   = document.getElementById('msg-tel').value.trim();
+      const email = document.getElementById('msg-email').value.trim();
+      if (!nome || !tel || !email) { alert('Preencha nome, telefone e e-mail.'); return; }
+      const btn = document.getElementById('btnEnviarMsg');
+      btn.textContent = 'Enviando…'; btn.disabled = true;
+      const fd = new FormData();
+      fd.append('nome', nome); fd.append('telefone', tel); fd.append('email', email);
+      fd.append('modalidade', document.getElementById('msg-assunto').value);
+      fd.append('mensagem', document.getElementById('msg-texto').value);
+      try {
+        await fetch('/contato', { method: 'POST', body: fd });
+        document.getElementById('successMsg').style.display = 'block';
+        btn.textContent = 'Enviar mensagem →'; btn.disabled = false;
+      } catch { alert('Erro de conexão. Tente novamente.'); btn.textContent = 'Enviar mensagem →'; btn.disabled = false; }
+    });
+  </script>
 </body>
 </html>

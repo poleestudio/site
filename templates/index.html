@@ -20,28 +20,17 @@
       --shadow-strong: 0 24px 60px rgba(139,0,33,0.14);
     }
 
-    /* ── Nav buttons fix ── */
+    /* ── Nav ── */
     .nav-actions {
-      display: flex !important;
-      align-items: center !important;
-      gap: 0.5rem !important;
-      flex-shrink: 0;
+      display: flex !important; align-items: center !important;
+      gap: 0.5rem !important; flex-shrink: 0;
     }
-    .nav-actions .nav-cta {
-      white-space: nowrap;
-      padding: 0.5rem 1rem !important;
-      font-size: 0.68rem !important;
-    }
+    .nav-actions .nav-cta { white-space: nowrap; padding: 0.5rem 1rem !important; font-size: 0.68rem !important; }
     .nav-actions .nav-cta-outline {
-      background: transparent !important;
-      border: 1.5px solid rgba(139,0,33,0.4) !important;
-      color: var(--bordo) !important;
-      box-shadow: none !important;
+      background: transparent !important; border: 1.5px solid rgba(139,0,33,0.4) !important;
+      color: var(--bordo) !important; box-shadow: none !important;
     }
-    .nav-actions .nav-cta-outline:hover {
-      background: var(--bordo) !important;
-      color: #fff !important;
-    }
+    .nav-actions .nav-cta-outline:hover { background: var(--bordo) !important; color: #fff !important; }
 
     /* ── Professoras ── */
     .professoras { padding: 6rem; background: var(--warm-white); }
@@ -61,14 +50,19 @@
 
     /* ── Modal galeria ── */
     .modal-gallery { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.4rem; margin-top: 0.9rem; }
-    .modal-gallery img { width: 100%; height: 72px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; }
-    .modal-gallery img:hover { opacity: 0.82; }
+    .modal-gallery img,.modal-gallery video { width: 100%; height: 72px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; }
+    .modal-gallery img:hover,.modal-gallery video:hover { opacity: 0.82; }
     .modal-card-img-wrap { height: 160px; background: var(--bordo-pale); overflow: hidden; cursor: pointer; position: relative; }
-    .modal-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
-    .modal-card:hover .modal-card-img-wrap img { transform: scale(1.05); }
+    .modal-card-img-wrap img,.modal-card-img-wrap video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .modal-card:hover .modal-card-img-wrap img,
+    .modal-card:hover .modal-card-img-wrap video { transform: scale(1.05); }
     .modal-card-img-wrap .no-img { display: flex; align-items: center; justify-content: center; height: 100%; opacity: 0.22; }
     .modal-card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(42,26,31,0.4), transparent); display: flex; align-items: flex-end; padding: 0.7rem 0.9rem; pointer-events: none; }
     .modal-card-img-overlay span { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.8); }
+
+    /* MUDANÇA 1: múltiplas professoras na tag da modalidade */
+    .modal-profs-row { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
+    .modal-prof-tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.65rem; border-radius: 50px; background: #e6f0f5; color: #005577; }
 
     /* ── Lightbox ── */
     .lightbox { position: fixed; inset: 0; background: rgba(42,26,31,0.93); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
@@ -82,7 +76,6 @@
 
     /* ── Horários ── */
     .schedule-empty { font-size: 0.8rem; color: var(--text-light); font-style: italic; margin-top: 0.5rem; }
-    /* ── Horários: aulas simultâneas lado a lado ── */
     .schedule-row { display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.55rem; }
     .schedule-row-time { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; color: var(--bordo); min-width: 38px; padding-top: 0.55rem; white-space: nowrap; flex-shrink: 0; }
     .schedule-row-classes { display: flex; gap: 0.45rem; flex: 1; flex-wrap: nowrap; overflow-x: auto; }
@@ -104,9 +97,7 @@
     .pacote-mods { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.8rem; }
     .pacote-mod-tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.65rem; border-radius: 50px; background: var(--bordo-pale); color: var(--bordo); }
 
-    /* ════════════════════════════════════
-       WORKSHOPS
-    ════════════════════════════════════ */
+    /* ── Workshops ── */
     .workshops { padding: 6rem; background: var(--cream); }
     .ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 1.5rem; margin-top: 2.4rem; }
     .ws-card { background: var(--warm-white); border: 1px solid rgba(139,0,33,0.08); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); transition: all 0.35s; display: flex; flex-direction: column; }
@@ -137,9 +128,7 @@
     .ws-empty-state p { color: var(--text-light); font-size: 0.9rem; line-height: 1.7; }
     .ws-empty-state a { color: var(--bordo); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1rem; display: inline-block; }
 
-    /* ════════════════════════════════════
-       PRIMEIRA AULA
-    ════════════════════════════════════ */
+    /* ── Primeira aula ── */
     .primeira-aula { padding: 6rem; background: var(--warm-white); }
     .pa-tabs { display: flex; gap: 0; margin-bottom: 2rem; border: 1.5px solid rgba(139,0,33,0.12); border-radius: 50px; overflow: hidden; width: fit-content; max-width: 100%; flex-wrap: wrap; }
     .pa-tab { padding: 0.65rem 1.4rem; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; color: var(--text-light); background: none; border: none; border-right: 1.5px solid rgba(139,0,33,0.12); transition: all 0.3s; font-family: 'Jost', sans-serif; white-space: nowrap; }
@@ -153,12 +142,9 @@
     .pa-item.obrigatorio { border-left-color: var(--bordo); }
     .pa-item:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
     .pa-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
-    .pa-icon-vestuario    { background: #f9e8e4; }
-    .pa-icon-equipamento  { background: #e4f0e8; }
-    .pa-icon-higiene      { background: #e4eaf5; }
-    .pa-icon-alimentacao  { background: #f5f0e0; }
-    .pa-icon-documentos   { background: #ede4f5; }
-    .pa-icon-outros       { background: var(--bordo-pale); }
+    .pa-icon-vestuario{background:#f9e8e4;} .pa-icon-equipamento{background:#e4f0e8;}
+    .pa-icon-higiene{background:#e4eaf5;} .pa-icon-alimentacao{background:#f5f0e0;}
+    .pa-icon-documentos{background:#ede4f5;} .pa-icon-outros{background:var(--bordo-pale);}
     .pa-body { flex: 1; min-width: 0; }
     .pa-nome { font-size: 0.9rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.15rem; }
     .pa-func { font-size: 0.76rem; color: var(--text-mid); line-height: 1.5; }
@@ -271,6 +257,8 @@
   </section>
 
   <!-- ══ PROFESSORAS ══════════════════════════════════════════ -->
+  {# MUDANÇA 1: professoras agora vêm via modalidade_professoras (múltiplas por modalidade)
+     A variável `professoras` continua existindo — o app.py já a monta via JOIN na nova tabela. #}
   {% if professoras %}
   <section class="professoras" id="professoras">
     <div class="section-label reveal">Nossa equipe</div>
@@ -282,8 +270,12 @@
       {% for prof in professoras %}
       <article class="prof-card reveal">
         <div class="prof-img-wrap">
+          {# MUDANÇA 1: foto vem de modalidade_professoras.foto_professora
+             (campo `foto_professora` no objeto prof, com `slug` da primeira modalidade) #}
           {% if prof.foto_professora and prof.slug %}
-            <img src="{{ url_for('static', filename='modalidades/' ~ prof.slug ~ '/professora/' ~ prof.foto_professora) }}" alt="{{ prof.nome_completo }}">
+            <img src="{{ url_for('static', filename='modalidades/' ~ prof.slug ~ '/professoras/' ~ prof.id_cadastro|string ~ '/' ~ prof.foto_professora) }}"
+                 alt="{{ prof.nome_completo }}"
+                 onerror="this.parentElement.innerHTML='<div class=\'no-photo\'><svg width=\'52\' height=\'52\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#8B0021\' stroke-width=\'1\'><circle cx=\'12\' cy=\'7\' r=\'4\'/><path d=\'M4 21c0-4 3.6-7 8-7s8 3 8 7\'/></svg></div>'">
           {% else %}
             <div class="no-photo">
               <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -316,11 +308,21 @@
     <div class="modal-grid">
       {% for m in modalidades %}
       <article class="modal-card reveal">
+
+        {# MUDANÇA 1: capa pode ser imagem OU vídeo (foto_capa vem da tabela modalidades) #}
         <div class="modal-card-img-wrap" onclick="abrirGaleria({{ m.id_modalidade }})">
-          {% if m.foto_capa and m.slug %}
-            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/professora/' ~ m.foto_capa) }}" alt="{{ m.titulo }}">
+          {% set ext = m.foto_capa.rsplit('.',1)[-1].lower() if m.foto_capa else '' %}
+          {% if m.foto_capa and ext in ['mp4','mov','webm'] and m.slug %}
+            {# vídeo de capa #}
+            <video src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/' ~ m.foto_capa) }}"
+                   autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+            {% if m.galeria %}<div class="modal-card-img-overlay"><span>Ver galeria →</span></div>{% endif %}
+          {% elif m.foto_capa and m.slug %}
+            {# imagem de capa #}
+            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/' ~ m.foto_capa) }}" alt="{{ m.titulo }}">
             {% if m.galeria %}<div class="modal-card-img-overlay"><span>Ver fotos →</span></div>{% endif %}
           {% elif m.galeria and m.slug %}
+            {# fallback: primeira imagem da galeria #}
             <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ m.galeria[0]) }}" alt="{{ m.titulo }}">
             <div class="modal-card-img-overlay"><span>Ver fotos →</span></div>
           {% else %}
@@ -329,20 +331,43 @@
             </div>
           {% endif %}
         </div>
+
         <div class="modal-icon" style="display:none;"></div>
         <div class="modal-name">{{ m.titulo }}</div>
         <p class="modal-desc">{{ m.resumo or (m.descricao[:110] ~ '…' if m.descricao and m.descricao|length > 110 else m.descricao) or 'Modalidade disponível no estúdio.' }}</p>
         {% if m.nivel %}<span class="modal-tag">{{ m.nivel }}</span>{% endif %}
-        {% if m.responsavel_nome %}<span class="modal-tag" style="background:#e6f0f5;color:#005577;margin-left:0.3rem;">{{ m.responsavel_nome.split()[0] }}</span>{% endif %}
+
+        {# MUDANÇA 1: exibe todas as professoras da modalidade, não só a responsável #}
+        {% if m.professoras %}
+        <div class="modal-profs-row">
+          {% for p in m.professoras %}
+          <span class="modal-prof-tag">{{ p.nome_completo.split()[0] }}</span>
+          {% endfor %}
+        </div>
+        {% elif m.responsavel_nome %}
+        <span class="modal-tag" style="background:#e6f0f5;color:#005577;margin-left:0.3rem;">{{ m.responsavel_nome.split()[0] }}</span>
+        {% endif %}
+
         <button class="modal-more-btn" type="button" aria-expanded="false" data-id="{{ m.id_modalidade }}">Saber mais</button>
         <div class="modal-more-content" id="more-{{ m.id_modalidade }}" hidden>
           {% if m.descricao and m.descricao != m.resumo %}<p>{{ m.descricao }}</p>{% endif %}
+
+          {# MUDANÇA 1: galeria suporta vídeos (mp4/mov/webm) além de imagens #}
           {% if m.galeria and m.slug %}
           <div class="modal-gallery" style="margin-top:0.8rem;">
-            {% for foto in m.galeria[:6] %}
-            <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ foto) }}"
-                 alt="{{ m.titulo }}"
-                 onclick="abrirLightbox('{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ foto) }}', {{ loop.index0 }}, {{ m.id_modalidade }})">
+            {% for arquivo in m.galeria[:6] %}
+              {% set ext_gal = arquivo.rsplit('.',1)[-1].lower() %}
+              {% if ext_gal in ['mp4','mov','webm'] %}
+              <video src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ arquivo) }}"
+                     muted loop playsinline
+                     style="width:100%;height:72px;object-fit:cover;border-radius:8px;cursor:pointer;"
+                     onclick="abrirLightboxVideo('{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ arquivo) }}')">
+              </video>
+              {% else %}
+              <img src="{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ arquivo) }}"
+                   alt="{{ m.titulo }}"
+                   onclick="abrirLightbox('{{ url_for('static', filename='modalidades/' ~ m.slug ~ '/galeria/' ~ arquivo) }}', {{ loop.index0 }}, {{ m.id_modalidade }})">
+              {% endif %}
             {% endfor %}
           </div>
           {% endif %}
@@ -366,19 +391,25 @@
   </div>
 
   <!-- ══ HORÁRIOS ════════════════════════════════════════════ -->
+  {# CORREÇÃO: adicionado 'Sábado' na lista de dias #}
   <section class="horarios" id="horarios">
     <div class="section-label reveal">Grade semanal</div>
     <h2 class="section-title reveal reveal-delay-1">Horários das <em>aulas</em></h2>
     <div class="schedule-grid reveal reveal-delay-2">
-      {% set dias_semana = ['Segunda','Terça','Quarta','Quinta','Sexta'] %}
+      {% set dias_semana = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'] %}
       {% for dia in dias_semana %}
       <div class="schedule-day">
         <div class="day-name">{{ dia }}</div>
 
         {% set aulas_do_dia = [] %}
         {% for t in turmas %}
+          {# Normaliza tanto "Sábado" quanto "Sab"/"sáb" etc. #}
           {% set dias_lower = t.dias_semana | lower %}
-          {% if dia[:3].lower() in dias_lower or dia.lower() in dias_lower %}
+          {% set dia3 = dia[:3].lower() %}
+          {# "Sábado" vira "sáb" nos 3 chars — normaliza acentos manualmente #}
+          {% set dia3_norm = dia3.replace('á','a').replace('é','e').replace('ê','e') %}
+          {% set dias_norm = dias_lower.replace('á','a').replace('é','e').replace('ê','e') %}
+          {% if dia3_norm in dias_norm or dia.lower() in dias_lower %}
             {% set _ = aulas_do_dia.append(t) %}
           {% endif %}
         {% endfor %}
@@ -403,6 +434,7 @@
                   <div class="class-item">
                     <div class="class-time">{{ a.hora_inicio }}{% if a.hora_fim %} – {{ a.hora_fim }}{% endif %}</div>
                     <div class="class-name">{{ a.modalidade }}</div>
+                    {# MUDANÇA 1: professora vem de turmas.id_professora (já resolvido no app.py) #}
                     {% if a.professora %}<div class="class-level">{{ a.professora }}</div>{% endif %}
                     <span class="class-sala">{{ a.sala }}</span>
                   </div>
@@ -444,16 +476,11 @@
             </svg>
           </div>
           <div class="ws-img-overlay">
-            {% if w.lotado %}
-              <span class="ws-vagas-pill esgotado">Esgotado</span>
-            {% elif w.vagas_restantes is not none %}
-              <span class="ws-vagas-pill">{{ w.vagas_restantes }} vaga{{ 's' if w.vagas_restantes != 1 else '' }}</span>
-            {% else %}
-              <span class="ws-vagas-pill">Vagas disponíveis</span>
-            {% endif %}
+            {% if w.lotado %}<span class="ws-vagas-pill esgotado">Esgotado</span>
+            {% elif w.vagas_restantes is not none %}<span class="ws-vagas-pill">{{ w.vagas_restantes }} vaga{{ 's' if w.vagas_restantes != 1 else '' }}</span>
+            {% else %}<span class="ws-vagas-pill">Vagas disponíveis</span>{% endif %}
           </div>
         </div>
-
         <div class="ws-body">
           <div class="ws-meta">
             {% if w.modalidade_nome %}<span class="ws-tag">{{ w.modalidade_nome }}</span>{% endif %}
@@ -461,40 +488,25 @@
           </div>
           <div class="ws-nome">{{ w.nome }}</div>
           {% if w.descricao %}<p class="ws-desc">{{ w.descricao }}</p>{% endif %}
-
           <div class="ws-footer">
             <div>
-              {% if w.data_workshop %}
-              <div class="ws-datetime">
-                📅 {{ w.data_workshop }}{% if w.hora_inicio %} · {{ w.hora_inicio }}{% if w.hora_fim %} – {{ w.hora_fim }}{% endif %}{% endif %}
-              </div>
-              {% endif %}
+              {% if w.data_workshop %}<div class="ws-datetime">📅 {{ w.data_workshop }}{% if w.hora_inicio %} · {{ w.hora_inicio }}{% if w.hora_fim %} – {{ w.hora_fim }}{% endif %}{% endif %}</div>{% endif %}
               {% if w.sala_nome %}<div class="ws-local">📍 {{ w.sala_nome }}</div>{% endif %}
             </div>
             <div>
-              {% if w.valor > 0 %}
-                <div class="ws-preco">R$ {{ '%.0f'|format(w.valor) }}<small>por pessoa</small></div>
-              {% else %}
-                <div class="ws-preco gratuito">Gratuito</div>
-              {% endif %}
+              {% if w.valor > 0 %}<div class="ws-preco">R$ {{ '%.0f'|format(w.valor) }}<small>por pessoa</small></div>
+              {% else %}<div class="ws-preco gratuito">Gratuito</div>{% endif %}
             </div>
           </div>
-
-          {% if w.lotado %}
-            <span class="ws-btn-disabled">Esgotado</span>
-          {% else %}
-            <a href="#contato" class="btn-primary ws-btn" onclick="escolherWorkshop('{{ w.nome }}')">Quero participar →</a>
-          {% endif %}
+          {% if w.lotado %}<span class="ws-btn-disabled">Esgotado</span>
+          {% else %}<a href="#contato" class="btn-primary ws-btn" onclick="escolherWorkshop('{{ w.nome }}')">Quero participar →</a>{% endif %}
         </div>
       </article>
       {% endfor %}
     </div>
-
     {% else %}
     <div class="ws-empty-state reveal">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1">
-        <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-      </svg>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
       <p>Nenhum workshop agendado no momento.<br>Em breve novas datas serão divulgadas.</p>
       <a href="#contato">Avise-me quando houver →</a>
     </div>
@@ -513,23 +525,16 @@
     <div class="pa-tabs reveal">
       {% for pa in primeira_aula_list %}
       <button class="pa-tab {% if loop.first %}active{% endif %}"
-              data-target="pa-{{ pa.id_modalidade }}"
-              type="button">{{ pa.titulo }}</button>
+              data-target="pa-{{ pa.id_modalidade }}" type="button">{{ pa.titulo }}</button>
       {% endfor %}
     </div>
-
     {% for pa in primeira_aula_list %}
     <div class="pa-panel {% if loop.first %}active{% endif %}" id="pa-{{ pa.id_modalidade }}">
       <div class="pa-grid">
         {% for item in pa.itens %}
         <div class="pa-item {% if item.obrigatorio %}obrigatorio{% endif %} reveal">
           <div class="pa-icon pa-icon-{{ item.categoria }}">
-            {%- if item.categoria == 'vestuario' -%}👗
-            {%- elif item.categoria == 'equipamento' -%}🎽
-            {%- elif item.categoria == 'higiene' -%}🧴
-            {%- elif item.categoria == 'alimentacao' -%}🍎
-            {%- elif item.categoria == 'documentos' -%}📄
-            {%- else -%}📦{%- endif -%}
+            {%- if item.categoria=='vestuario' -%}👗{%- elif item.categoria=='equipamento' -%}🎽{%- elif item.categoria=='higiene' -%}🧴{%- elif item.categoria=='alimentacao' -%}🍎{%- elif item.categoria=='documentos' -%}📄{%- else -%}📦{%- endif -%}
           </div>
           <div class="pa-body">
             <div class="pa-nome">{{ item.nome }}</div>
@@ -541,23 +546,14 @@
         {% endfor %}
       </div>
       <div class="pa-legenda">
-        <div class="pa-legenda-item">
-          <div class="pa-legenda-dot" style="background:var(--bordo);"></div>
-          Item obrigatório
-        </div>
-        <div class="pa-legenda-item">
-          <div class="pa-legenda-dot" style="background:rgba(139,0,33,0.18);border:1px solid rgba(139,0,33,0.25);"></div>
-          Item recomendado
-        </div>
+        <div class="pa-legenda-item"><div class="pa-legenda-dot" style="background:var(--bordo);"></div>Item obrigatório</div>
+        <div class="pa-legenda-item"><div class="pa-legenda-dot" style="background:rgba(139,0,33,0.18);border:1px solid rgba(139,0,33,0.25);"></div>Item recomendado</div>
       </div>
     </div>
     {% endfor %}
-
     {% else %}
     <div class="pa-empty-state reveal">
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-      </svg>
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       <p>As listas de itens por modalidade serão exibidas aqui.<br>Cadastre os itens no painel administrativo.</p>
     </div>
     {% endif %}
@@ -574,10 +570,7 @@
       {% for p in pacotes %}
       <article class="pacote-card reveal {% if loop.index == 2 %}destaque{% endif %}">
         <div class="pacote-badge">
-          {% if loop.index == 1 %}Entrada
-          {% elif loop.index == 2 %}Mais escolhido
-          {% elif p.tipo_cobranca == 'semestral' %}Semestral
-          {% else %}{{ p.aulas_por_semana }}x/semana{% endif %}
+          {% if loop.index == 1 %}Entrada{% elif loop.index == 2 %}Mais escolhido{% elif p.tipo_cobranca == 'semestral' %}Semestral{% else %}{{ p.aulas_por_semana }}x/semana{% endif %}
         </div>
         <h3 class="pacote-nome">{{ p.nome }}</h3>
         <div class="pacote-preco">R$ {{ '%.0f'|format(p.valor) }}<span>/{{ 'mês' if p.tipo_cobranca == 'mensal' else 'semestre' }}</span></div>
@@ -589,9 +582,7 @@
           <li>Turmas fixas semanais</li>
         </ul>
         {% if p.modalidades_nomes %}
-        <div class="pacote-mods">
-          {% for mn in p.modalidades_nomes %}<span class="pacote-mod-tag">{{ mn }}</span>{% endfor %}
-        </div>
+        <div class="pacote-mods">{% for mn in p.modalidades_nomes %}<span class="pacote-mod-tag">{{ mn }}</span>{% endfor %}</div>
         {% endif %}
         <a href="#contato" class="btn-primary pacote-btn" onclick="escolherPacote('{{ p.nome }}')">Quero esse</a>
       </article>
@@ -618,7 +609,7 @@
         </div>
         <div>
           <div class="contact-label">WhatsApp · PIX</div>
-          <div class="contact-value">(34) 99834-8127</div>
+          <div class="contact-value">(34) 98422-8804</div>
         </div>
       </div>
       <div class="contact-item">
@@ -627,7 +618,7 @@
         </div>
         <div>
           <div class="contact-label">E-mail</div>
-          <div class="contact-value">contato@claralucatti.com.br</div>
+          <div class="contact-value">pole.estudio@hotmail.com</div>
         </div>
       </div>
       <a class="wpp-cta" href="https://wa.me/5534998348127?text=Olá!%20Tenho%20interesse%20em%20uma%20aula%20experimental." target="_blank" rel="noopener">
@@ -635,9 +626,8 @@
         Falar no WhatsApp
       </a>
       <div class="social-links" style="margin-top:1.5rem;">
-        <a href="#" class="social-link" title="Instagram" aria-label="Instagram">IG</a>
-        <a href="#" class="social-link" title="Facebook" aria-label="Facebook">FB</a>
-        <a href="#" class="social-link" title="YouTube" aria-label="YouTube">YT</a>
+        <a href="https://www.instagram.com/estudioclaralucatti?igsh=MTFhM3JrcGt6cmps" class="social-link" title="Instagram" aria-label="Instagram">IG</a>
+        
       </div>
     </div>
 
@@ -657,19 +647,10 @@
           </a>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label for="exp-nome">Nome</label>
-            <input id="exp-nome" name="nome" type="text" placeholder="Seu nome completo" required>
-          </div>
-          <div class="form-group">
-            <label for="exp-tel">WhatsApp</label>
-            <input id="exp-tel" name="telefone" type="tel" placeholder="(34) 99999-0000" required>
-          </div>
+          <div class="form-group"><label for="exp-nome">Nome</label><input id="exp-nome" name="nome" type="text" placeholder="Seu nome completo" required></div>
+          <div class="form-group"><label for="exp-tel">WhatsApp</label><input id="exp-tel" name="telefone" type="tel" placeholder="(34) 99999-0000" required></div>
         </div>
-        <div class="form-group">
-          <label for="exp-email">E-mail</label>
-          <input id="exp-email" name="email" type="email" placeholder="seu@email.com" required>
-        </div>
+        <div class="form-group"><label for="exp-email">E-mail</label><input id="exp-email" name="email" type="email" placeholder="seu@email.com" required></div>
         <div class="form-group">
           <label for="exp-modal">Modalidade de interesse</label>
           <select id="exp-modal" name="modalidade" required>
@@ -677,16 +658,10 @@
             {% for m in modalidades %}<option value="{{ m.titulo }}">{{ m.titulo }}</option>{% endfor %}
           </select>
         </div>
-        <div class="form-group">
-          <label for="exp-horario">Melhor horário</label>
-          <input id="exp-horario" name="horario_preferido" type="text" placeholder="Ex.: Noites de segunda ou terça manhã">
-        </div>
-        <div class="form-group">
-          <label for="exp-msg">Mensagem</label>
-          <textarea id="exp-msg" name="mensagem" placeholder="Conte sobre você, sua experiência ou qualquer dúvida…"></textarea>
-        </div>
+        <div class="form-group"><label for="exp-horario">Melhor horário</label><input id="exp-horario" name="horario_preferido" type="text" placeholder="Ex.: Noites de segunda ou terça manhã"></div>
+        <div class="form-group"><label for="exp-msg">Mensagem</label><textarea id="exp-msg" name="mensagem" placeholder="Conte sobre você, sua experiência ou qualquer dúvida…"></textarea></div>
         <div class="form-hint">
-          Após enviar, entraremos em contato pelo WhatsApp para confirmar o horário e o valor da aula experimental. Chave PIX: <strong>(34) 99834-8127</strong>
+          Após enviar, entraremos em contato pelo WhatsApp para confirmar o horário e o valor da aula experimental. Chave PIX: <strong>(34) 98422-8804</strong>
         </div>
         <button type="button" id="btnEnviarExp" class="btn-primary" style="width:100%;justify-content:center;margin-top:1rem;">
           Solicitar aula experimental →
@@ -697,33 +672,20 @@
       <div class="form-panel" id="panelMsg">
         <div class="form-success" id="successMsg">✓ Mensagem enviada! Retornaremos em breve.</div>
         <div class="form-row">
-          <div class="form-group">
-            <label for="msg-nome">Nome</label>
-            <input id="msg-nome" name="nome" type="text" placeholder="Seu nome" required>
-          </div>
-          <div class="form-group">
-            <label for="msg-tel">Telefone</label>
-            <input id="msg-tel" name="telefone" type="tel" placeholder="(34) 99999-0000" required>
-          </div>
+          <div class="form-group"><label for="msg-nome">Nome</label><input id="msg-nome" name="nome" type="text" placeholder="Seu nome" required></div>
+          <div class="form-group"><label for="msg-tel">Telefone</label><input id="msg-tel" name="telefone" type="tel" placeholder="(34) 99999-0000" required></div>
         </div>
-        <div class="form-group">
-          <label for="msg-email">E-mail</label>
-          <input id="msg-email" name="email" type="email" placeholder="seu@email.com" required>
-        </div>
+        <div class="form-group"><label for="msg-email">E-mail</label><input id="msg-email" name="email" type="email" placeholder="seu@email.com" required></div>
         <div class="form-group">
           <label for="msg-assunto">Assunto</label>
           <select id="msg-assunto" name="modalidade">
             <option value="">Selecione</option>
-            <option>Pacotes e valores</option>
-            <option>Horários</option>
+            <option>Pacotes e valores</option><option>Horários</option>
             {% for m in modalidades %}<option value="{{ m.titulo }}">{{ m.titulo }}</option>{% endfor %}
             <option>Outro</option>
           </select>
         </div>
-        <div class="form-group">
-          <label for="msg-texto">Mensagem</label>
-          <textarea id="msg-texto" name="mensagem" placeholder="Como podemos ajudar?" required></textarea>
-        </div>
+        <div class="form-group"><label for="msg-texto">Mensagem</label><textarea id="msg-texto" name="mensagem" placeholder="Como podemos ajudar?" required></textarea></div>
         <button type="button" id="btnEnviarMsg" class="btn-primary" style="width:100%;justify-content:center;border:none;font-size:0.82rem;padding:1.1rem">
           Enviar mensagem →
         </button>
@@ -747,12 +709,12 @@
       const cur = document.getElementById('cursor');
       const ring = document.getElementById('cursorRing');
       document.addEventListener('mousemove', e => {
-        cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px';
-        setTimeout(() => { ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px'; }, 80);
+        cur.style.left = e.clientX+'px'; cur.style.top = e.clientY+'px';
+        setTimeout(() => { ring.style.left = e.clientX+'px'; ring.style.top = e.clientY+'px'; }, 80);
       });
       document.querySelectorAll('a, button, input, select, textarea').forEach(el => {
-        el.addEventListener('mouseenter', () => { cur.style.transform = 'translate(-50%,-50%) scale(2.5)'; ring.style.transform = 'translate(-50%,-50%) scale(1.5)'; });
-        el.addEventListener('mouseleave', () => { cur.style.transform = 'translate(-50%,-50%) scale(1)';   ring.style.transform = 'translate(-50%,-50%) scale(1)'; });
+        el.addEventListener('mouseenter', () => { cur.style.transform='translate(-50%,-50%) scale(2.5)'; ring.style.transform='translate(-50%,-50%) scale(1.5)'; });
+        el.addEventListener('mouseleave', () => { cur.style.transform='translate(-50%,-50%) scale(1)';   ring.style.transform='translate(-50%,-50%) scale(1)'; });
       });
     }
 
@@ -779,19 +741,26 @@
       });
     });
 
-    // ── Lightbox ─────────────────────────────────────────────
+    // ── Lightbox (imagens) ────────────────────────────────────
     let _lbImgs = [], _lbIdx = 0;
     function abrirGaleria(idMod) {
-      const imgs = GALERIA_DATA[idMod] || [];
+      const imgs = (GALERIA_DATA[idMod] || []).filter(s => !/\.(mp4|mov|webm)$/i.test(s));
       if (!imgs.length) return;
       _lbImgs = imgs; _lbIdx = 0;
       document.getElementById('lightboxImg').src = imgs[0];
       document.getElementById('lightbox').classList.add('open');
     }
     function abrirLightbox(src, idx, idMod) {
-      _lbImgs = GALERIA_DATA[idMod] || [src]; _lbIdx = idx;
-      document.getElementById('lightboxImg').src = src;
+      const imgs = (GALERIA_DATA[idMod] || [src]).filter(s => !/\.(mp4|mov|webm)$/i.test(s));
+      _lbImgs = imgs.length ? imgs : [src];
+      _lbIdx  = Math.min(idx, _lbImgs.length - 1);
+      document.getElementById('lightboxImg').src = _lbImgs[_lbIdx];
       document.getElementById('lightbox').classList.add('open');
+    }
+    // MUDANÇA 1: abre vídeos inline (não no lightbox de imagens)
+    function abrirLightboxVideo(src) {
+      // abre o vídeo em nova aba para não conflitar com o lightbox de imagens
+      window.open(src, '_blank');
     }
     function fecharLightbox() { document.getElementById('lightbox').classList.remove('open'); }
     function navLightbox(dir) {
@@ -800,9 +769,9 @@
       document.getElementById('lightboxImg').src = _lbImgs[_lbIdx];
     }
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape')      fecharLightbox();
-      if (e.key === 'ArrowRight')  navLightbox(1);
-      if (e.key === 'ArrowLeft')   navLightbox(-1);
+      if (e.key === 'Escape')     fecharLightbox();
+      if (e.key === 'ArrowRight') navLightbox(1);
+      if (e.key === 'ArrowLeft')  navLightbox(-1);
     });
 
     // ── Tabs do formulário de contato ─────────────────────────
@@ -826,23 +795,17 @@
       });
     });
 
-    // ── Escolher pacote → rola ao formulário ──────────────────
+    // ── Escolher pacote / workshop ────────────────────────────
     function escolherPacote(nome) {
       document.querySelector('[data-panel="panelExp"]').click();
       document.getElementById('contato').scrollIntoView({ behavior: 'smooth' });
     }
-
-    // ── Escolher workshop → rola ao formulário ────────────────
     function escolherWorkshop(nomeWs) {
       document.querySelector('[data-panel="panelExp"]').click();
-      // tenta pré-selecionar a modalidade pelo nome do workshop
       const sel = document.getElementById('exp-modal');
       for (let i = 0; i < sel.options.length; i++) {
-        if (sel.options[i].value && nomeWs.toLowerCase().includes(sel.options[i].value.toLowerCase())) {
-          sel.selectedIndex = i; break;
-        }
+        if (sel.options[i].value && nomeWs.toLowerCase().includes(sel.options[i].value.toLowerCase())) { sel.selectedIndex = i; break; }
       }
-      // preenche a mensagem com o nome do workshop se estiver vazio
       const msgEl = document.getElementById('exp-msg');
       if (msgEl && !msgEl.value) msgEl.value = 'Tenho interesse no workshop: ' + nomeWs;
       document.getElementById('contato').scrollIntoView({ behavior: 'smooth' });
@@ -875,9 +838,7 @@
           alert(d.mensagem || 'Erro ao enviar. Tente novamente.');
           btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false;
         }
-      } catch {
-        alert('Erro de conexão. Tente novamente.'); btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false;
-      }
+      } catch { alert('Erro de conexão. Tente novamente.'); btn.textContent = 'Solicitar aula experimental →'; btn.disabled = false; }
     });
 
     // ── Enviar mensagem geral ─────────────────────────────────
@@ -896,9 +857,7 @@
         await fetch('/contato', { method: 'POST', body: fd });
         document.getElementById('successMsg').style.display = 'block';
         btn.textContent = 'Enviar mensagem →'; btn.disabled = false;
-      } catch {
-        alert('Erro de conexão. Tente novamente.'); btn.textContent = 'Enviar mensagem →'; btn.disabled = false;
-      }
+      } catch { alert('Erro de conexão. Tente novamente.'); btn.textContent = 'Enviar mensagem →'; btn.disabled = false; }
     });
   </script>
 </body>
