@@ -16,20 +16,15 @@
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     body{background:var(--warm-white);color:var(--text-dark);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;}
     a{text-decoration:none;color:inherit;} button{border:none;background:none;cursor:pointer;font:inherit;}
-
     nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(253,248,245,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,0,33,0.08);}
     .nav-left{display:flex;align-items:center;gap:1rem;}
     .btn-back{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-light);padding:0.5rem 1rem;border:1.5px solid rgba(139,0,33,0.15);border-radius:50px;transition:all 0.3s;}
     .btn-back:hover{border-color:var(--bordo);color:var(--bordo);}
     .nav-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;letter-spacing:0.1em;}
-
-    /* TABS */
     .tabs{display:flex;gap:0;border-bottom:1px solid rgba(139,0,33,0.08);background:var(--cream);padding:0 3rem;}
     .tab-btn{font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;padding:1rem 1.5rem;color:var(--text-light);border-bottom:2.5px solid transparent;transition:all 0.3s;background:none;cursor:pointer;}
     .tab-btn.active{color:var(--bordo);border-bottom-color:var(--bordo);}
     .tab-panel{display:none;} .tab-panel.active{display:block;}
-
-    /* ── TAB CADASTRAR ── */
     #tabCadastrar{padding:2.5rem 3rem;}
     .form-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.8rem;align-items:start;}
     .form-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:24px;padding:2rem;box-shadow:var(--shadow);}
@@ -42,27 +37,37 @@
     .form-group textarea{min-height:90px;resize:vertical;}
     .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
     .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem;}
+
+    /* ── Seletor múltiplo de instrutores ── */
+    .instr-selector{border:1.5px solid rgba(139,0,33,0.12);border-radius:14px;overflow:hidden;background:var(--warm-white);}
+    .instr-selector-header{padding:0.6rem 1rem;font-size:0.72rem;color:var(--text-light);border-bottom:1px solid rgba(139,0,33,0.08);}
+    .instr-list-scroll{max-height:190px;overflow-y:auto;}
+    .instr-item{display:flex;align-items:center;gap:0.7rem;padding:0.6rem 1rem;border-bottom:1px solid rgba(139,0,33,0.05);cursor:pointer;transition:background 0.2s;}
+    .instr-item:last-child{border-bottom:none;}
+    .instr-item:hover{background:var(--bordo-pale);}
+    .instr-item input[type=checkbox]{accent-color:var(--bordo);width:15px;height:15px;cursor:pointer;flex-shrink:0;}
+    .instr-item-name{font-size:0.88rem;flex:1;}
+    .instr-tags{display:flex;flex-wrap:wrap;gap:0.35rem;padding:0.55rem 1rem;min-height:34px;border-top:1px solid rgba(139,0,33,0.08);}
+    .instr-tag{display:inline-flex;align-items:center;gap:0.3rem;background:var(--bordo-pale);color:var(--bordo);border-radius:50px;padding:0.2rem 0.65rem;font-size:0.7rem;}
+    .instr-tag span{cursor:pointer;font-size:0.9rem;line-height:1;}
+
     .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:0.6rem;background:var(--bordo);color:#fff;font-size:0.74rem;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;padding:0.9rem 2rem;border-radius:50px;transition:all 0.3s;box-shadow:0 8px 24px rgba(139,0,33,0.18);cursor:pointer;}
     .btn-primary:hover{background:var(--bordo-light);transform:translateY(-2px);}
     .btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.9rem 1.5rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.15);color:var(--bordo);font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.3s;cursor:pointer;}
     .btn-secondary:hover{background:var(--bordo-pale);}
     .btn-row{display:flex;gap:0.7rem;margin-top:1.2rem;flex-wrap:wrap;}
-
-    /* preview de imagem */
     .img-upload-zone{border:1.5px dashed rgba(139,0,33,0.2);border-radius:14px;padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--warm-white);position:relative;overflow:hidden;}
     .img-upload-zone:hover{border-color:var(--bordo);background:var(--bordo-pale);}
     .img-upload-zone input{display:none;}
     .img-preview{width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:0.8rem;display:none;}
     .upload-hint{font-size:0.78rem;color:var(--text-light);line-height:1.6;margin-top:0.4rem;}
 
-    /* ── TAB WORKSHOPS ── */
     #tabWorkshops{padding:2.5rem 3rem;}
     .ws-filters{display:flex;gap:0.8rem;margin-bottom:1.8rem;flex-wrap:wrap;align-items:center;}
     .filter-btn{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.5rem 1.1rem;border-radius:50px;border:1.5px solid rgba(139,0,33,0.12);color:var(--text-light);background:none;cursor:pointer;transition:all 0.3s;}
     .filter-btn.active,.filter-btn:hover{background:var(--bordo);color:#fff;border-color:var(--bordo);}
     .search-input{flex:1;min-width:200px;max-width:300px;background:var(--cream);border:1.5px solid rgba(139,0,33,0.1);border-radius:50px;padding:0.5rem 1.2rem;font-family:'Jost',sans-serif;font-size:0.86rem;color:var(--text-dark);outline:none;}
     .search-input:focus{border-color:var(--bordo);}
-
     .ws-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.4rem;}
     .ws-card{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:24px;overflow:hidden;transition:all 0.3s;position:relative;}
     .ws-card:hover{box-shadow:var(--shadow);transform:translateY(-5px);border-color:rgba(139,0,33,0.18);}
@@ -73,21 +78,19 @@
     .status-aberto{background:#eaf3de;color:#3B6D11;}
     .status-encerrado{background:#f1efee;color:#6b4a55;}
     .status-rascunho{background:#faeeda;color:#854F0B;}
-    .status-lotado{background:var(--bordo-pale);color:var(--bordo);}
     .ws-card-body{padding:1.4rem 1.6rem;}
     .ws-card-data{font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.5rem;}
-    .ws-card-nome{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;margin-bottom:0.3rem;line-height:1.2;}
-    .ws-card-instrutor{font-size:0.8rem;color:var(--text-light);margin-bottom:0.8rem;}
+    .ws-card-nome{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;margin-bottom:0.4rem;line-height:1.2;}
+    /* MUDANÇA: badges de instrutores múltiplos */
+    .ws-card-instrutores{display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.8rem;}
+    .instr-badge{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.18rem 0.55rem;border-radius:50px;background:#e6f0f5;color:#005577;}
     .ws-card-desc{font-size:0.84rem;color:var(--text-mid);line-height:1.7;margin-bottom:1rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-
-    /* barra de vagas */
     .vagas-wrap{margin-bottom:1rem;}
     .vagas-label{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-light);letter-spacing:0.08em;margin-bottom:0.4rem;}
     .vagas-bar{height:5px;border-radius:3px;background:rgba(139,0,33,0.1);overflow:hidden;}
     .vagas-fill{height:100%;border-radius:3px;background:var(--bordo);transition:width 0.5s;}
     .vagas-fill.quase{background:#e6a820;}
     .vagas-fill.lotado{background:#c0392b;}
-
     .ws-card-tags{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.1rem;}
     .pill{display:inline-flex;padding:0.25rem 0.7rem;border-radius:50px;background:var(--bordo-pale);color:var(--bordo);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;}
     .ws-card-actions{display:flex;gap:0.5rem;padding-top:1rem;border-top:1px solid rgba(139,0,33,0.08);}
@@ -96,21 +99,17 @@
     .btn-sm.primary{background:var(--bordo);color:#fff;border-color:var(--bordo);}
     .btn-sm.primary:hover{background:var(--bordo-light);}
 
-    /* ── TAB INSCRIÇÕES ── */
     #tabInscricoes{padding:2.5rem 3rem;}
     .inscr-layout{display:grid;grid-template-columns:320px 1fr;gap:2rem;align-items:start;}
-
     .ws-pick-list{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);}
     .ws-pick-head{padding:1.2rem 1.4rem;border-bottom:1px solid rgba(139,0,33,0.08);font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;}
     .ws-pick-item{display:flex;align-items:center;gap:0.9rem;padding:0.9rem 1.2rem;border-bottom:1px solid rgba(139,0,33,0.06);cursor:pointer;transition:all 0.2s;}
     .ws-pick-item:last-child{border-bottom:none;}
-    .ws-pick-item:hover{background:var(--bordo-pale);}
-    .ws-pick-item.active{background:var(--bordo-pale);}
+    .ws-pick-item:hover,.ws-pick-item.active{background:var(--bordo-pale);}
     .ws-pick-dot{width:7px;height:7px;border-radius:50%;background:rgba(139,0,33,0.3);flex-shrink:0;}
     .ws-pick-item.active .ws-pick-dot{background:var(--bordo);}
     .ws-pick-nome{font-size:0.88rem;color:var(--text-dark);}
     .ws-pick-vagas{font-size:0.72rem;color:var(--text-light);margin-top:0.1rem;}
-
     .inscr-panel{background:var(--cream);border:1px solid rgba(139,0,33,0.08);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);}
     .inscr-panel-head{padding:1.4rem 1.6rem 1rem;border-bottom:1px solid rgba(139,0,33,0.08);}
     .inscr-ws-nome{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;margin-bottom:0.25rem;}
@@ -121,7 +120,6 @@
     .btn-inscrever{background:var(--bordo);color:#fff;border-radius:14px;padding:0.72rem 1.3rem;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;border:none;}
     .btn-inscrever:hover{background:var(--bordo-light);}
     .btn-inscrever:disabled{opacity:0.4;cursor:not-allowed;}
-
     .inscr-list{max-height:460px;overflow-y:auto;}
     .inscr-row{display:flex;align-items:center;gap:0.8rem;padding:0.9rem 1.4rem;border-bottom:1px solid rgba(139,0,33,0.05);transition:background 0.2s;}
     .inscr-row:hover{background:rgba(139,0,33,0.02);}
@@ -134,12 +132,10 @@
     .btn-rem{width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(139,0,33,0.12);display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:0.72rem;cursor:pointer;background:none;flex-shrink:0;transition:all 0.2s;}
     .btn-rem:hover{border-color:var(--bordo);color:var(--bordo);background:var(--bordo-pale);}
     .inscr-empty{text-align:center;padding:3rem;color:var(--text-light);font-size:0.86rem;}
-
     .cap-tag{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.25rem 0.7rem;border-radius:50px;}
     .cap-ok{background:#eaf3de;color:#3B6D11;}
     .cap-quase{background:#faeeda;color:#854F0B;}
     .cap-cheio{background:var(--bordo-pale);color:var(--bordo);}
-
     .msg-warn{font-size:0.8rem;color:#854F0B;background:#faeeda;padding:0.6rem 1rem;margin:0.5rem 1.4rem;border-radius:10px;}
     .msg-err{font-size:0.8rem;color:var(--bordo);background:var(--bordo-pale);padding:0.6rem 1rem;margin:0.5rem 1.4rem;border-radius:10px;}
 
@@ -171,20 +167,20 @@
   <button class="tab-btn" data-tab="tabInscricoes">Inscrições</button>
 </div>
 
-<!-- ══════════════════════ TAB: CADASTRAR ══════════════════════ -->
+<!-- ══ TAB: CADASTRAR ══ -->
 <div class="tab-panel active" id="tabCadastrar">
   <div class="form-layout">
-
-    <!-- BLOCO 1: INFORMAÇÕES GERAIS -->
     <div>
       <div class="form-card">
         <div class="form-card-title">Informações gerais</div>
-        <div class="form-card-sub">Nome, descrição, modalidade relacionada e instrutor responsável.</div>
+        <div class="form-card-sub">Nome, descrição, modalidade relacionada e instrutores responsáveis.</div>
         <input type="hidden" id="ws-id">
+
         <div class="form-group">
           <label>Nome do workshop</label>
           <input id="ws-nome" type="text" placeholder="Ex.: Workshop Feminino de Bachata">
         </div>
+
         <div class="form-group">
           <label>Modalidade relacionada <span style="font-size:0.6rem;opacity:0.6;">(opcional)</span></label>
           <select id="ws-modal">
@@ -194,22 +190,38 @@
             {% endfor %}
           </select>
         </div>
+
+        <!-- MUDANÇA: seletor de múltiplos instrutores (substitui o <select> simples de id_instrutor) -->
         <div class="form-group">
-          <label>Instrutor / ministrante</label>
-          <select id="ws-instrutor">
-            <option value="">Selecione</option>
-            {% for p in professoras %}
-            <option value="{{ p.id_cadastro }}">{{ p.nome_completo }}</option>
-            {% endfor %}
-          </select>
+          <label>Instrutores / ministrantes</label>
+          <div class="instr-selector">
+            <div class="instr-selector-header">Selecione um ou mais instrutores</div>
+            <div class="instr-list-scroll" id="instrList">
+              {% for p in professoras %}
+              <div class="instr-item">
+                <input type="checkbox"
+                       id="instrChk_{{ p.id_cadastro }}"
+                       value="{{ p.id_cadastro }}"
+                       onchange="toggleInstr(this, '{{ p.nome_completo }}')">
+                <label for="instrChk_{{ p.id_cadastro }}" class="instr-item-name" style="cursor:pointer;">
+                  {{ p.nome_completo }}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            <div class="instr-tags" id="instrTags">
+              <span style="font-size:0.72rem;color:var(--text-light);align-self:center;">Nenhum selecionado</span>
+            </div>
+          </div>
         </div>
+
         <div class="form-group">
           <label>Descrição completa</label>
-          <textarea id="ws-desc" placeholder="O que será abordado, para quem é indicado, o que a participante vai aprender…"></textarea>
+          <textarea id="ws-desc" placeholder="O que será abordado, para quem é indicado, o que a participante vai aprender..."></textarea>
         </div>
         <div class="form-group">
           <label>O que levar / pré-requisitos</label>
-          <textarea id="ws-requisitos" placeholder="Liste o que as alunas devem trazer ou saber antes do workshop…"></textarea>
+          <textarea id="ws-requisitos" placeholder="Liste o que as alunas devem trazer ou saber antes do workshop..."></textarea>
         </div>
         <div class="form-group">
           <label>Observações gerais</label>
@@ -218,43 +230,25 @@
       </div>
     </div>
 
-    <!-- BLOCO 2: DATA, VAGAS, PREÇO, CAPA -->
     <div style="display:grid;gap:1.4rem;">
       <div class="form-card">
         <div class="form-card-title">Data, vagas &amp; valor</div>
         <div class="form-card-sub">Configure quando acontece, quantas pessoas cabem e quanto custa.</div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Data</label>
-            <input id="ws-data" type="date">
-          </div>
-          <div class="form-group">
-            <label>Horário início</label>
-            <input id="ws-hora-ini" type="time">
-          </div>
-          <div class="form-group">
-            <label>Horário fim</label>
-            <input id="ws-hora-fim" type="time">
-          </div>
+          <div class="form-group"><label>Data</label><input id="ws-data" type="date"></div>
+          <div class="form-group"><label>Horário início</label><input id="ws-hora-ini" type="time"></div>
+          <div class="form-group"><label>Horário fim</label><input id="ws-hora-fim" type="time"></div>
           <div class="form-group">
             <label>Local / sala</label>
             <select id="ws-sala">
               <option value="">Selecione</option>
-              {% for s in salas %}
-              <option value="{{ s.id_sala }}">{{ s.nome }}</option>
-              {% endfor %}
+              {% for s in salas %}<option value="{{ s.id_sala }}">{{ s.nome }}</option>{% endfor %}
             </select>
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Vagas totais</label>
-            <input id="ws-vagas" type="number" min="1" placeholder="Ex.: 15">
-          </div>
-          <div class="form-group">
-            <label>Valor da inscrição (R$)</label>
-            <input id="ws-valor" type="number" step="0.01" min="0" placeholder="0.00">
-          </div>
+          <div class="form-group"><label>Vagas totais</label><input id="ws-vagas" type="number" min="1" placeholder="Ex.: 15"></div>
+          <div class="form-group"><label>Valor da inscrição (R$)</label><input id="ws-valor" type="number" step="0.01" min="0" placeholder="0.00"></div>
         </div>
         <div class="form-group">
           <label>Status de divulgação</label>
@@ -268,7 +262,7 @@
 
       <div class="form-card">
         <div class="form-card-title">Imagem de capa</div>
-        <div class="img-upload-zone" id="zoneImg" onclick="document.getElementById('ws-img').click()">
+        <div class="img-upload-zone" onclick="document.getElementById('ws-img').click()">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8B0021" stroke-width="1.5" opacity="0.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
           <div class="upload-hint">Clique para selecionar a capa do workshop<br>JPG ou PNG recomendado</div>
           <input id="ws-img" type="file" accept="image/*">
@@ -283,18 +277,17 @@
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ══════════════════════ TAB: WORKSHOPS ══════════════════════ -->
+<!-- ══ TAB: WORKSHOPS ══ -->
 <div class="tab-panel" id="tabWorkshops">
   <div class="ws-filters">
     <button class="filter-btn active" data-status="">Todos</button>
     <button class="filter-btn" data-status="aberto">Abertos</button>
     <button class="filter-btn" data-status="encerrado">Encerrados</button>
     <button class="filter-btn" data-status="rascunho">Rascunhos</button>
-    <input class="search-input" id="wsSearch" type="text" placeholder="Buscar workshop…">
+    <input class="search-input" id="wsSearch" type="text" placeholder="Buscar workshop...">
   </div>
   <div class="ws-grid" id="wsGrid">
     {% for w in workshops %}
@@ -321,7 +314,20 @@
           {% if w.hora_fim %} às {{ w.hora_fim[:5] }}{% endif %}
         </div>
         <div class="ws-card-nome">{{ w.nome }}</div>
-        <div class="ws-card-instrutor">{{ w.instrutor_nome or 'Instrutor não definido' }}</div>
+
+        <!-- MUDANÇA: badges de instrutores múltiplos -->
+        <div class="ws-card-instrutores">
+          {% if w.instrutores %}
+            {% for inst in w.instrutores %}
+            <span class="instr-badge">{{ inst.nome_completo.split()[0] }}</span>
+            {% endfor %}
+          {% elif w.instrutor_nome %}
+            <span class="instr-badge">{{ w.instrutor_nome.split()[0] }}</span>
+          {% else %}
+            <span style="font-size:0.78rem;color:var(--text-light);">Instrutor não definido</span>
+          {% endif %}
+        </div>
+
         <div class="ws-card-desc">{{ w.descricao or '' }}</div>
         <div class="vagas-wrap">
           <div class="vagas-label">
@@ -353,11 +359,9 @@
   </div>
 </div>
 
-<!-- ══════════════════════ TAB: INSCRIÇÕES ══════════════════════ -->
+<!-- ══ TAB: INSCRIÇÕES ══ -->
 <div class="tab-panel" id="tabInscricoes">
   <div class="inscr-layout">
-
-    <!-- Lista de workshops para selecionar -->
     <div>
       <div class="ws-pick-list">
         <div class="ws-pick-head">Workshops</div>
@@ -375,7 +379,6 @@
       </div>
     </div>
 
-    <!-- Painel de inscrições do workshop selecionado -->
     <div class="inscr-panel" id="inscricoesPainel">
       <div class="inscr-empty" id="inscricaoVazio" style="padding:5rem 2rem;">
         <p>Selecione um workshop ao lado para gerenciar as inscrições.</p>
@@ -393,8 +396,6 @@
             <div class="vagas-bar" style="height:6px;"><div class="vagas-fill" id="iVagasBar"></div></div>
           </div>
         </div>
-
-        <!-- Adicionar inscrição -->
         <div class="inscr-add-row">
           <select class="inscr-select" id="selAddInscr">
             <option value="">Selecione o participante</option>
@@ -405,8 +406,6 @@
           <button class="btn-inscrever" id="btnInscrever">Inscrever</button>
         </div>
         <div id="inscricaoMsg"></div>
-
-        <!-- Lista de inscritos -->
         <div class="inscr-list" id="inscricaoLista"></div>
       </div>
     </div>
@@ -414,214 +413,250 @@
 </div>
 
 <script>
+// ── Estado dos instrutores selecionados ────────────────────────
+const instrSel = {}; // { "id_cadastro": "Nome Completo" }
+
+function toggleInstr(chk, nome) {
+  if (chk.checked) instrSel[chk.value] = nome;
+  else delete instrSel[chk.value];
+  renderInstrTags();
+}
+
+function renderInstrTags() {
+  const c = document.getElementById('instrTags');
+  c.innerHTML = '';
+  const ids = Object.keys(instrSel);
+  if (!ids.length) {
+    c.innerHTML = '<span style="font-size:0.72rem;color:var(--text-light);align-self:center;">Nenhum selecionado</span>';
+    return;
+  }
+  ids.forEach(id => {
+    const tag = document.createElement('span');
+    tag.className = 'instr-tag';
+    tag.innerHTML = `${instrSel[id]} <span onclick="deselInstr('${id}')">×</span>`;
+    c.appendChild(tag);
+  });
+}
+
+function deselInstr(id) {
+  const chk = document.getElementById(`instrChk_${id}`);
+  if (chk) chk.checked = false;
+  delete instrSel[id];
+  renderInstrTags();
+}
+
 // ── TABS ──────────────────────────────────────────────────────
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(btn.dataset.tab).classList.add("active");
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
   });
 });
 
 // ── UPLOAD PREVIEW ────────────────────────────────────────────
-document.getElementById("ws-img").addEventListener("change", function() {
-  const prev = document.getElementById("ws-img-preview");
-  if (this.files[0]) {
-    prev.src = URL.createObjectURL(this.files[0]);
-    prev.style.display = "block";
-  }
+document.getElementById('ws-img').addEventListener('change', function() {
+  const prev = document.getElementById('ws-img-preview');
+  if (this.files[0]) { prev.src = URL.createObjectURL(this.files[0]); prev.style.display = 'block'; }
 });
 
-// ── SALVAR WORKSHOP ───────────────────────────────────────────
-document.getElementById("btnSalvarWs").addEventListener("click", async () => {
+// ── SALVAR ────────────────────────────────────────────────────
+document.getElementById('btnSalvarWs').addEventListener('click', async () => {
   const fd = new FormData();
-  const id = document.getElementById("ws-id").value;
-  if (id) fd.append("id_workshop", id);
-  fd.append("nome",          document.getElementById("ws-nome").value.trim());
-  fd.append("id_modalidade", document.getElementById("ws-modal").value);
-  fd.append("id_instrutor",  document.getElementById("ws-instrutor").value);
-  fd.append("descricao",     document.getElementById("ws-desc").value.trim());
-  fd.append("requisitos",    document.getElementById("ws-requisitos").value.trim());
-  fd.append("observacao",    document.getElementById("ws-obs").value.trim());
-  fd.append("data_workshop", document.getElementById("ws-data").value);
-  fd.append("hora_inicio",   document.getElementById("ws-hora-ini").value);
-  fd.append("hora_fim",      document.getElementById("ws-hora-fim").value);
-  fd.append("id_sala",       document.getElementById("ws-sala").value);
-  fd.append("vagas_totais",  document.getElementById("ws-vagas").value);
-  fd.append("valor",         document.getElementById("ws-valor").value);
-  fd.append("status",        document.getElementById("ws-status").value);
-  const img = document.getElementById("ws-img").files[0];
-  if (img) fd.append("imagem_capa", img);
+  const id = document.getElementById('ws-id').value;
+  if (id) fd.append('id_workshop', id);
+  fd.append('nome',          document.getElementById('ws-nome').value.trim());
+  fd.append('id_modalidade', document.getElementById('ws-modal').value);
+  fd.append('descricao',     document.getElementById('ws-desc').value.trim());
+  fd.append('requisitos',    document.getElementById('ws-requisitos').value.trim());
+  fd.append('observacao',    document.getElementById('ws-obs').value.trim());
+  fd.append('data_workshop', document.getElementById('ws-data').value);
+  fd.append('hora_inicio',   document.getElementById('ws-hora-ini').value);
+  fd.append('hora_fim',      document.getElementById('ws-hora-fim').value);
+  fd.append('id_sala',       document.getElementById('ws-sala').value);
+  fd.append('vagas_totais',  document.getElementById('ws-vagas').value);
+  fd.append('valor',         document.getElementById('ws-valor').value);
+  fd.append('status',        document.getElementById('ws-status').value);
 
-  const r = await fetch("/admin/workshop", { method:"POST", body:fd });
+  // MUDANÇA: envia lista de instrutores
+  const ids = Object.keys(instrSel);
+  if (ids.length) {
+    fd.append('ids_instrutores', ids.join(','));
+    fd.append('id_instrutor', ids[0]); // retrocompatibilidade com coluna legada
+  }
+
+  const img = document.getElementById('ws-img').files[0];
+  if (img) fd.append('imagem_capa', img);
+
+  const r = await fetch('/admin/workshop', { method: 'POST', body: fd });
   const d = await r.json();
   alert(d.mensagem);
   if (d.ok) location.reload();
 });
 
+// ── LIMPAR ────────────────────────────────────────────────────
 function limparWs() {
-  document.getElementById("ws-id").value = "";
-  ["ws-nome","ws-desc","ws-requisitos","ws-obs","ws-data","ws-hora-ini","ws-hora-fim","ws-valor"].forEach(id => document.getElementById(id).value = "");
-  document.getElementById("ws-modal").value = "";
-  document.getElementById("ws-instrutor").value = "";
-  document.getElementById("ws-sala").value = "";
-  document.getElementById("ws-status").value = "rascunho";
-  document.getElementById("ws-vagas").value = "";
-  document.getElementById("ws-img-preview").style.display = "none";
+  document.getElementById('ws-id').value = '';
+  ['ws-nome','ws-desc','ws-requisitos','ws-obs','ws-data','ws-hora-ini','ws-hora-fim','ws-valor']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ws-modal').value  = '';
+  document.getElementById('ws-sala').value   = '';
+  document.getElementById('ws-status').value = 'rascunho';
+  document.getElementById('ws-vagas').value  = '';
+  document.getElementById('ws-img-preview').style.display = 'none';
+  Object.keys(instrSel).forEach(id => deselInstr(id));
 }
-document.getElementById("btnLimparWs").addEventListener("click", limparWs);
+document.getElementById('btnLimparWs').addEventListener('click', limparWs);
 
-// ── FILTROS WORKSHOPS ─────────────────────────────────────────
-let filtroStatus = "";
-document.querySelectorAll(".filter-btn[data-status]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".filter-btn[data-status]").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    filtroStatus = btn.dataset.status;
-    filtrarWs();
+// ── FILTROS ───────────────────────────────────────────────────
+let filtroStatus = '';
+document.querySelectorAll('.filter-btn[data-status]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-status]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); filtroStatus = btn.dataset.status; filtrarWs();
   });
 });
-document.getElementById("wsSearch").addEventListener("input", filtrarWs);
+document.getElementById('wsSearch').addEventListener('input', filtrarWs);
 function filtrarWs() {
-  const q = document.getElementById("wsSearch").value.toLowerCase();
-  document.querySelectorAll(".ws-card").forEach(c => {
-    const stOk = !filtroStatus || c.dataset.status === filtroStatus;
-    const nOk  = !q || c.dataset.nome.includes(q);
-    c.style.display = stOk && nOk ? "" : "none";
+  const q = document.getElementById('wsSearch').value.toLowerCase();
+  document.querySelectorAll('.ws-card').forEach(c => {
+    const ok = (!filtroStatus || c.dataset.status === filtroStatus) && (!q || c.dataset.nome.includes(q));
+    c.style.display = ok ? '' : 'none';
   });
 }
 
-// ── EDITAR WORKSHOP ───────────────────────────────────────────
-document.querySelectorAll(".btn-editar-ws").forEach(btn => {
-  btn.addEventListener("click", async () => {
-    const card = btn.closest(".ws-card");
-    const id = card.dataset.id;
-    const r = await fetch(`/admin/workshop/${id}`);
-    const d = await r.json();
+// ── EDITAR ────────────────────────────────────────────────────
+document.querySelectorAll('.btn-editar-ws').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.closest('.ws-card').dataset.id;
+    const r  = await fetch(`/admin/workshop/${id}`);
+    const d  = await r.json();
     if (!d.ok) return alert(d.mensagem);
     const w = d.workshop;
-    document.getElementById("ws-id").value        = w.id_workshop;
-    document.getElementById("ws-nome").value      = w.nome || "";
-    document.getElementById("ws-modal").value     = w.id_modalidade || "";
-    document.getElementById("ws-instrutor").value = w.id_instrutor || "";
-    document.getElementById("ws-desc").value      = w.descricao || "";
-    document.getElementById("ws-requisitos").value= w.requisitos || "";
-    document.getElementById("ws-obs").value       = w.observacao || "";
-    document.getElementById("ws-data").value      = w.data_workshop ? w.data_workshop.substring(0,10) : "";
-    document.getElementById("ws-hora-ini").value  = w.hora_inicio || "";
-    document.getElementById("ws-hora-fim").value  = w.hora_fim || "";
-    document.getElementById("ws-sala").value      = w.id_sala || "";
-    document.getElementById("ws-vagas").value     = w.vagas_totais || "";
-    document.getElementById("ws-valor").value     = w.valor || "";
-    document.getElementById("ws-status").value    = w.status || "rascunho";
+
+    document.getElementById('ws-id').value         = w.id_workshop;
+    document.getElementById('ws-nome').value       = w.nome || '';
+    document.getElementById('ws-modal').value      = w.id_modalidade || '';
+    document.getElementById('ws-desc').value       = w.descricao || '';
+    document.getElementById('ws-requisitos').value = w.requisitos || '';
+    document.getElementById('ws-obs').value        = w.observacao || '';
+    document.getElementById('ws-data').value       = w.data_workshop ? w.data_workshop.substring(0,10) : '';
+    document.getElementById('ws-hora-ini').value   = w.hora_inicio || '';
+    document.getElementById('ws-hora-fim').value   = w.hora_fim || '';
+    document.getElementById('ws-sala').value       = w.id_sala || '';
+    document.getElementById('ws-vagas').value      = w.vagas_totais || '';
+    document.getElementById('ws-valor').value      = w.valor || '';
+    document.getElementById('ws-status').value     = w.status || 'rascunho';
+
+    // MUDANÇA: pré-marca instrutores — usa ids_instrutores (novo) ou id_instrutor (legado)
+    Object.keys(instrSel).forEach(id => deselInstr(id));
+    const instIds = w.ids_instrutores && w.ids_instrutores.length
+      ? w.ids_instrutores
+      : (w.id_instrutor ? [w.id_instrutor] : []);
+    instIds.forEach(pid => {
+      const chk = document.getElementById(`instrChk_${pid}`);
+      if (chk) {
+        chk.checked = true;
+        instrSel[pid] = chk.closest('.instr-item').querySelector('.instr-item-name').textContent.trim();
+      }
+    });
+    renderInstrTags();
+
     document.querySelector('[data-tab="tabCadastrar"]').click();
-    window.scrollTo({ top:0, behavior:"smooth" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 });
 
-// ── EXCLUIR WORKSHOP ──────────────────────────────────────────
-document.querySelectorAll(".btn-excluir-ws").forEach(btn => {
-  btn.addEventListener("click", async () => {
-    if (!confirm("Excluir este workshop?")) return;
-    const r = await fetch(`/admin/workshop/${btn.dataset.id}`, { method:"DELETE" });
+// ── EXCLUIR ───────────────────────────────────────────────────
+document.querySelectorAll('.btn-excluir-ws').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm('Excluir este workshop?')) return;
+    const r = await fetch(`/admin/workshop/${btn.dataset.id}`, { method: 'DELETE' });
     const d = await r.json();
-    alert(d.mensagem);
-    if (d.ok) location.reload();
+    alert(d.mensagem); if (d.ok) location.reload();
   });
 });
 
 // ── IR PARA INSCRIÇÕES ────────────────────────────────────────
-document.querySelectorAll(".btn-ver-inscricoes").forEach(btn => {
-  btn.addEventListener("click", () => {
+document.querySelectorAll('.btn-ver-inscricoes').forEach(btn => {
+  btn.addEventListener('click', () => {
     document.querySelector('[data-tab="tabInscricoes"]').click();
     const item = document.querySelector(`.ws-pick-item[data-wsid="${btn.dataset.wsid}"]`);
-    if (item) { item.click(); item.scrollIntoView({ behavior:"smooth", block:"center" }); }
+    if (item) { item.click(); item.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
   });
 });
 
-// ── INSCRIÇÕES: SELECIONAR WORKSHOP ──────────────────────────
-let wsAtivo = null;
-let inscritosCache = {};
+// ── INSCRIÇÕES ────────────────────────────────────────────────
+let wsAtivo = null, inscritosCache = {};
 
-document.querySelectorAll(".ws-pick-item").forEach(item => {
-  item.addEventListener("click", () => {
-    document.querySelectorAll(".ws-pick-item").forEach(i => i.classList.remove("active"));
-    item.classList.add("active");
+document.querySelectorAll('.ws-pick-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.ws-pick-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
     wsAtivo = parseInt(item.dataset.wsid);
-    document.getElementById("inscricaoVazio").style.display = "none";
-    document.getElementById("inscricaoConteudo").style.display = "";
-    document.getElementById("inscricaoMsg").innerHTML = "";
+    document.getElementById('inscricaoVazio').style.display    = 'none';
+    document.getElementById('inscricaoConteudo').style.display = '';
+    document.getElementById('inscricaoMsg').innerHTML = '';
     carregarInscricoes(wsAtivo);
   });
 });
 
 async function carregarInscricoes(id) {
   const r = await fetch(`/admin/workshop/${id}/inscricoes`);
-  const d = await r.json();
-  if (!d.ok) return;
+  const d = await r.json(); if (!d.ok) return;
   const w = d.workshop;
   inscritosCache[id] = d.inscritos || [];
 
-  document.getElementById("iWsNome").textContent = w.nome;
-  document.getElementById("iWsMeta").textContent =
-    `${w.data_workshop ? new Date(w.data_workshop).toLocaleDateString('pt-BR') : ''} · ${(w.hora_inicio||'').substring(0,5)}${w.hora_fim ? ' às ' + (w.hora_fim||'').substring(0,5) : ''}`;
+  document.getElementById('iWsNome').textContent = w.nome;
+  document.getElementById('iWsMeta').textContent =
+    `${w.data_workshop ? new Date(w.data_workshop).toLocaleDateString('pt-BR') : ''} · ${(w.hora_inicio||'').substring(0,5)}${w.hora_fim?' às '+(w.hora_fim||'').substring(0,5):''}`;
 
-  const cap = w.vagas_totais || 0;
-  const ocp = inscritosCache[id].length;
+  const cap = w.vagas_totais || 0, ocp = inscritosCache[id].length;
   const pct = cap > 0 ? Math.min(Math.round(ocp/cap*100), 100) : 0;
-  const capTag = document.getElementById("iCapTag");
+  const capTag = document.getElementById('iCapTag');
   capTag.textContent = `${ocp}/${cap} vagas`;
-  capTag.className = "cap-tag " + (pct >= 100 ? "cap-cheio" : pct >= 75 ? "cap-quase" : "cap-ok");
-  const bar = document.getElementById("iVagasBar");
-  bar.style.width = (cap > 0 ? pct : 0) + "%";
-  bar.className = "vagas-fill" + (pct >= 100 ? " lotado" : pct >= 75 ? " quase" : "");
+  capTag.className = 'cap-tag ' + (pct>=100?'cap-cheio':pct>=75?'cap-quase':'cap-ok');
+  const bar = document.getElementById('iVagasBar');
+  bar.style.width = (cap>0?pct:0)+'%';
+  bar.className = 'vagas-fill'+(pct>=100?' lotado':pct>=75?' quase':'');
 
-  // popular select — excluir já inscritos
-  const sel = document.getElementById("selAddInscr");
+  const sel = document.getElementById('selAddInscr');
   const inscritosIds = inscritosCache[id].map(i => i.id_cadastro);
   const cheio = cap > 0 && ocp >= cap;
-  const btnI = document.getElementById("btnInscrever");
-  btnI.disabled = cheio;
-
+  document.getElementById('btnInscrever').disabled = cheio;
   sel.innerHTML = '<option value="">Selecione o participante</option>';
   if (!cheio) {
-    document.querySelectorAll("#selAddInscr option[data-perm]").forEach(o => o.remove());
     const todos = {{ todos_usuarios | tojson }};
     todos.filter(u => !inscritosIds.includes(u.id_cadastro)).forEach(u => {
-      const opt = document.createElement("option");
-      opt.value = u.id_cadastro; opt.textContent = u.nome_completo;
-      opt.dataset.perm = "1"; sel.appendChild(opt);
+      const opt = document.createElement('option');
+      opt.value = u.id_cadastro; opt.textContent = u.nome_completo; sel.appendChild(opt);
     });
   }
-
   renderInscritos(inscritosCache[id], id);
 }
 
 function renderInscritos(lista, idWs) {
-  const el = document.getElementById("inscricaoLista");
-  if (!lista.length) {
-    el.innerHTML = `<div class="inscr-empty">Nenhum inscrito ainda.</div>`;
-    return;
-  }
-  el.innerHTML = "";
+  const el = document.getElementById('inscricaoLista');
+  if (!lista.length) { el.innerHTML = '<div class="inscr-empty">Nenhum inscrito ainda.</div>'; return; }
+  el.innerHTML = '';
   lista.forEach((p, i) => {
-    const ini = (p.nome_completo||"?").split(" ").slice(0,2).map(x => x[0].toUpperCase()).join("");
-    const row = document.createElement("div"); row.className = "inscr-row";
+    const ini = (p.nome_completo||'?').split(' ').slice(0,2).map(x=>x[0].toUpperCase()).join('');
+    const row = document.createElement('div'); row.className = 'inscr-row';
     row.innerHTML = `
       <div class="inscr-num">${i+1}</div>
       <div class="inscr-ava">${ini}</div>
       <div class="inscr-info">
         <div class="inscr-nome">${p.nome_completo}</div>
-        <div class="inscr-email">${p.email || ''}</div>
+        <div class="inscr-email">${p.email||''}</div>
       </div>
-      <div class="inscr-data">${p.data_inscricao ? new Date(p.data_inscricao).toLocaleDateString('pt-BR') : ''}</div>
+      <div class="inscr-data">${p.data_inscricao?new Date(p.data_inscricao).toLocaleDateString('pt-BR'):''}</div>
       <button class="btn-rem" data-id="${p.id_cadastro}" title="Cancelar inscrição">✕</button>`;
-    row.querySelector(".btn-rem").addEventListener("click", async () => {
+    row.querySelector('.btn-rem').addEventListener('click', async () => {
       if (!confirm(`Cancelar inscrição de ${p.nome_completo}?`)) return;
-      const r = await fetch("/admin/workshop/desinscrever", {
-        method:"DELETE", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ id_workshop: idWs, id_participante: p.id_cadastro })
+      const r = await fetch('/admin/workshop/desinscrever', {
+        method:'DELETE', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({id_workshop:idWs, id_participante:p.id_cadastro})
       });
       const d = await r.json();
       if (d.ok) { delete inscritosCache[idWs]; carregarInscricoes(idWs); }
@@ -631,22 +666,17 @@ function renderInscritos(lista, idWs) {
   });
 }
 
-document.getElementById("btnInscrever").addEventListener("click", async () => {
-  const id_part = parseInt(document.getElementById("selAddInscr").value);
+document.getElementById('btnInscrever').addEventListener('click', async () => {
+  const id_part = parseInt(document.getElementById('selAddInscr').value);
   if (!id_part || !wsAtivo) return;
-  const msgEl = document.getElementById("inscricaoMsg");
-  const r = await fetch("/admin/workshop/inscrever", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ id_workshop: wsAtivo, id_participante: id_part })
+  const msgEl = document.getElementById('inscricaoMsg');
+  const r = await fetch('/admin/workshop/inscrever', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id_workshop:wsAtivo, id_participante:id_part})
   });
   const d = await r.json();
-  if (d.ok) {
-    delete inscritosCache[wsAtivo];
-    msgEl.innerHTML = "";
-    carregarInscricoes(wsAtivo);
-  } else {
-    msgEl.innerHTML = `<div class="${d.codigo === 'WS_CHEIO' ? 'msg-warn' : 'msg-err'}">${d.mensagem}</div>`;
-  }
+  if (d.ok) { delete inscritosCache[wsAtivo]; msgEl.innerHTML=''; carregarInscricoes(wsAtivo); }
+  else msgEl.innerHTML = `<div class="${d.codigo==='WS_CHEIO'?'msg-warn':'msg-err'}">${d.mensagem}</div>`;
 });
 </script>
 </body>
