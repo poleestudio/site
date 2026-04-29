@@ -1377,3 +1377,173 @@ footer {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ── HAMBURGER BUTTON ── */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0.4rem;
+  z-index: 200;
+}
+ 
+.nav-hamburger span {
+  display: block;
+  width: 24px;
+  height: 1.5px;
+  background: var(--bordo);
+  transition: transform 0.3s, opacity 0.3s;
+  transform-origin: center;
+}
+ 
+.nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+ 
+/* ── DRAWER MOBILE ── */
+.nav-drawer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+}
+ 
+.nav-drawer.open {
+  display: block;
+  pointer-events: all;
+}
+ 
+.nav-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(42, 26, 31, 0.45);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.25s ease both;
+}
+ 
+.nav-drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(80vw, 320px);
+  background: var(--cream);
+  padding: 5rem 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: -8px 0 40px rgba(42, 26, 31, 0.15);
+  animation: slideInRight 0.3s cubic-bezier(.25,.46,.45,.94) both;
+}
+ 
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+ 
+.nav-drawer-panel a {
+  display: block;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  text-decoration: none;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(139, 0, 33, 0.07);
+  transition: color 0.2s;
+}
+ 
+.nav-drawer-panel a:hover { color: var(--bordo); }
+ 
+.nav-drawer-panel a:last-child { border-bottom: none; }
+ 
+.nav-drawer-cta {
+  margin-top: 2rem !important;
+  background: var(--bordo) !important;
+  color: #fff !important;
+  border-radius: 50px !important;
+  padding: 0.85rem 1.4rem !important;
+  text-align: center !important;
+  border-bottom: none !important;
+  letter-spacing: 0.14em !important;
+}
+ 
+.nav-drawer-cta-outline {
+  margin-top: 0.7rem !important;
+  border: 1.5px solid rgba(139, 0, 33, 0.35) !important;
+  color: var(--bordo) !important;
+  border-radius: 50px !important;
+  padding: 0.75rem 1.4rem !important;
+  text-align: center !important;
+  border-bottom: none !important;
+}
+ 
+/* ── HERO BUTTONS — fix mobile ── */
+@media (max-width: 640px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;        /* botões ocupam largura total */
+    gap: 0.9rem;
+    width: 100%;
+    max-width: 320px;
+  }
+ 
+  .btn-primary {
+    justify-content: center;
+    width: 100%;
+    padding: 0.95rem 1.4rem;
+    font-size: 0.76rem;
+  }
+ 
+  .btn-secondary {
+    justify-content: center;
+    width: 100%;
+  }
+ 
+  /* hero-left não deixa os botões transbordar */
+  .hero-left {
+    padding: 7rem 1.5rem 2.5rem;
+  }
+ 
+  .hero-subtitle {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+}
+ 
+/* ── SCHEDULE GRID — sábado visível ── */
+/* no breakpoint 900px já vira 2 colunas; no 640px vira 1 coluna.
+   Vamos deixar 2 colunas até 480px e 1 coluna abaixo disso,
+   garantindo que as 6 colunas (seg→sáb) fiquem acessíveis */
+@media (max-width: 900px) {
+  .schedule-grid {
+    grid-template-columns: repeat(2, 1fr);  /* já existia, mantém */
+    gap: 0.8rem;
+  }
+}
+ 
+@media (max-width: 480px) {
+  .schedule-grid {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+}
+ 
+/* ── RESPONSIVE: mostrar hamburger e esconder nav-links ── */
+@media (max-width: 900px) {
+  .nav-hamburger {
+    display: flex;
+  }
+ 
+  /* nav-links já tem display:none no breakpoint existente — mantemos */
+  /* nav-actions também some para dar espaço ao hamburger */
+  .nav-actions {
+    display: none !important;
+  }
+}
+ 
